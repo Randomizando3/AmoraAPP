@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace AmoraApp.Models
 {
@@ -51,7 +52,7 @@ namespace AmoraApp.Models
         // Tags de interesses selecionadas (ex: Música, Filmes, Viagem...)
         public List<string> Interests { get; set; } = new();
 
-        // Status online
+        // Status online (para exibição no Discover)
         public bool IsOnline { get; set; } = false;
         public long LastOnlineUtc { get; set; } = 0;
 
@@ -63,5 +64,9 @@ namespace AmoraApp.Models
 
         // Texto amigável da última localização (ex.: "São Paulo/SP (debug)" ou "Cidade, Estado, País (IP)")
         public string CurrentLocationText { get; set; } = string.Empty;
+
+        // Distância calculada em relação ao usuário logado (NÃO salva no Firebase)
+        [JsonIgnore]
+        public double DistanceKm { get; set; } = 0;
     }
 }

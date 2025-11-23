@@ -12,6 +12,13 @@ namespace AmoraApp.Views
         // Guarda o último TotalX do pan para usar no Completed
         private double _lastSwipeTotalX = 0;
 
+        // Construtor SEM parâmetros – usado pelo XAML / Shell
+        public DiscoverPage()
+            : this(new DiscoverViewModel())
+        {
+        }
+
+        // Construtor COM ViewModel – se você quiser injetar manualmente
         public DiscoverPage(DiscoverViewModel vm)
         {
             InitializeComponent();
@@ -23,7 +30,17 @@ namespace AmoraApp.Views
             base.OnAppearing();
 
             if (Vm != null)
-                await Vm.InitializeAsync();
+            {
+                try
+                {
+                    await Vm.InitializeAsync();
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[DiscoverPage] Erro em OnAppearing: {ex}");
+                    // Não relança: evita derrubar o app
+                }
+            }
         }
 
         // ================== SWIPE NO CARD ==================
@@ -117,7 +134,7 @@ namespace AmoraApp.Views
                 await Navigation.PushAsync(new FiltersPage(Vm));
         }
 
-        // BOTÃO REWIND
+        // BOTÃO REWIND (se em algum lugar você ligar no XAML por Tap)
         private async void OnRewindTapped(object sender, EventArgs e)
         {
             if (Vm?.RewindCommand != null && Vm.RewindCommand.CanExecute(null))

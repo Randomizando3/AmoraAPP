@@ -110,6 +110,116 @@
                            TextColor="#555" />
                 </VerticalStackLayout>
 
+                <!-- PROFISSÃO -->
+                <VerticalStackLayout>
+                    <Label Text="Profissão (contém)"
+                           FontSize="16"
+                           TextColor="#222"
+                           FontAttributes="Bold" />
+
+                    <Entry
+                        x:Name="ProfessionEntry"
+                        Text="{Binding ProfessionFilter, Mode=TwoWay}"
+                        Placeholder="Ex.: Desenvolvedor, Designer..."
+                        Margin="0,6,0,0" />
+                </VerticalStackLayout>
+
+                <!-- ESCOLARIDADE -->
+                <VerticalStackLayout>
+                    <Label Text="Escolaridade (contém)"
+                           FontSize="16"
+                           TextColor="#222"
+                           FontAttributes="Bold" />
+
+                    <Entry
+                        x:Name="EducationEntry"
+                        Text="{Binding EducationFilter, Mode=TwoWay}"
+                        Placeholder="Ex.: Superior completo, Técnico..."
+                        Margin="0,6,0,0" />
+                </VerticalStackLayout>
+
+                <!-- RELIGIÃO -->
+                <VerticalStackLayout>
+                    <Label Text="Religião (contém)"
+                           FontSize="16"
+                           TextColor="#222"
+                           FontAttributes="Bold" />
+
+                    <Entry
+                        x:Name="ReligionEntry"
+                        Text="{Binding ReligionFilter, Mode=TwoWay}"
+                        Placeholder="Ex.: Católica, Evangélica, Espírita..."
+                        Margin="0,6,0,0" />
+                </VerticalStackLayout>
+
+                <!-- ORIENTAÇÃO SEXUAL -->
+                <VerticalStackLayout>
+                    <Label Text="Orientação sexual (contém)"
+                           FontSize="16"
+                           TextColor="#222"
+                           FontAttributes="Bold" />
+
+                    <Entry
+                        x:Name="OrientationEntry"
+                        Text="{Binding OrientationFilter, Mode=TwoWay}"
+                        Placeholder="Ex.: Heterossexual, Bissexual..."
+                        Margin="0,6,0,0" />
+                </VerticalStackLayout>
+
+                <!-- INTERESSES -->
+                <VerticalStackLayout>
+                    <Label Text="Interesses em comum"
+                           FontSize="16"
+                           TextColor="#222"
+                           FontAttributes="Bold" />
+
+                    <Label Text="(Selecione um ou mais hobbies)"
+                           FontSize="12"
+                           TextColor="#777" />
+
+                    <FlexLayout
+                        Margin="0,8,0,0"
+                        Wrap="Wrap"
+                        AlignItems="Center"
+                        BindableLayout.ItemsSource="{Binding AvailableFilterInterests}">
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate>
+                                <Frame
+                                    Padding="10,5"
+                                    Margin="0,6,8,0"
+                                    HasShadow="False"
+                                    CornerRadius="16">
+                                    <Frame.GestureRecognizers>
+                                        <TapGestureRecognizer Tapped="OnInterestTapped" />
+                                    </Frame.GestureRecognizers>
+
+                                    <Frame.Triggers>
+                                        <DataTrigger
+                                            TargetType="Frame"
+                                            Binding="{Binding IsSelected}"
+                                            Value="True">
+                                            <Setter Property="BackgroundColor" Value="#FFE7F4" />
+                                            <Setter Property="BorderColor" Value="#F3C9E2" />
+                                        </DataTrigger>
+                                        <DataTrigger
+                                            TargetType="Frame"
+                                            Binding="{Binding IsSelected}"
+                                            Value="False">
+                                            <Setter Property="BackgroundColor" Value="#F5F5F5" />
+                                            <Setter Property="BorderColor" Value="#DDDDDD" />
+                                        </DataTrigger>
+                                    </Frame.Triggers>
+
+                                    <Label
+                                        Text="{Binding Name}"
+                                        FontSize="12"
+                                        TextColor="#FF4E8A" />
+                                </Frame>
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                    </FlexLayout>
+                </VerticalStackLayout>
+
             </VerticalStackLayout>
         </ScrollView>
 

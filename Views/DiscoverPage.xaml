@@ -8,7 +8,7 @@
 
     <Grid RowDefinitions="Auto,*,Auto">
 
-        <!-- FUNDO COM ELIPSE -->
+        <!-- FUNDO -->
         <Image
             Source="background.jpg"
             Aspect="AspectFill"
@@ -59,127 +59,199 @@
                     <RoundRectangle CornerRadius="20" />
                 </Border.StrokeShape>
 
-                <Grid RowDefinitions="2*,Auto,Auto">
+                <Grid>
 
-                    <!-- FOTO (AGORA CLIP VIA BORDER, SEM Image.Clip) -->
-                    <Grid Grid.Row="0">
-                        <Border StrokeThickness="0">
-                            <Border.StrokeShape>
-                                <RoundRectangle CornerRadius="20,20,0,0" />
-                            </Border.StrokeShape>
-                            <Image
-                                Source="{Binding CurrentUser.PhotoUrl}"
-                                Aspect="AspectFill"
-                                HorizontalOptions="FillAndExpand"
-                                VerticalOptions="FillAndExpand" />
-                        </Border>
+                    <!-- CARD COM PERFIL -->
+                    <Grid IsVisible="{Binding HasUser}">
+                        <Grid RowDefinitions="2*,Auto,Auto">
+
+                            <!-- FOTO -->
+                            <Grid Grid.Row="0">
+                                <Border StrokeThickness="0">
+                                    <Border.StrokeShape>
+                                        <RoundRectangle CornerRadius="20,20,0,0" />
+                                    </Border.StrokeShape>
+                                    <Image
+                                        Source="{Binding CurrentUser.PhotoUrl}"
+                                        Aspect="AspectFill"
+                                        HorizontalOptions="FillAndExpand"
+                                        VerticalOptions="FillAndExpand" />
+                                </Border>
+                            </Grid>
+
+                            <!-- NOME + INFOS -->
+                            <StackLayout Grid.Row="1"
+                                         Padding="16,10,16,4"
+                                         Spacing="2">
+
+                                <StackLayout Orientation="Horizontal" Spacing="4">
+                                    <Label
+                                        Text="{Binding CurrentUser.DisplayName}"
+                                        FontSize="20"
+                                        FontAttributes="Bold"
+                                        TextColor="#222222" />
+                                    <Label
+                                        Text=", "
+                                        FontSize="20"
+                                        FontAttributes="Bold"
+                                        TextColor="#222222" />
+                                    <Label
+                                        Text="{Binding CurrentUser.Age}"
+                                        FontSize="20"
+                                        FontAttributes="Bold"
+                                        TextColor="#222222" />
+                                </StackLayout>
+
+                                <Label
+                                    Text="{Binding CurrentUser.City}"
+                                    FontSize="13"
+                                    TextColor="#777777" />
+
+                                <Label
+                                    Text="{Binding CurrentUser.JobTitle}"
+                                    FontSize="13"
+                                    TextColor="#555555"
+                                    LineBreakMode="TailTruncation" />
+
+                                <Label
+                                    Text="{Binding CurrentUser.EducationLevel}"
+                                    FontSize="12"
+                                    TextColor="#888888"
+                                    LineBreakMode="TailTruncation" />
+
+                                <Label
+                                    Text="{Binding CurrentUser.Bio}"
+                                    FontSize="13"
+                                    TextColor="#666666"
+                                    LineBreakMode="TailTruncation" />
+                            </StackLayout>
+
+                            <!-- TAGS + INTERESSES -->
+                            <StackLayout
+                                Grid.Row="2"
+                                Padding="16,0,16,12"
+                                Spacing="8">
+
+                                <!-- Online + distância -->
+                                <StackLayout Orientation="Horizontal" Spacing="10">
+
+                                    <!-- ONLINE BADGE -->
+                                    <Border
+                                        BackgroundColor="#FFE7F4"
+                                        Stroke="#F3C9E2"
+                                        StrokeThickness="2">
+
+                                        <Border.Triggers>
+                                            <DataTrigger TargetType="Border"
+                                                         Binding="{Binding OnlineText}"
+                                                         Value="">
+                                                <Setter Property="IsVisible" Value="False" />
+                                            </DataTrigger>
+
+                                            <DataTrigger TargetType="Border"
+                                                         Binding="{Binding OnlineText}"
+                                                         Value="{x:Null}">
+                                                <Setter Property="IsVisible" Value="False" />
+                                            </DataTrigger>
+                                        </Border.Triggers>
+
+                                        <Border.StrokeShape>
+                                            <RoundRectangle CornerRadius="12" />
+                                        </Border.StrokeShape>
+
+                                        <Label Text="{Binding OnlineText}"
+                                               Margin="10,4"
+                                               TextColor="#FF4E8A"
+                                               FontSize="11" />
+                                    </Border>
+
+                                    <!-- DISTÂNCIA BADGE (corrigido) -->
+                                    <Border
+                                        BackgroundColor="#F0F0F0"
+                                        Stroke="#DDDDDD"
+                                        StrokeThickness="2">
+
+                                        <Border.Triggers>
+                                            <!-- Se DistanceText for vazio -->
+                                            <DataTrigger TargetType="Border"
+                                                         Binding="{Binding DistanceText}"
+                                                         Value="">
+                                                <Setter Property="IsVisible" Value="False" />
+                                            </DataTrigger>
+
+                                            <!-- Se DistanceText for nulo -->
+                                            <DataTrigger TargetType="Border"
+                                                         Binding="{Binding DistanceText}"
+                                                         Value="{x:Null}">
+                                                <Setter Property="IsVisible" Value="False" />
+                                            </DataTrigger>
+                                        </Border.Triggers>
+
+                                        <Border.StrokeShape>
+                                            <RoundRectangle CornerRadius="12" />
+                                        </Border.StrokeShape>
+
+                                        <Label Text="{Binding DistanceText}"
+                                               Margin="10,4"
+                                               TextColor="#555555"
+                                               FontSize="11" />
+                                    </Border>
+
+                                </StackLayout>
+
+                                <!-- Interesses (chips) -->
+                                <FlexLayout
+                                    Wrap="Wrap"
+                                    AlignItems="Center"
+                                    BindableLayout.ItemsSource="{Binding CurrentUser.Interests}">
+                                    <BindableLayout.ItemTemplate>
+                                        <DataTemplate>
+                                            <Frame
+                                                Padding="8,4"
+                                                Margin="0,4,6,4"
+                                                BackgroundColor="#FFE7F4"
+                                                BorderColor="#F3C9E2"
+                                                CornerRadius="12"
+                                                HasShadow="False">
+                                                <Label
+                                                    Text="{Binding .}"
+                                                    FontSize="11"
+                                                    TextColor="#FF4E8A" />
+                                            </Frame>
+                                        </DataTemplate>
+                                    </BindableLayout.ItemTemplate>
+                                </FlexLayout>
+
+                            </StackLayout>
+
+                        </Grid>
                     </Grid>
 
-                    <!-- NOME + INFOS -->
-                    <StackLayout Grid.Row="1"
-                                 Padding="16,10,16,4"
-                                 Spacing="2">
+                    <!-- CARD VAZIO -->
+                    <Grid IsVisible="{Binding HasNoUser}">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
 
-                        <StackLayout Orientation="Horizontal" Spacing="4">
-                            <Label
-                                Text="{Binding CurrentUser.DisplayName}"
-                                FontSize="20"
-                                FontAttributes="Bold"
-                                TextColor="#222222" />
-                            <Label
-                                Text=", "
-                                FontSize="20"
-                                FontAttributes="Bold"
-                                TextColor="#222222" />
-                            <Label
-                                Text="{Binding CurrentUser.Age}"
-                                FontSize="20"
-                                FontAttributes="Bold"
-                                TextColor="#222222" />
+                        <StackLayout
+                            HorizontalOptions="Center"
+                            VerticalOptions="Center"
+                            Padding="24"
+                            Spacing="8">
+
+                            <Label Text="Nada por aqui por enquanto"
+                                   FontAttributes="Bold"
+                                   FontSize="18"
+                                   HorizontalTextAlignment="Center"
+                                   TextColor="#222" />
+
+                            <Label Text="Não há perfis para exibir no momento. Tente ajustar os filtros ou volte mais tarde."
+                                   FontSize="13"
+                                   HorizontalTextAlignment="Center"
+                                   TextColor="#777" />
                         </StackLayout>
+                    </Grid>
 
-                        <Label
-                            Text="{Binding CurrentUser.City}"
-                            FontSize="13"
-                            TextColor="#777777" />
-
-                        <Label
-                            Text="{Binding CurrentUser.JobTitle}"
-                            FontSize="13"
-                            TextColor="#555555"
-                            LineBreakMode="TailTruncation" />
-
-                        <Label
-                            Text="{Binding CurrentUser.EducationLevel}"
-                            FontSize="12"
-                            TextColor="#888888"
-                            LineBreakMode="TailTruncation" />
-
-                        <Label
-                            Text="{Binding CurrentUser.Bio}"
-                            FontSize="13"
-                            TextColor="#666666"
-                            LineBreakMode="TailTruncation" />
-                    </StackLayout>
-
-                    <!-- TAGS + INTERESSES -->
-                    <StackLayout
-                        Grid.Row="2"
-                        Padding="16,0,16,12"
-                        Spacing="8">
-
-                        <!-- Online + distância -->
-                        <StackLayout Orientation="Horizontal" Spacing="10">
-                            <Border
-                                BackgroundColor="#FFE7F4"
-                                Stroke="#F3C9E2"
-                                StrokeThickness="2">
-                                <Border.StrokeShape>
-                                    <RoundRectangle CornerRadius="12" />
-                                </Border.StrokeShape>
-                                <Label Text="Online"
-                                       Margin="10,4"
-                                       TextColor="#FF4E8A"
-                                       FontSize="11" />
-                            </Border>
-
-                            <Border
-                                BackgroundColor="#F0F0F0"
-                                Stroke="#DDDDDD"
-                                StrokeThickness="2">
-                                <Border.StrokeShape>
-                                    <RoundRectangle CornerRadius="12" />
-                                </Border.StrokeShape>
-                                <Label Text="3 km away"
-                                       Margin="10,4"
-                                       TextColor="#555555"
-                                       FontSize="11" />
-                            </Border>
-                        </StackLayout>
-
-                        <!-- Interesses (chips) -->
-                        <FlexLayout
-                            Wrap="Wrap"
-                            AlignItems="Center"
-                            BindableLayout.ItemsSource="{Binding CurrentUser.Interests}">
-                            <BindableLayout.ItemTemplate>
-                                <DataTemplate>
-                                    <Frame
-                                        Padding="8,4"
-                                        Margin="0,4,6,4"
-                                        BackgroundColor="#FFE7F4"
-                                        BorderColor="#F3C9E2"
-                                        CornerRadius="12"
-                                        HasShadow="False">
-                                        <Label
-                                            Text="{Binding .}"
-                                            FontSize="11"
-                                            TextColor="#FF4E8A" />
-                                    </Frame>
-                                </DataTemplate>
-                            </BindableLayout.ItemTemplate>
-                        </FlexLayout>
-                    </StackLayout>
                 </Grid>
 
                 <!-- SWIPE + TAP -->
@@ -187,10 +259,11 @@
                     <PanGestureRecognizer PanUpdated="OnSwipe" />
                     <TapGestureRecognizer Tapped="OnCardTapped" />
                 </Border.GestureRecognizers>
+
             </Border>
         </Grid>
 
-        <!-- BOTÕES INFERIORES -->
+        <!-- BOTÕES -->
         <Grid
             Grid.Row="2"
             Padding="0,0,0,12"
@@ -200,6 +273,7 @@
             ColumnDefinitions="*,*,*,*,*"
             ColumnSpacing="12">
 
+            <!-- BACK -->
             <Border
                 Grid.Column="0"
                 HeightRequest="50"
@@ -221,6 +295,7 @@
                 </Image>
             </Border>
 
+            <!-- NO -->
             <Border
                 Grid.Column="1"
                 HeightRequest="56"
@@ -242,6 +317,7 @@
                 </Image>
             </Border>
 
+            <!-- ADD -->
             <Border
                 Grid.Column="2"
                 HeightRequest="50"
@@ -263,6 +339,7 @@
                 </Image>
             </Border>
 
+            <!-- LIKE -->
             <Border
                 Grid.Column="3"
                 HeightRequest="56"
@@ -284,6 +361,7 @@
                 </Image>
             </Border>
 
+            <!-- BOOST -->
             <Border
                 Grid.Column="4"
                 HeightRequest="50"
@@ -314,5 +392,7 @@
             </Border>
 
         </Grid>
+
     </Grid>
+
 </ContentPage>

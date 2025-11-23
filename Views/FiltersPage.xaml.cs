@@ -7,19 +7,20 @@ namespace AmoraApp.Views
     {
         private readonly DiscoverViewModel _discoverVm;
 
-        // 🔹 Construtor SEM parâmetros (evita erro CS7036)
+        // Construtor SEM parâmetros (evita erro do XAML preview)
         public FiltersPage()
         {
             InitializeComponent();
         }
 
-        // 🔹 Construtor COM ViewModel (ideal quando chamado pelo Discover)
+        // Construtor COM ViewModel (usado pelo DiscoverPage)
         public FiltersPage(DiscoverViewModel discoverVm)
         {
             InitializeComponent();
             _discoverVm = discoverVm;
             BindingContext = _discoverVm;
 
+            _discoverVm.SyncFilterInterestsFromFilterList();
             UpdateGenderButtons();
         }
 
@@ -73,6 +74,18 @@ namespace AmoraApp.Views
         }
 
         // ======================
+        //  INTERESSES (chips)
+        // ======================
+
+        private void OnInterestTapped(object sender, TappedEventArgs e)
+        {
+            if (sender is VisualElement ve && ve.BindingContext is FilterInterestItem chip)
+            {
+                chip.IsSelected = !chip.IsSelected;
+            }
+        }
+
+        // ======================
         //  RESETAR FILTROS
         // ======================
 
@@ -84,6 +97,15 @@ namespace AmoraApp.Views
             _discoverVm.MaxAgeFilter = 35;
             _discoverVm.DistanceFilterKm = 20;
 
+            _discoverVm.ProfessionFilter = string.Empty;
+            _discoverVm.EducationFilter = string.Empty;
+            _discoverVm.ReligionFilter = string.Empty;
+            _discoverVm.OrientationFilter = string.Empty;
+
+            _discoverVm.InterestFilter.Clear();
+            foreach (var item in _discoverVm.AvailableFilterInterests)
+                item.IsSelected = false;
+
             UpdateGenderButtons();
         }
 
@@ -94,6 +116,12 @@ namespace AmoraApp.Views
         private async void OnApplyFilterClicked(object sender, System.EventArgs e)
         {
             if (_discoverVm == null) return;
+
+            // Atualiza lista de interesses selecionados no ViewModel
+            _discoverVm.InterestFilter = _discoverVm.AvailableFilterInterests
+                .Where(i => i.IsSelected)
+                .Select(i => i.Name)
+                .ToList();
 
             _discoverVm.ApplyFilters();
             await Navigation.PopAsync();
