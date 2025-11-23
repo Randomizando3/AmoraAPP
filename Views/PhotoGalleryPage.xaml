@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="AmoraApp.Views.PhotoGalleryPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    BackgroundColor="#FFF5F9"
+    NavigationPage.HasNavigationBar="False">
+
+    <Grid>
+
+        <!-- SCROLL PRINCIPAL -->
+        <ScrollView x:Name="RootScroll">
+
+            <VerticalStackLayout Spacing="12">
+
+                <!-- TOPO: BOTÃO VOLTAR -->
+                <Grid Padding="16,32,16,8"
+                      ColumnDefinitions="Auto,*,Auto">
+
+                    <Label Text="←"
+                           FontSize="22"
+                           TextColor="#444">
+                        <Label.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnCloseTapped" />
+                        </Label.GestureRecognizers>
+                    </Label>
+
+                    <Label Grid.Column="1"
+                           Text="{Binding User.DisplayName}"
+                           FontSize="20"
+                           HorizontalOptions="Center"
+                           VerticalOptions="Center"
+                           TextColor="#222"
+                           FontAttributes="Bold" />
+                </Grid>
+
+                <!-- FOTOS EMPILHADAS -->
+                <VerticalStackLayout
+                    x:Name="PhotosSection"
+                    BindableLayout.ItemsSource="{Binding Photos}"
+                    Spacing="8"
+                    Padding="16,0,16,0">
+
+                    <BindableLayout.ItemTemplate>
+                        <DataTemplate>
+                            <Frame CornerRadius="18"
+                                   Padding="0"
+                                   HasShadow="True"
+                                   Margin="0,0,0,8">
+                                <Image
+                                    Source="{Binding .}"
+                                    Aspect="AspectFill"
+                                    HeightRequest="260" />
+                            </Frame>
+                        </DataTemplate>
+                    </BindableLayout.ItemTemplate>
+                </VerticalStackLayout>
+
+                <!-- SEÇÃO DE INFORMAÇÕES -->
+                <Grid x:Name="InfoSection"
+                      Padding="16,12,16,16">
+
+                    <Border
+                        BackgroundColor="White"
+                        Stroke="#E5E5E5"
+                        StrokeThickness="2"
+                        Padding="16"
+                        HorizontalOptions="FillAndExpand">
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="18" />
+                        </Border.StrokeShape>
+
+                        <ScrollView>
+                            <StackLayout Spacing="8">
+
+                                <!-- Nome, idade -->
+                                <StackLayout Orientation="Horizontal" Spacing="4">
+                                    <Label Text="{Binding User.DisplayName}"
+                                           FontSize="20"
+                                           FontAttributes="Bold"
+                                           TextColor="#222222" />
+                                    <Label Text=", "
+                                           FontSize="20"
+                                           FontAttributes="Bold"
+                                           TextColor="#222222" />
+                                    <Label Text="{Binding User.Age}"
+                                           FontSize="20"
+                                           FontAttributes="Bold"
+                                           TextColor="#222222" />
+                                </StackLayout>
+
+                                <!-- Cidade -->
+                                <Label Text="{Binding User.City}"
+                                       FontSize="14"
+                                       TextColor="#777777" />
+
+                                <!-- Bio resumida -->
+                                <Label
+                                    Text="{Binding User.Bio}"
+                                    FontSize="13"
+                                    TextColor="#555555"
+                                    LineBreakMode="WordWrap" />
+
+                                <!-- Chips Online / distância (ainda visuais) -->
+                                <StackLayout Orientation="Horizontal" Spacing="10" Margin="0,6,0,0">
+                                    <Border
+                                        BackgroundColor="#FFE7F4"
+                                        Stroke="#F3C9E2"
+                                        StrokeThickness="2">
+                                        <Border.StrokeShape>
+                                            <RoundRectangle CornerRadius="12" />
+                                        </Border.StrokeShape>
+                                        <Label Text="Online"
+                                               Margin="10,4"
+                                               TextColor="#FF4E8A"
+                                               FontSize="11" />
+                                    </Border>
+
+                                    <Border
+                                        BackgroundColor="#F0F0F0"
+                                        Stroke="#DDDDDD"
+                                        StrokeThickness="2">
+                                        <Border.StrokeShape>
+                                            <RoundRectangle CornerRadius="12" />
+                                        </Border.StrokeShape>
+                                        <Label Text="3 km away"
+                                               Margin="10,4"
+                                               TextColor="#555555"
+                                               FontSize="11" />
+                                    </Border>
+                                </StackLayout>
+
+                                <!-- Sobre mim -->
+                                <Label Text="Sobre mim"
+                                       FontSize="14"
+                                       FontAttributes="Bold"
+                                       TextColor="#222222"
+                                       Margin="0,12,0,0" />
+                                <Label
+                                    Text="{Binding User.Bio}"
+                                    FontSize="13"
+                                    TextColor="#555555"
+                                    LineBreakMode="WordWrap" />
+
+                                <!-- Trabalho e estudos -->
+                                <Label Text="Trabalho e estudos"
+                                       FontSize="14"
+                                       FontAttributes="Bold"
+                                       TextColor="#222222"
+                                       Margin="0,12,0,0" />
+
+                                <Label Text="{Binding User.JobTitle}"
+                                       FontSize="13"
+                                       TextColor="#555555"
+                                       LineBreakMode="TailTruncation" />
+
+                                <Label Text="{Binding User.EducationLevel}"
+                                       FontSize="13"
+                                       TextColor="#555555"
+                                       LineBreakMode="TailTruncation" />
+
+                                <Label Text="{Binding User.EducationInstitution}"
+                                       FontSize="13"
+                                       TextColor="#555555"
+                                       LineBreakMode="TailTruncation" />
+
+                                <!-- Gênero e orientação -->
+                                <Label Text="Identidade"
+                                       FontSize="14"
+                                       FontAttributes="Bold"
+                                       TextColor="#222222"
+                                       Margin="0,12,0,0" />
+
+                                <Label Text="{Binding User.Gender}"
+                                       FontSize="13"
+                                       TextColor="#555555" />
+
+                                <Label Text="{Binding User.SexualOrientation}"
+                                       FontSize="13"
+                                       TextColor="#555555" />
+
+                                <!-- Interesses -->
+                                <Label Text="Interesses"
+                                       FontSize="14"
+                                       FontAttributes="Bold"
+                                       TextColor="#222222"
+                                       Margin="0,12,0,0" />
+
+                                <FlexLayout
+                                    Wrap="Wrap"
+                                    AlignItems="Center"
+                                    BindableLayout.ItemsSource="{Binding User.Interests}">
+                                    <BindableLayout.ItemTemplate>
+                                        <DataTemplate>
+                                            <Frame
+                                                Padding="8,4"
+                                                Margin="0,4,6,4"
+                                                BackgroundColor="#FFE7F4"
+                                                BorderColor="#F3C9E2"
+                                                CornerRadius="12"
+                                                HasShadow="False">
+                                                <Label
+                                                    Text="{Binding .}"
+                                                    FontSize="11"
+                                                    TextColor="#FF4E8A" />
+                                            </Frame>
+                                        </DataTemplate>
+                                    </BindableLayout.ItemTemplate>
+                                </FlexLayout>
+
+                            </StackLayout>
+                        </ScrollView>
+                    </Border>
+                </Grid>
+
+                <!-- Espaço extra no fim -->
+                <BoxView HeightRequest="40" />
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <!-- BOTÃO FLUTUANTE "i" PARA IR ÀS INFOS -->
+        <Frame
+            x:Name="InfoFab"
+            WidthRequest="40"
+            HeightRequest="40"
+            CornerRadius="20"
+            BackgroundColor="#FF4E8A"
+            Padding="0"
+            HasShadow="True"
+            HorizontalOptions="End"
+            VerticalOptions="Start"
+            Margin="0,60,16,0">
+            <Label Text="i"
+                   HorizontalOptions="Center"
+                   VerticalOptions="Center"
+                   FontSize="20"
+                   TextColor="White">
+                <Label.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnInfoFabTapped" />
+                </Label.GestureRecognizers>
+            </Label>
+        </Frame>
+
+    </Grid>
+</ContentPage>

@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="AmoraApp.Views.CommentsPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    BackgroundColor="#FFF5F9"
+    NavigationPage.HasNavigationBar="False">
+
+    <Grid RowDefinitions="Auto,*,Auto"
+          Padding="16,32,16,16">
+
+        <!-- HEADER -->
+        <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto">
+            <Label Text="⟵"
+                   FontSize="22"
+                   VerticalOptions="Center">
+                <Label.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnCloseTapped" />
+                </Label.GestureRecognizers>
+            </Label>
+
+            <Label Grid.Column="1"
+                   Text="Comentários"
+                   FontSize="20"
+                   FontAttributes="Bold"
+                   HorizontalTextAlignment="Center"
+                   VerticalTextAlignment="Center"
+                   TextColor="#262626" />
+        </Grid>
+
+        <!-- LISTA DE COMENTÁRIOS -->
+        <CollectionView
+            Grid.Row="1"
+            x:Name="CommentsList"
+            ItemsSource="{Binding Comments}"
+            Margin="0,12,0,12">
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Grid RowDefinitions="Auto,Auto"
+                          Margin="0,0,0,12">
+                        <Label
+                            Grid.Row="0"
+                            Text="{Binding UserName}"
+                            FontAttributes="Bold"
+                            FontSize="13"
+                            TextColor="#262626" />
+                        <Label
+                            Grid.Row="1"
+                            Text="{Binding Text}"
+                            FontSize="13"
+                            TextColor="#444444" />
+                    </Grid>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+        <!-- CAIXA DE NOVO COMENTÁRIO -->
+        <Grid Grid.Row="2"
+              ColumnDefinitions="*,Auto"
+              ColumnSpacing="8">
+
+            <!-- “Pílula” branca com Entry dentro -->
+            <Frame Grid.Column="0"
+                   BackgroundColor="White"
+                   CornerRadius="22"
+                   HasShadow="False"
+                   Padding="16,0">
+                <Entry
+                    x:Name="CommentEntry"
+                    Placeholder="Escreva um comentário..."
+                    BackgroundColor="Transparent"
+                    HeightRequest="44" />
+            </Frame>
+
+            <Button
+                Grid.Column="1"
+                Text="Enviar"
+                Clicked="OnSendClicked"
+                BackgroundColor="#FF4E8A"
+                TextColor="White"
+                CornerRadius="22"
+                HeightRequest="44"
+                Padding="16,0" />
+        </Grid>
+    </Grid>
+</ContentPage>

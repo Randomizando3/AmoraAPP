@@ -1,0 +1,318 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="AmoraApp.Views.DiscoverPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    BackgroundColor="White"
+    Shell.NavBarIsVisible="False">
+
+    <Grid RowDefinitions="Auto,*,Auto">
+
+        <!-- FUNDO COM ELIPSE -->
+        <Image
+            Source="background.jpg"
+            Aspect="AspectFill"
+            Grid.RowSpan="3" />
+
+        <!-- HEADER -->
+        <Grid Grid.Row="0"
+              Padding="16,24,16,8"
+              ColumnDefinitions="*,Auto"
+              VerticalOptions="Start">
+
+            <Label
+                Grid.Column="0"
+                Text="Descubra"
+                FontSize="24"
+                FontAttributes="Bold"
+                TextColor="White"
+                HorizontalOptions="Start"
+                VerticalOptions="Center" />
+
+            <ImageButton
+                Grid.Column="1"
+                Source="filter.png"
+                BackgroundColor="Transparent"
+                WidthRequest="24"
+                HeightRequest="24"
+                HorizontalOptions="End"
+                VerticalOptions="Center"
+                Clicked="OnFilterHeaderClicked" />
+        </Grid>
+
+        <!-- CARD CENTRAL -->
+        <Grid Grid.Row="1"
+              Padding="0,-150,0,-130"
+              VerticalOptions="Center">
+
+            <Border
+                x:Name="SwipeCard"
+                WidthRequest="320"
+                HeightRequest="480"
+                BackgroundColor="White"
+                Stroke="#E5E5E5"
+                StrokeThickness="2"
+                HorizontalOptions="Center"
+                VerticalOptions="Center">
+
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="20" />
+                </Border.StrokeShape>
+
+                <Grid RowDefinitions="2*,Auto,Auto">
+
+                    <!-- FOTO (AGORA CLIP VIA BORDER, SEM Image.Clip) -->
+                    <Grid Grid.Row="0">
+                        <Border StrokeThickness="0">
+                            <Border.StrokeShape>
+                                <RoundRectangle CornerRadius="20,20,0,0" />
+                            </Border.StrokeShape>
+                            <Image
+                                Source="{Binding CurrentUser.PhotoUrl}"
+                                Aspect="AspectFill"
+                                HorizontalOptions="FillAndExpand"
+                                VerticalOptions="FillAndExpand" />
+                        </Border>
+                    </Grid>
+
+                    <!-- NOME + INFOS -->
+                    <StackLayout Grid.Row="1"
+                                 Padding="16,10,16,4"
+                                 Spacing="2">
+
+                        <StackLayout Orientation="Horizontal" Spacing="4">
+                            <Label
+                                Text="{Binding CurrentUser.DisplayName}"
+                                FontSize="20"
+                                FontAttributes="Bold"
+                                TextColor="#222222" />
+                            <Label
+                                Text=", "
+                                FontSize="20"
+                                FontAttributes="Bold"
+                                TextColor="#222222" />
+                            <Label
+                                Text="{Binding CurrentUser.Age}"
+                                FontSize="20"
+                                FontAttributes="Bold"
+                                TextColor="#222222" />
+                        </StackLayout>
+
+                        <Label
+                            Text="{Binding CurrentUser.City}"
+                            FontSize="13"
+                            TextColor="#777777" />
+
+                        <Label
+                            Text="{Binding CurrentUser.JobTitle}"
+                            FontSize="13"
+                            TextColor="#555555"
+                            LineBreakMode="TailTruncation" />
+
+                        <Label
+                            Text="{Binding CurrentUser.EducationLevel}"
+                            FontSize="12"
+                            TextColor="#888888"
+                            LineBreakMode="TailTruncation" />
+
+                        <Label
+                            Text="{Binding CurrentUser.Bio}"
+                            FontSize="13"
+                            TextColor="#666666"
+                            LineBreakMode="TailTruncation" />
+                    </StackLayout>
+
+                    <!-- TAGS + INTERESSES -->
+                    <StackLayout
+                        Grid.Row="2"
+                        Padding="16,0,16,12"
+                        Spacing="8">
+
+                        <!-- Online + distância -->
+                        <StackLayout Orientation="Horizontal" Spacing="10">
+                            <Border
+                                BackgroundColor="#FFE7F4"
+                                Stroke="#F3C9E2"
+                                StrokeThickness="2">
+                                <Border.StrokeShape>
+                                    <RoundRectangle CornerRadius="12" />
+                                </Border.StrokeShape>
+                                <Label Text="Online"
+                                       Margin="10,4"
+                                       TextColor="#FF4E8A"
+                                       FontSize="11" />
+                            </Border>
+
+                            <Border
+                                BackgroundColor="#F0F0F0"
+                                Stroke="#DDDDDD"
+                                StrokeThickness="2">
+                                <Border.StrokeShape>
+                                    <RoundRectangle CornerRadius="12" />
+                                </Border.StrokeShape>
+                                <Label Text="3 km away"
+                                       Margin="10,4"
+                                       TextColor="#555555"
+                                       FontSize="11" />
+                            </Border>
+                        </StackLayout>
+
+                        <!-- Interesses (chips) -->
+                        <FlexLayout
+                            Wrap="Wrap"
+                            AlignItems="Center"
+                            BindableLayout.ItemsSource="{Binding CurrentUser.Interests}">
+                            <BindableLayout.ItemTemplate>
+                                <DataTemplate>
+                                    <Frame
+                                        Padding="8,4"
+                                        Margin="0,4,6,4"
+                                        BackgroundColor="#FFE7F4"
+                                        BorderColor="#F3C9E2"
+                                        CornerRadius="12"
+                                        HasShadow="False">
+                                        <Label
+                                            Text="{Binding .}"
+                                            FontSize="11"
+                                            TextColor="#FF4E8A" />
+                                    </Frame>
+                                </DataTemplate>
+                            </BindableLayout.ItemTemplate>
+                        </FlexLayout>
+                    </StackLayout>
+                </Grid>
+
+                <!-- SWIPE + TAP -->
+                <Border.GestureRecognizers>
+                    <PanGestureRecognizer PanUpdated="OnSwipe" />
+                    <TapGestureRecognizer Tapped="OnCardTapped" />
+                </Border.GestureRecognizers>
+            </Border>
+        </Grid>
+
+        <!-- BOTÕES INFERIORES -->
+        <Grid
+            Grid.Row="2"
+            Padding="0,0,0,12"
+            WidthRequest="320"
+            HorizontalOptions="Center"
+            VerticalOptions="End"
+            ColumnDefinitions="*,*,*,*,*"
+            ColumnSpacing="12">
+
+            <Border
+                Grid.Column="0"
+                HeightRequest="50"
+                BackgroundColor="#F9F9F9"
+                Stroke="#E0E0E0"
+                StrokeThickness="2">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="25" />
+                </Border.StrokeShape>
+                <Image
+                    Source="back.png"
+                    WidthRequest="22"
+                    HeightRequest="22"
+                    HorizontalOptions="Center"
+                    VerticalOptions="Center">
+                    <Image.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding RewindCommand}" />
+                    </Image.GestureRecognizers>
+                </Image>
+            </Border>
+
+            <Border
+                Grid.Column="1"
+                HeightRequest="56"
+                BackgroundColor="White"
+                Stroke="#E0E0E0"
+                StrokeThickness="2">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="28" />
+                </Border.StrokeShape>
+                <Image
+                    Source="no.png"
+                    WidthRequest="28"
+                    HeightRequest="28"
+                    HorizontalOptions="Center"
+                    VerticalOptions="Center">
+                    <Image.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding DislikeCommand}" />
+                    </Image.GestureRecognizers>
+                </Image>
+            </Border>
+
+            <Border
+                Grid.Column="2"
+                HeightRequest="50"
+                BackgroundColor="White"
+                Stroke="#E0E0E0"
+                StrokeThickness="2">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="25" />
+                </Border.StrokeShape>
+                <Image
+                    Source="add.png"
+                    WidthRequest="22"
+                    HeightRequest="22"
+                    HorizontalOptions="Center"
+                    VerticalOptions="Center">
+                    <Image.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding AddFriendCommand}" />
+                    </Image.GestureRecognizers>
+                </Image>
+            </Border>
+
+            <Border
+                Grid.Column="3"
+                HeightRequest="56"
+                BackgroundColor="White"
+                Stroke="#E0E0E0"
+                StrokeThickness="2">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="28" />
+                </Border.StrokeShape>
+                <Image
+                    Source="heart.png"
+                    WidthRequest="28"
+                    HeightRequest="28"
+                    HorizontalOptions="Center"
+                    VerticalOptions="Center">
+                    <Image.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding LikeCommand}" />
+                    </Image.GestureRecognizers>
+                </Image>
+            </Border>
+
+            <Border
+                Grid.Column="4"
+                HeightRequest="50"
+                Stroke="#E0E0E0"
+                StrokeThickness="2">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="25" />
+                </Border.StrokeShape>
+                <Grid>
+                    <Grid.Background>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                            <GradientStop Color="#FF4E8A" Offset="0" />
+                            <GradientStop Color="#FF9966" Offset="1" />
+                        </LinearGradientBrush>
+                    </Grid.Background>
+
+                    <Image
+                        Source="boost.png"
+                        WidthRequest="22"
+                        HeightRequest="22"
+                        HorizontalOptions="Center"
+                        VerticalOptions="Center">
+                        <Image.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnBoostTapped" />
+                        </Image.GestureRecognizers>
+                    </Image>
+                </Grid>
+            </Border>
+
+        </Grid>
+    </Grid>
+</ContentPage>

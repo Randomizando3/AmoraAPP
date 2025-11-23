@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="AmoraApp.Views.FiltersPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    BackgroundColor="White"
+    NavigationPage.HasNavigationBar="False">
+
+    <Grid RowDefinitions="Auto,*,Auto">
+
+        <!-- HEADER -->
+        <Grid Grid.Row="0"
+              ColumnDefinitions="Auto,*,Auto"
+              Padding="16,40,16,12">
+
+            <Label Text="Filtros"
+                   Grid.Column="1"
+                   HorizontalOptions="Center"
+                   VerticalOptions="Center"
+                   FontSize="22"
+                   FontAttributes="Bold"
+                   TextColor="#222" />
+
+            <Label Text="×"
+                   Grid.Column="2"
+                   FontSize="30"
+                   Padding="4"
+                   TextColor="#444">
+                <Label.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnCloseTapped" />
+                </Label.GestureRecognizers>
+            </Label>
+        </Grid>
+
+        <!-- BODY -->
+        <ScrollView Grid.Row="1">
+            <VerticalStackLayout Padding="16" Spacing="24">
+
+                <!-- GÊNERO -->
+                <VerticalStackLayout>
+                    <Label Text="Mostrar:"
+                           FontSize="16"
+                           TextColor="#222"
+                           FontAttributes="Bold" />
+
+                    <HorizontalStackLayout Spacing="10" Margin="0,6,0,0">
+
+                        <Button x:Name="GirlsButton"
+                                Text="Mulheres"
+                                Clicked="OnGirlsClicked"
+                                BackgroundColor="#F5F5F5"
+                                TextColor="#555"
+                                CornerRadius="12"
+                                Padding="12,8" />
+
+                        <Button x:Name="BoysButton"
+                                Text="Homens"
+                                Clicked="OnBoysClicked"
+                                BackgroundColor="#F5F5F5"
+                                TextColor="#555"
+                                CornerRadius="12"
+                                Padding="12,8" />
+
+                        <Button x:Name="BothButton"
+                                Text="Todos"
+                                Clicked="OnBothClicked"
+                                BackgroundColor="#F5F5F5"
+                                TextColor="#555"
+                                CornerRadius="12"
+                                Padding="12,8" />
+
+                    </HorizontalStackLayout>
+                </VerticalStackLayout>
+
+                <!-- IDADE -->
+                <VerticalStackLayout>
+                    <Label Text="Idade máxima"
+                           FontSize="16"
+                           TextColor="#222"
+                           FontAttributes="Bold" />
+
+                    <Slider
+                        x:Name="AgeSlider"
+                        Minimum="18"
+                        Maximum="60"
+                        Value="{Binding MaxAgeFilter, Mode=TwoWay}"
+                        Margin="0,6,0,0" />
+
+                    <Label Text="{Binding MaxAgeFilter, StringFormat='Até {0} anos'}"
+                           HorizontalOptions="Center"
+                           TextColor="#555" />
+                </VerticalStackLayout>
+
+                <!-- DISTÂNCIA -->
+                <VerticalStackLayout>
+                    <Label Text="Distância máxima"
+                           FontSize="16"
+                           TextColor="#222"
+                           FontAttributes="Bold" />
+
+                    <Slider
+                        x:Name="DistanceSlider"
+                        Minimum="1"
+                        Maximum="100"
+                        Value="{Binding DistanceFilterKm, Mode=TwoWay}"
+                        Margin="0,6,0,0" />
+
+                    <Label Text="{Binding DistanceFilterKm, StringFormat='{0} km'}"
+                           HorizontalOptions="Center"
+                           TextColor="#555" />
+                </VerticalStackLayout>
+
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <!-- FOOTER -->
+        <Grid Grid.Row="2"
+              Padding="16,12"
+              ColumnDefinitions="*,*"
+              ColumnSpacing="12">
+
+            <Button Text="Redefinir"
+                    BackgroundColor="#EDEDED"
+                    TextColor="#444"
+                    CornerRadius="16"
+                    Clicked="OnResetClicked" />
+
+            <Button Text="Aplicar"
+                    BackgroundColor="#FF4E8A"
+                    TextColor="White"
+                    CornerRadius="16"
+                    Clicked="OnApplyFilterClicked" />
+
+        </Grid>
+    </Grid>
+
+</ContentPage>

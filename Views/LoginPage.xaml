@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="AmoraApp.Views.LoginPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    BackgroundColor="#FFF5F9"
+    Shell.NavBarIsVisible="False">
+
+    <Grid RowDefinitions="Auto,*" Padding="24,40,24,24">
+
+        <!-- HEADER -->
+        <VerticalStackLayout Grid.Row="0" Spacing="6">
+            <Label
+                Text="Welcome to AmoraApp"
+                FontSize="24"
+                FontAttributes="Bold"
+                TextColor="#262626" />
+            <Label
+                Text="Login to continue finding matches."
+                FontSize="14"
+                TextColor="#777777" />
+        </VerticalStackLayout>
+
+        <!-- FORM -->
+        <ScrollView Grid.Row="1">
+            <VerticalStackLayout Spacing="18">
+
+                <Frame
+                    CornerRadius="18"
+                    Padding="18"
+                    BackgroundColor="White"
+                    HasShadow="True">
+                    <VerticalStackLayout Spacing="12">
+
+                        <Label Text="Email Address" TextColor="#555" FontSize="13" />
+                        <Entry
+                            Placeholder="your@email.com"
+                            Text="{Binding Email}"
+                            Keyboard="Email"
+                            TextColor="#222"
+                            PlaceholderColor="#BBBBBB" />
+
+                        <Label Text="Password" TextColor="#555" FontSize="13" />
+                        <Entry
+                            Placeholder="••••••••"
+                            Text="{Binding Password}"
+                            IsPassword="True"
+                            TextColor="#222"
+                            PlaceholderColor="#BBBBBB" />
+
+                        <Label
+                            Text="{Binding ErrorMessage}"
+                            TextColor="Red"
+                            FontSize="12" />
+
+                        <ActivityIndicator
+                            IsRunning="{Binding IsBusy}"
+                            IsVisible="{Binding IsBusy}"
+                            Color="#FF4E8A" />
+
+                        <Button
+                            Text="Login"
+                            Command="{Binding LoginCommand}"
+                            CornerRadius="22"
+                            HeightRequest="48"
+                            TextColor="White"
+                            Margin="0,8,0,0">
+                            <Button.Background>
+                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                    <GradientStop Color="#FF4E8A" Offset="0.0" />
+                                    <GradientStop Color="#FF74A8" Offset="1.0" />
+                                </LinearGradientBrush>
+                            </Button.Background>
+                        </Button>
+                    </VerticalStackLayout>
+                </Frame>
+
+                <Button
+                    Text="Create new account"
+                    Command="{Binding RegisterCommand}"
+                    BackgroundColor="Transparent"
+                    TextColor="#FF4E8A" />
+
+                <!-- Login social fake por enquanto -->
+                <VerticalStackLayout Spacing="8">
+                    <Label
+                        Text="Or continue with"
+                        HorizontalOptions="Center"
+                        TextColor="#777"
+                        FontSize="13" />
+
+                    <HorizontalStackLayout Spacing="12" HorizontalOptions="Center">
+                        <Frame
+                            WidthRequest="44"
+                            HeightRequest="44"
+                            CornerRadius="22"
+                            BackgroundColor="White"
+                            HasShadow="True">
+                            <Label
+                                Text="G"
+                                FontSize="20"
+                                HorizontalOptions="Center"
+                                VerticalOptions="Center" />
+                        </Frame>
+                        <Frame
+                            WidthRequest="44"
+                            HeightRequest="44"
+                            CornerRadius="22"
+                            BackgroundColor="White"
+                            HasShadow="True">
+                            <Label
+                                Text=""
+                                FontSize="18"
+                                HorizontalOptions="Center"
+                                VerticalOptions="Center" />
+                        </Frame>
+                    </HorizontalStackLayout>
+                </VerticalStackLayout>
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
+</ContentPage>

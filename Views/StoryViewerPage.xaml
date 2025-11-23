@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="AmoraApp.Views.StoryViewerPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    BackgroundColor="Black"
+    NavigationPage.HasNavigationBar="False">
+
+    <Grid RowDefinitions="Auto,*">
+
+        <!-- HEADER + BARRA -->
+        <Grid Grid.Row="0"
+              RowDefinitions="Auto,3"
+              Padding="16,40,16,12"
+              ColumnSpacing="0">
+
+            <!-- Título + fechar -->
+            <Grid Grid.Row="0" ColumnDefinitions="*,Auto">
+                <Label
+                    x:Name="UserNameLabel"
+                    Text="User"
+                    FontSize="18"
+                    FontAttributes="Bold"
+                    TextColor="White"
+                    VerticalOptions="Center" />
+                <Label
+                    Grid.Column="1"
+                    Text="✕"
+                    FontSize="20"
+                    TextColor="White"
+                    VerticalOptions="Center"
+                    HorizontalOptions="End">
+                    <Label.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnCloseTapped" />
+                    </Label.GestureRecognizers>
+                </Label>
+            </Grid>
+
+            <!-- Barra de progresso (uma só, contínua) -->
+            <Grid Grid.Row="1" Margin="0,8,0,0">
+                <BoxView
+                    BackgroundColor="#444444"
+                    Opacity="0.6"
+                    HeightRequest="3"
+                    HorizontalOptions="FillAndExpand" />
+                <BoxView
+                    x:Name="ProgressBarFill"
+                    BackgroundColor="White"
+                    HeightRequest="3"
+                    HorizontalOptions="FillAndExpand"
+                    ScaleX="0"
+                    AnchorX="0" />
+            </Grid>
+        </Grid>
+
+        <!-- STORIES + TAP ESQ/DIR + LIKE -->
+        <Grid Grid.Row="1">
+
+            <!-- Imagem atual do story -->
+            <Image
+                x:Name="StoryImage"
+                Aspect="AspectFill"
+                HorizontalOptions="FillAndExpand"
+                VerticalOptions="FillAndExpand" />
+
+            <!-- Áreas clique esq/dir por cima da imagem -->
+            <Grid ColumnDefinitions="*,*">
+                <!-- voltar -->
+                <BoxView Grid.Column="0" Opacity="0.01">
+                    <BoxView.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnPrevAreaTapped" />
+                    </BoxView.GestureRecognizers>
+                </BoxView>
+
+                <!-- avançar -->
+                <BoxView Grid.Column="1" Opacity="0.01">
+                    <BoxView.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnNextAreaTapped" />
+                    </BoxView.GestureRecognizers>
+                </BoxView>
+            </Grid>
+
+            <!-- Like no story -->
+            <Grid VerticalOptions="End" Padding="20,0,20,30">
+                <StackLayout Orientation="Horizontal"
+                             HorizontalOptions="End"
+                             Spacing="8">
+                    <Label
+                        x:Name="LikesLabel"
+                        Text="0"
+                        FontSize="14"
+                        TextColor="White"
+                        VerticalOptions="Center" />
+                    <Frame
+                        WidthRequest="40"
+                        HeightRequest="40"
+                        CornerRadius="20"
+                        BackgroundColor="#66000000"
+                        Padding="0">
+                        <Label
+                            Text="❤"
+                            FontSize="20"
+                            TextColor="White"
+                            HorizontalOptions="Center"
+                            VerticalOptions="Center">
+                            <Label.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnLikeTapped" />
+                            </Label.GestureRecognizers>
+                        </Label>
+                    </Frame>
+                </StackLayout>
+            </Grid>
+        </Grid>
+    </Grid>
+</ContentPage>

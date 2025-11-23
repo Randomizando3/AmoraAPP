@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Shell
+    x:Class="AmoraApp.AppShell"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:views="clr-namespace:AmoraApp.Views"
+    Shell.NavBarIsVisible="False">
+
+    <!-- ESTILOS DO TABBAR (cores do menu inferior) -->
+    <Shell.Resources>
+        <Style TargetType="TabBar">
+            <Setter Property="Shell.TabBarBackgroundColor" Value="White" />
+            <Setter Property="Shell.TabBarForegroundColor" Value="#FF4E8A" />
+            <Setter Property="Shell.TabBarTitleColor" Value="#FF4E8A" />
+            <Setter Property="Shell.TabBarUnselectedColor" Value="#999999" />
+        </Style>
+    </Shell.Resources>
+
+    <!--
+        IMPORTANTE:
+        - Em ANDROID / iOS: isso vira um TAB BAR embaixo (igual Tinder).
+        - Em WINDOWS: por bug do MAUI ele aparece em cima, mesmo assim.
+    -->
+
+    <TabBar>
+
+        <!-- Discover (swipe) -->
+        <ShellContent
+            Title="Discover"
+            Icon="tab_discover.png"
+            Route="discover"
+            ContentTemplate="{DataTemplate views:DiscoverPage}" />
+
+        <!-- Feed -->
+        <ShellContent
+            Title="Feed"
+            Icon="tab_feed.png"
+            Route="feed"
+            ContentTemplate="{DataTemplate views:FeedPage}" />
+
+        <!-- Chat -->
+        <ShellContent
+            Title="Chat"
+            Icon="tab_chat.png"
+            Route="chatlist"
+            ContentTemplate="{DataTemplate views:ChatListPage}" />
+
+        <!-- Profile -->
+        <ShellContent
+            Title="Profile"
+            Icon="tab_profile.png"
+            Route="profile"
+            ContentTemplate="{DataTemplate views:ProfilePage}" />
+
+    </TabBar>
+</Shell>

@@ -1,0 +1,148 @@
+is_global = true
+build_property.MvvmToolkitEnableINotifyPropertyChangingSupport = true
+build_property._MvvmToolkitIsUsingWindowsRuntimePack = true
+build_property.CsWinRTComponent = 
+build_property.CsWinRTAotOptimizerEnabled = true
+build_property.CsWinRTAotOptimizerEnabled = true
+build_property.CsWinRTAotWarningLevel = 
+build_property.CsWinRTAotWarningLevel = 
+build_property.TargetFramework = net9.0-windows10.0.19041.0
+build_property.TargetPlatformMinVersion = 10.0.17763.0
+build_property.UsingMicrosoftNETSdkWeb = 
+build_property.ProjectTypeGuids = 9A19103F-16F7-4668-BE54-9A1E7A4F7556
+build_property.InvariantGlobalization = 
+build_property.PlatformNeutralAssembly = 
+build_property.EnforceExtendedAnalyzerRules = 
+build_property._SupportedPlatformList = Linux,macOS,Windows
+build_property.RootNamespace = AmoraApp
+build_property.ProjectDir = D:\PROJETOS\002 - PROJETOS WORKANA\002 - APP DE NAMORO\AmoraApp\
+build_property.EnableComHosting = 
+build_property.EnableGeneratedComInterfaceComImportInterop = 
+build_property.CsWinRTAotExportsEnabled = 
+build_property.CsWinRTRcwFactoryFallbackGeneratorForceOptIn = 
+build_property.CsWinRTRcwFactoryFallbackGeneratorForceOptOut = 
+build_property.CsWinRTCcwLookupTableGeneratorEnabled = true
+build_property.CsWinRTMergeReferencedActivationFactories = 
+build_property.CsWinRTUseWindowsUIXamlProjections = false
+build_property.EffectiveAnalysisLevelStyle = 9.0
+build_property.EnableCodeStyleSeverity = 
+
+[D:/PROJETOS/002 - PROJETOS WORKANA/002 - APP DE NAMORO/AmoraApp/App.xaml]
+build_metadata.AdditionalFiles.GenKind = Xaml
+build_metadata.AdditionalFiles.ManifestResourceName = AmoraApp.App.xaml
+build_metadata.AdditionalFiles.TargetPath = App.xaml
+build_metadata.AdditionalFiles.RelativePath = App.xaml
+
+[D:/PROJETOS/002 - PROJETOS WORKANA/002 - APP DE NAMORO/AmoraApp/AppShell.xaml]
+build_metadata.AdditionalFiles.GenKind = Xaml
+build_metadata.AdditionalFiles.ManifestResourceName = AmoraApp.AppShell.xaml
+build_metadata.AdditionalFiles.TargetPath = AppShell.xaml
+build_metadata.AdditionalFiles.RelativePath = AppShell.xaml
+
+[D:/PROJETOS/002 - PROJETOS WORKANA/002 - APP DE NAMORO/AmoraApp/MainPage.xaml]
+build_metadata.AdditionalFiles.GenKind = Xaml
+build_metadata.AdditionalFiles.ManifestResourceName = AmoraApp.MainPage.xaml
+build_metadata.AdditionalFiles.TargetPath = MainPage.xaml
+build_metadata.AdditionalFiles.RelativePath = MainPage.xaml
+
+[D:/PROJETOS/002 - PROJETOS WORKANA/002 - APP DE NAMORO/AmoraApp/Resources/Styles/Colors.xaml]
+build_metadata.AdditionalFiles.GenKind = Xaml
+build_metadata.AdditionalFiles.ManifestResourceName = AmoraApp.Resources.Styles.Colors.xaml
+build_metadata.AdditionalFiles.TargetPath = Resources\Styles\Colors.xaml
+build_metadata.AdditionalFiles.RelativePath = Resources\Styles\Colors.xaml
+
+[D:/PROJETOS/002 - PROJETOS WORKANA/002 - APP DE NAMORO/AmoraApp/Resources/Styles/Styles.xaml]
+build_metadata.AdditionalFiles.GenKind = Xaml
+build_metadata.AdditionalFiles.ManifestResourceName = AmoraApp.Resources.Styles.Styles.xaml
+build_metadata.AdditionalFiles.TargetPath = Resources\Styles\Styles.xaml
+build_metadata.AdditionalFiles.RelativePath = Resources\Styles\Styles.xaml
+
+[D:/PROJETOS/002 - PROJETOS WORKANA/002 - APP DE NAMORO/AmoraApp/Views/ChatListPage.xaml]
+build_metadata.AdditionalFiles.GenKind = Xaml
+build_metadata.AdditionalFiles.ManifestResourceName = AmoraApp.Views.ChatListPage.xaml
+build_metadata.AdditionalFiles.TargetPath = Views\ChatListPage.xaml
+build_metadata.AdditionalFiles.RelativePath = Views\ChatListPage.xaml
+
+[D:/PROJETOS/002 - PROJETOS WORKANA/002 - APP DE NAMORO/AmoraApp/Views/ChatPage.xaml]
+build_metadata.AdditionalFiles.GenKind = Xaml
+build_metadata.AdditionalFiles.ManifestResourceName = AmoraApp.Views.ChatPage.xaml
+build_metadata.AdditionalFiles.TargetPath = Views\ChatPage.xaml
+build_metadata.AdditionalFiles.RelativePath = Views\ChatPage.xaml
+
+[D:/PROJETOS/002 - PROJETOS WORKANA/002 - APP DE NAMORO/AmoraApp/Views/CommentsPage.xaml]
+build_metadata.AdditionalFiles.GenKind = Xaml
+build_metadata.AdditionalFiles.ManifestResourceName = AmoraApp.Views.CommentsPage.xaml
+build_metadata.AdditionalFiles.TargetPath = Views\CommentsPage.xaml
+build_metadata.AdditionalFiles.RelativePath = Views\CommentsPage.xaml
+
+[D:/PROJETOS/002 - PROJETOS WORKANA/002 - APP DE NAMORO/AmoraApp/Views/DiscoverPage.xaml]
+build_metadata.AdditionalFiles.GenKind = Xaml
+build_metadata.AdditionalFiles.ManifestResourceName = AmoraApp.Views.DiscoverPage.xaml
+build_metadata.AdditionalFiles.TargetPath = Views\DiscoverPage.xaml
+build_metadata.AdditionalFiles.RelativePath = Views\DiscoverPage.xaml
+
+[D:/PROJETOS/002 - PROJETOS WORKANA/002 - APP DE NAMORO/AmoraApp/Views/FeedPage.xaml]
+build_metadata.AdditionalFiles.GenKind = Xaml
+build_metadata.AdditionalFiles.ManifestResourceName = AmoraApp.Views.FeedPage.xaml
+build_metadata.AdditionalFiles.TargetPath = Views\FeedPage.xaml
+build_metadata.AdditionalFiles.RelativePath = Views\FeedPage.xaml
+
+[D:/PROJETOS/002 - PROJETOS WORKANA/002 - APP DE NAMORO/AmoraApp/Views/FiltersPage.xaml]
+build_metadata.AdditionalFiles.GenKind = Xaml
+build_metadata.AdditionalFiles.ManifestResourceName = AmoraApp.Views.FiltersPage.xaml
+build_metadata.AdditionalFiles.TargetPath = Views\FiltersPage.xaml
+build_metadata.AdditionalFiles.RelativePath = Views\FiltersPage.xaml
+
+[D:/PROJETOS/002 - PROJETOS WORKANA/002 - APP DE NAMORO/AmoraApp/Views/FriendRequestsPage.xaml]
+build_metadata.AdditionalFiles.GenKind = Xaml
+build_metadata.AdditionalFiles.ManifestResourceName = AmoraApp.Views.FriendRequestsPage.xaml
+build_metadata.AdditionalFiles.TargetPath = Views\FriendRequestsPage.xaml
+build_metadata.AdditionalFiles.RelativePath = Views\FriendRequestsPage.xaml
+
+[D:/PROJETOS/002 - PROJETOS WORKANA/002 - APP DE NAMORO/AmoraApp/Views/FriendsPage.xaml]
+build_metadata.AdditionalFiles.GenKind = Xaml
+build_metadata.AdditionalFiles.ManifestResourceName = AmoraApp.Views.FriendsPage.xaml
+build_metadata.AdditionalFiles.TargetPath = Views\FriendsPage.xaml
+build_metadata.AdditionalFiles.RelativePath = Views\FriendsPage.xaml
+
+[D:/PROJETOS/002 - PROJETOS WORKANA/002 - APP DE NAMORO/AmoraApp/Views/LoginPage.xaml]
+build_metadata.AdditionalFiles.GenKind = Xaml
+build_metadata.AdditionalFiles.ManifestResourceName = AmoraApp.Views.LoginPage.xaml
+build_metadata.AdditionalFiles.TargetPath = Views\LoginPage.xaml
+build_metadata.AdditionalFiles.RelativePath = Views\LoginPage.xaml
+
+[D:/PROJETOS/002 - PROJETOS WORKANA/002 - APP DE NAMORO/AmoraApp/Views/MessagesPage.xaml]
+build_metadata.AdditionalFiles.GenKind = Xaml
+build_metadata.AdditionalFiles.ManifestResourceName = AmoraApp.Views.MessagesPage.xaml
+build_metadata.AdditionalFiles.TargetPath = Views\MessagesPage.xaml
+build_metadata.AdditionalFiles.RelativePath = Views\MessagesPage.xaml
+
+[D:/PROJETOS/002 - PROJETOS WORKANA/002 - APP DE NAMORO/AmoraApp/Views/PhotoGalleryPage.xaml]
+build_metadata.AdditionalFiles.GenKind = Xaml
+build_metadata.AdditionalFiles.ManifestResourceName = AmoraApp.Views.PhotoGalleryPage.xaml
+build_metadata.AdditionalFiles.TargetPath = Views\PhotoGalleryPage.xaml
+build_metadata.AdditionalFiles.RelativePath = Views\PhotoGalleryPage.xaml
+
+[D:/PROJETOS/002 - PROJETOS WORKANA/002 - APP DE NAMORO/AmoraApp/Views/ProfilePage.xaml]
+build_metadata.AdditionalFiles.GenKind = Xaml
+build_metadata.AdditionalFiles.ManifestResourceName = AmoraApp.Views.ProfilePage.xaml
+build_metadata.AdditionalFiles.TargetPath = Views\ProfilePage.xaml
+build_metadata.AdditionalFiles.RelativePath = Views\ProfilePage.xaml
+
+[D:/PROJETOS/002 - PROJETOS WORKANA/002 - APP DE NAMORO/AmoraApp/Views/RegisterPage.xaml]
+build_metadata.AdditionalFiles.GenKind = Xaml
+build_metadata.AdditionalFiles.ManifestResourceName = AmoraApp.Views.RegisterPage.xaml
+build_metadata.AdditionalFiles.TargetPath = Views\RegisterPage.xaml
+build_metadata.AdditionalFiles.RelativePath = Views\RegisterPage.xaml
+
+[D:/PROJETOS/002 - PROJETOS WORKANA/002 - APP DE NAMORO/AmoraApp/Views/StoryViewerPage.xaml]
+build_metadata.AdditionalFiles.GenKind = Xaml
+build_metadata.AdditionalFiles.ManifestResourceName = AmoraApp.Views.StoryViewerPage.xaml
+build_metadata.AdditionalFiles.TargetPath = Views\StoryViewerPage.xaml
+build_metadata.AdditionalFiles.RelativePath = Views\StoryViewerPage.xaml
+
+[D:/PROJETOS/002 - PROJETOS WORKANA/002 - APP DE NAMORO/AmoraApp/Views/WelcomePage.xaml]
+build_metadata.AdditionalFiles.GenKind = Xaml
+build_metadata.AdditionalFiles.ManifestResourceName = AmoraApp.Views.WelcomePage.xaml
+build_metadata.AdditionalFiles.TargetPath = Views\WelcomePage.xaml
+build_metadata.AdditionalFiles.RelativePath = Views\WelcomePage.xaml

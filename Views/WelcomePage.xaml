@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="AmoraApp.Views.WelcomePage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    BackgroundColor="#FFF5F9"
+    Shell.NavBarIsVisible="False">
+
+    <Grid RowDefinitions="*,Auto" Padding="24">
+
+        <!-- Top - imagem + texto -->
+        <VerticalStackLayout
+            Grid.Row="0"
+            Spacing="24"
+            VerticalOptions="CenterAndExpand">
+
+            <!-- Círculo / logo -->
+            <Grid HeightRequest="180" HorizontalOptions="Center">
+                <Grid.Background>
+                    <RadialGradientBrush>
+                        <GradientStop Color="#FF8BBF" Offset="0.0" />
+                        <GradientStop Color="#FFF5F9" Offset="1.0" />
+                    </RadialGradientBrush>
+                </Grid.Background>
+
+                <Label
+                    Text="💗"
+                    FontSize="72"
+                    HorizontalOptions="Center"
+                    VerticalOptions="Center" />
+            </Grid>
+
+            <Label
+                Text="Discover Your Dream Partner"
+                FontSize="26"
+                FontAttributes="Bold"
+                HorizontalTextAlignment="Center"
+                TextColor="#262626" />
+
+            <Label
+                Text="Swipe right to like someone, and if you both like each other, it's a match!"
+                FontSize="14"
+                HorizontalTextAlignment="Center"
+                TextColor="#777777"
+                Margin="12,0" />
+        </VerticalStackLayout>
+
+        <!-- Bottom - botões -->
+        <VerticalStackLayout Grid.Row="1" Spacing="12">
+            <Button
+                Text="Login"
+                Clicked="OnLoginClicked"
+                CornerRadius="22"
+                HeightRequest="48"
+                TextColor="White">
+                <Button.Background>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                        <GradientStop Color="#FF4E8A" Offset="0.0" />
+                        <GradientStop Color="#FF74A8" Offset="1.0" />
+                    </LinearGradientBrush>
+                </Button.Background>
+            </Button>
+
+            <Button
+                Text="Register"
+                Clicked="OnRegisterClicked"
+                CornerRadius="22"
+                HeightRequest="48"
+                BackgroundColor="White"
+                TextColor="#FF4E8A"
+                BorderColor="#FF4E8A"
+                BorderWidth="1" />
+        </VerticalStackLayout>
+    </Grid>
+</ContentPage>

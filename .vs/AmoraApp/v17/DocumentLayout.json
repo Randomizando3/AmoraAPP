@@ -1,0 +1,154 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "D:\\PROJETOS\\002 - PROJETOS WORKANA\\002 - APP DE NAMORO\\AmoraApp\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{ED46BB98-5505-442E-85DD-137EB846EC90}|AmoraApp.csproj|d:\\projetos\\002 - projetos workana\\002 - app de namoro\\amoraapp\\views\\profilepage.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{ED46BB98-5505-442E-85DD-137EB846EC90}|AmoraApp.csproj|solutionrelative:views\\profilepage.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{ED46BB98-5505-442E-85DD-137EB846EC90}|AmoraApp.csproj|d:\\projetos\\002 - projetos workana\\002 - app de namoro\\amoraapp\\views\\profilepage.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
+      "RelativeMoniker": "D:0:0:{ED46BB98-5505-442E-85DD-137EB846EC90}|AmoraApp.csproj|solutionrelative:views\\profilepage.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{ED46BB98-5505-442E-85DD-137EB846EC90}|AmoraApp.csproj|d:\\projetos\\002 - projetos workana\\002 - app de namoro\\amoraapp\\viewmodels\\profileviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{ED46BB98-5505-442E-85DD-137EB846EC90}|AmoraApp.csproj|solutionrelative:viewmodels\\profileviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{ED46BB98-5505-442E-85DD-137EB846EC90}|AmoraApp.csproj|d:\\projetos\\002 - projetos workana\\002 - app de namoro\\amoraapp\\viewmodels\\authviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{ED46BB98-5505-442E-85DD-137EB846EC90}|AmoraApp.csproj|solutionrelative:viewmodels\\authviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{ED46BB98-5505-442E-85DD-137EB846EC90}|AmoraApp.csproj|d:\\projetos\\002 - projetos workana\\002 - app de namoro\\amoraapp\\services\\firebasedatabaseservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{ED46BB98-5505-442E-85DD-137EB846EC90}|AmoraApp.csproj|solutionrelative:services\\firebasedatabaseservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{ED46BB98-5505-442E-85DD-137EB846EC90}|AmoraApp.csproj|d:\\projetos\\002 - projetos workana\\002 - app de namoro\\amoraapp\\models\\userprofile.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{ED46BB98-5505-442E-85DD-137EB846EC90}|AmoraApp.csproj|solutionrelative:models\\userprofile.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{ED46BB98-5505-442E-85DD-137EB846EC90}|AmoraApp.csproj|d:\\projetos\\002 - projetos workana\\002 - app de namoro\\amoraapp\\platforms\\android\\androidmanifest.xml||{4E01A4BC-CFCF-452C-8C08-51352512D197}",
+      "RelativeMoniker": "D:0:0:{ED46BB98-5505-442E-85DD-137EB846EC90}|AmoraApp.csproj|solutionrelative:platforms\\android\\androidmanifest.xml||{4E01A4BC-CFCF-452C-8C08-51352512D197}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{ED46BB98-5505-442E-85DD-137EB846EC90}|AmoraApp.csproj|d:\\projetos\\002 - projetos workana\\002 - app de namoro\\amoraapp\\app.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{ED46BB98-5505-442E-85DD-137EB846EC90}|AmoraApp.csproj|solutionrelative:app.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 5,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "AuthViewModel.cs",
+              "DocumentMoniker": "D:\\PROJETOS\\002 - PROJETOS WORKANA\\002 - APP DE NAMORO\\AmoraApp\\ViewModels\\AuthViewModel.cs",
+              "RelativeDocumentMoniker": "ViewModels\\AuthViewModel.cs",
+              "ToolTip": "D:\\PROJETOS\\002 - PROJETOS WORKANA\\002 - APP DE NAMORO\\AmoraApp\\ViewModels\\AuthViewModel.cs",
+              "RelativeToolTip": "ViewModels\\AuthViewModel.cs",
+              "ViewState": "AgIAAIQAAAAAAAAAAAAUwJkAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-11-23T16:55:07.05Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "UserProfile.cs",
+              "DocumentMoniker": "D:\\PROJETOS\\002 - PROJETOS WORKANA\\002 - APP DE NAMORO\\AmoraApp\\Models\\UserProfile.cs",
+              "RelativeDocumentMoniker": "Models\\UserProfile.cs",
+              "ToolTip": "D:\\PROJETOS\\002 - PROJETOS WORKANA\\002 - APP DE NAMORO\\AmoraApp\\Models\\UserProfile.cs",
+              "RelativeToolTip": "Models\\UserProfile.cs",
+              "ViewState": "AgIAACUAAAAAAAAAAAAUwDoAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-11-23T16:54:26.925Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "FirebaseDatabaseService.cs",
+              "DocumentMoniker": "D:\\PROJETOS\\002 - PROJETOS WORKANA\\002 - APP DE NAMORO\\AmoraApp\\Services\\FirebaseDatabaseService.cs",
+              "RelativeDocumentMoniker": "Services\\FirebaseDatabaseService.cs",
+              "ToolTip": "D:\\PROJETOS\\002 - PROJETOS WORKANA\\002 - APP DE NAMORO\\AmoraApp\\Services\\FirebaseDatabaseService.cs",
+              "RelativeToolTip": "Services\\FirebaseDatabaseService.cs",
+              "ViewState": "AgIAACYBAAAAAAAAAAAUwDsBAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-11-23T16:54:50Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "ProfileViewModel.cs",
+              "DocumentMoniker": "D:\\PROJETOS\\002 - PROJETOS WORKANA\\002 - APP DE NAMORO\\AmoraApp\\ViewModels\\ProfileViewModel.cs",
+              "RelativeDocumentMoniker": "ViewModels\\ProfileViewModel.cs",
+              "ToolTip": "D:\\PROJETOS\\002 - PROJETOS WORKANA\\002 - APP DE NAMORO\\AmoraApp\\ViewModels\\ProfileViewModel.cs",
+              "RelativeToolTip": "ViewModels\\ProfileViewModel.cs",
+              "ViewState": "AgIAAEACAAAAAAAAAAAUwFUCAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-11-23T16:55:16.317Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "ProfilePage.xaml",
+              "DocumentMoniker": "D:\\PROJETOS\\002 - PROJETOS WORKANA\\002 - APP DE NAMORO\\AmoraApp\\Views\\ProfilePage.xaml",
+              "RelativeDocumentMoniker": "Views\\ProfilePage.xaml",
+              "ToolTip": "D:\\PROJETOS\\002 - PROJETOS WORKANA\\002 - APP DE NAMORO\\AmoraApp\\Views\\ProfilePage.xaml",
+              "RelativeToolTip": "Views\\ProfilePage.xaml",
+              "ViewState": "AgIAAF0CAAAAAAAAAAAUwHICAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
+              "WhenOpened": "2025-11-23T16:55:29.561Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "ProfilePage.xaml.cs",
+              "DocumentMoniker": "D:\\PROJETOS\\002 - PROJETOS WORKANA\\002 - APP DE NAMORO\\AmoraApp\\Views\\ProfilePage.xaml.cs",
+              "RelativeDocumentMoniker": "Views\\ProfilePage.xaml.cs",
+              "ToolTip": "D:\\PROJETOS\\002 - PROJETOS WORKANA\\002 - APP DE NAMORO\\AmoraApp\\Views\\ProfilePage.xaml.cs",
+              "RelativeToolTip": "Views\\ProfilePage.xaml.cs",
+              "ViewState": "AgIAALcBAAAAAAAAAAAUwMwBAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-11-23T16:56:01.253Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "AndroidManifest.xml",
+              "DocumentMoniker": "D:\\PROJETOS\\002 - PROJETOS WORKANA\\002 - APP DE NAMORO\\AmoraApp\\Platforms\\Android\\AndroidManifest.xml",
+              "RelativeDocumentMoniker": "Platforms\\Android\\AndroidManifest.xml",
+              "ToolTip": "D:\\PROJETOS\\002 - PROJETOS WORKANA\\002 - APP DE NAMORO\\AmoraApp\\Platforms\\Android\\AndroidManifest.xml",
+              "RelativeToolTip": "Platforms\\Android\\AndroidManifest.xml",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003576|",
+              "WhenOpened": "2025-11-23T17:09:33.165Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "App.xaml.cs",
+              "DocumentMoniker": "D:\\PROJETOS\\002 - PROJETOS WORKANA\\002 - APP DE NAMORO\\AmoraApp\\App.xaml.cs",
+              "RelativeDocumentMoniker": "App.xaml.cs",
+              "ToolTip": "D:\\PROJETOS\\002 - PROJETOS WORKANA\\002 - APP DE NAMORO\\AmoraApp\\App.xaml.cs",
+              "RelativeToolTip": "App.xaml.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA4AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-11-23T19:24:56.563Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

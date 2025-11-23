@@ -1,0 +1,444 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="AmoraApp.Views.ChatListPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    BackgroundColor="#FFF5F9"
+    Shell.NavBarIsVisible="False">
+
+    <ContentPage.Resources>
+
+        <!-- Badge de não lidas só aparece se UnreadCount > 0 -->
+        <Style x:Key="UnreadBadgeStyle" TargetType="Frame">
+            <Setter Property="IsVisible" Value="True" />
+            <Style.Triggers>
+                <DataTrigger
+                    TargetType="Frame"
+                    Binding="{Binding UnreadCount}"
+                    Value="0">
+                    <Setter Property="IsVisible" Value="False" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+    </ContentPage.Resources>
+
+    <Grid RowDefinitions="Auto,Auto,*" Padding="16,32,16,12">
+
+        <!-- HEADER + FILTROS -->
+        <Grid Grid.Row="0" RowDefinitions="Auto,Auto">
+
+            <!-- Título -->
+            <Grid Grid.Row="0" ColumnDefinitions="Auto,*" VerticalOptions="Center">
+                <Label
+                    Text="Mensagens"
+                    FontSize="22"
+                    FontAttributes="Bold"
+                    TextColor="#262626"
+                    VerticalOptions="Center" />
+            </Grid>
+
+            <!-- Filtros -->
+            <Grid Grid.Row="1" Margin="0,12,0,0">
+                <Frame
+                    CornerRadius="20"
+                    BackgroundColor="White"
+                    HasShadow="True"
+                    Padding="4">
+                    <Grid ColumnDefinitions="*,*,*,*">
+
+                        <!-- Todos -->
+                        <Button
+                            Grid.Column="0"
+                            Text="Todos"
+                            Command="{Binding ChangeFilterCommand}"
+                            CommandParameter="All"
+                            FontSize="13"
+                            BackgroundColor="Transparent"
+                            BorderWidth="0"
+                            TextColor="#777">
+                            <Button.Triggers>
+                                <DataTrigger
+                                    TargetType="Button"
+                                    Binding="{Binding CurrentFilter}"
+                                    Value="All">
+                                    <Setter Property="BackgroundColor" Value="#FF4E8A" />
+                                    <Setter Property="TextColor" Value="White" />
+                                </DataTrigger>
+                            </Button.Triggers>
+                        </Button>
+
+                        <!-- Matches -->
+                        <Button
+                            Grid.Column="1"
+                            Text="Matches"
+                            Command="{Binding ChangeFilterCommand}"
+                            CommandParameter="Matches"
+                            FontSize="13"
+                            BackgroundColor="Transparent"
+                            BorderWidth="0"
+                            TextColor="#777">
+                            <Button.Triggers>
+                                <DataTrigger
+                                    TargetType="Button"
+                                    Binding="{Binding CurrentFilter}"
+                                    Value="Matches">
+                                    <Setter Property="BackgroundColor" Value="#FF4E8A" />
+                                    <Setter Property="TextColor" Value="White" />
+                                </DataTrigger>
+                            </Button.Triggers>
+                        </Button>
+
+                        <!-- Amigos -->
+                        <Button
+                            Grid.Column="2"
+                            Text="Amigos"
+                            Command="{Binding ChangeFilterCommand}"
+                            CommandParameter="Friends"
+                            FontSize="13"
+                            BackgroundColor="Transparent"
+                            BorderWidth="0"
+                            TextColor="#777">
+                            <Button.Triggers>
+                                <DataTrigger
+                                    TargetType="Button"
+                                    Binding="{Binding CurrentFilter}"
+                                    Value="Friends">
+                                    <Setter Property="BackgroundColor" Value="#FF4E8A" />
+                                    <Setter Property="TextColor" Value="White" />
+                                </DataTrigger>
+                            </Button.Triggers>
+                        </Button>
+
+                        <!-- Favoritos -->
+                        <Button
+                            Grid.Column="3"
+                            Text="Favoritos"
+                            Command="{Binding ChangeFilterCommand}"
+                            CommandParameter="Favorites"
+                            FontSize="13"
+                            BackgroundColor="Transparent"
+                            BorderWidth="0"
+                            TextColor="#777">
+                            <Button.Triggers>
+                                <DataTrigger
+                                    TargetType="Button"
+                                    Binding="{Binding CurrentFilter}"
+                                    Value="Favorites">
+                                    <Setter Property="BackgroundColor" Value="#FF4E8A" />
+                                    <Setter Property="TextColor" Value="White" />
+                                </DataTrigger>
+                            </Button.Triggers>
+                        </Button>
+
+                    </Grid>
+                </Frame>
+            </Grid>
+        </Grid>
+
+        <!-- MATCHES + AMIGOS HORIZONTAIS -->
+        <StackLayout Grid.Row="1" Spacing="12" Margin="0,12,0,0">
+
+            <!-- Matches -->
+            <StackLayout Spacing="6">
+                <Label
+                    Text="Matches"
+                    FontSize="14"
+                    FontAttributes="Bold"
+                    TextColor="#555" />
+
+                <CollectionView
+                    ItemsSource="{Binding Matches}"
+                    ItemsLayout="HorizontalList"
+                    HeightRequest="88"
+                    HorizontalScrollBarVisibility="Never">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <StackLayout Spacing="4" HorizontalOptions="Center">
+                                <Grid>
+
+                                    <!-- Avatar circular menor -->
+                                    <Frame
+                                        WidthRequest="52"
+                                        HeightRequest="52"
+                                        CornerRadius="26"
+                                        Padding="0"
+                                        HasShadow="False"
+                                        BackgroundColor="White">
+                                        <Image
+                                            Source="{Binding PhotoUrl}"
+                                            Aspect="AspectFill"
+                                            WidthRequest="52"
+                                            HeightRequest="52">
+                                            <Image.Clip>
+                                                <EllipseGeometry
+                                                    Center="26,26"
+                                                    RadiusX="26"
+                                                    RadiusY="26" />
+                                            </Image.Clip>
+                                        </Image>
+                                    </Frame>
+
+                                    <!-- Coração de match -->
+                                    <Frame
+                                        WidthRequest="18"
+                                        HeightRequest="18"
+                                        CornerRadius="9"
+                                        BackgroundColor="#FF4E8A"
+                                        Padding="0"
+                                        HorizontalOptions="End"
+                                        VerticalOptions="End"
+                                        Margin="0,0,2,2">
+                                        <Label
+                                            Text="♥"
+                                            FontSize="11"
+                                            TextColor="White"
+                                            HorizontalOptions="Center"
+                                            VerticalOptions="Center" />
+                                    </Frame>
+
+                                    <!-- Estrela de favorito -->
+                                    <Frame
+                                        WidthRequest="18"
+                                        HeightRequest="18"
+                                        CornerRadius="9"
+                                        BackgroundColor="#FFD54F"
+                                        Padding="0"
+                                        HorizontalOptions="End"
+                                        VerticalOptions="Start"
+                                        Margin="0,2,2,0"
+                                        IsVisible="{Binding IsFavorite}">
+                                        <Label
+                                            Text="★"
+                                            FontSize="11"
+                                            TextColor="#5D4037"
+                                            HorizontalOptions="Center"
+                                            VerticalOptions="Center" />
+                                    </Frame>
+                                </Grid>
+
+                                <Label
+                                    Text="{Binding DisplayName}"
+                                    FontSize="11"
+                                    HorizontalTextAlignment="Center"
+                                    LineBreakMode="TailTruncation"
+                                    WidthRequest="72" />
+
+                                <StackLayout.GestureRecognizers>
+                                    <TapGestureRecognizer
+                                        Tapped="OnChatTapped"
+                                        CommandParameter="{Binding .}" />
+                                </StackLayout.GestureRecognizers>
+                            </StackLayout>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </StackLayout>
+
+            <!-- Amigos -->
+            <StackLayout Spacing="6">
+                <Label
+                    Text="Amigos"
+                    FontSize="14"
+                    FontAttributes="Bold"
+                    TextColor="#555" />
+
+                <CollectionView
+                    ItemsSource="{Binding Friends}"
+                    ItemsLayout="HorizontalList"
+                    HeightRequest="88"
+                    HorizontalScrollBarVisibility="Never">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <StackLayout Spacing="4" HorizontalOptions="Center">
+                                <Grid>
+
+                                    <!-- Avatar circular menor -->
+                                    <Frame
+                                        WidthRequest="52"
+                                        HeightRequest="52"
+                                        CornerRadius="26"
+                                        Padding="0"
+                                        HasShadow="False"
+                                        BackgroundColor="White">
+                                        <Image
+                                            Source="{Binding PhotoUrl}"
+                                            Aspect="AspectFill"
+                                            WidthRequest="52"
+                                            HeightRequest="52">
+                                            <Image.Clip>
+                                                <EllipseGeometry
+                                                    Center="26,26"
+                                                    RadiusX="26"
+                                                    RadiusY="26" />
+                                            </Image.Clip>
+                                        </Image>
+                                    </Frame>
+
+                                    <!-- Estrela de favorito -->
+                                    <Frame
+                                        WidthRequest="18"
+                                        HeightRequest="18"
+                                        CornerRadius="9"
+                                        BackgroundColor="#FFD54F"
+                                        Padding="0"
+                                        HorizontalOptions="End"
+                                        VerticalOptions="Start"
+                                        Margin="0,2,2,0"
+                                        IsVisible="{Binding IsFavorite}">
+                                        <Label
+                                            Text="★"
+                                            FontSize="11"
+                                            TextColor="#5D4037"
+                                            HorizontalOptions="Center"
+                                            VerticalOptions="Center" />
+                                    </Frame>
+                                </Grid>
+
+                                <Label
+                                    Text="{Binding DisplayName}"
+                                    FontSize="11"
+                                    HorizontalTextAlignment="Center"
+                                    LineBreakMode="TailTruncation"
+                                    WidthRequest="72" />
+
+                                <StackLayout.GestureRecognizers>
+                                    <TapGestureRecognizer
+                                        Tapped="OnChatTapped"
+                                        CommandParameter="{Binding .}" />
+                                </StackLayout.GestureRecognizers>
+                            </StackLayout>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </StackLayout>
+
+        </StackLayout>
+
+        <!-- LISTA DE CHATS -->
+        <CollectionView
+            Grid.Row="2"
+            Margin="0,16,0,0"
+            ItemsSource="{Binding FilteredChats}"
+            SelectionMode="None">
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Grid
+                        ColumnDefinitions="Auto,*,Auto"
+                        Padding="4,8"
+                        Margin="0,0,0,4">
+
+                        <!-- Avatar com ícones (menor) -->
+                        <Grid Grid.Column="0">
+                            <Frame
+                                WidthRequest="48"
+                                HeightRequest="48"
+                                CornerRadius="24"
+                                Padding="0"
+                                BackgroundColor="White">
+                                <Image
+                                    Source="{Binding PhotoUrl}"
+                                    Aspect="AspectFill"
+                                    WidthRequest="48"
+                                    HeightRequest="48">
+                                    <Image.Clip>
+                                        <EllipseGeometry
+                                            Center="24,24"
+                                            RadiusX="24"
+                                            RadiusY="24" />
+                                    </Image.Clip>
+                                </Image>
+                            </Frame>
+
+                            <!-- Coração se for match -->
+                            <Frame
+                                IsVisible="{Binding IsMatch}"
+                                WidthRequest="18"
+                                HeightRequest="18"
+                                CornerRadius="9"
+                                BackgroundColor="#FF4E8A"
+                                Padding="0"
+                                HorizontalOptions="End"
+                                VerticalOptions="End"
+                                Margin="0,0,1,1">
+                                <Label
+                                    Text="♥"
+                                    FontSize="10"
+                                    TextColor="White"
+                                    HorizontalOptions="Center"
+                                    VerticalOptions="Center" />
+                            </Frame>
+
+                            <!-- Estrela se for favorito -->
+                            <Frame
+                                IsVisible="{Binding IsFavorite}"
+                                WidthRequest="18"
+                                HeightRequest="18"
+                                CornerRadius="9"
+                                BackgroundColor="#FFD54F"
+                                Padding="0"
+                                HorizontalOptions="End"
+                                VerticalOptions="Start"
+                                Margin="0,1,1,0">
+                                <Label
+                                    Text="★"
+                                    FontSize="10"
+                                    TextColor="#5D4037"
+                                    HorizontalOptions="Center"
+                                    VerticalOptions="Center" />
+                            </Frame>
+                        </Grid>
+
+                        <!-- Nome + preview da mensagem -->
+                        <StackLayout
+                            Grid.Column="1"
+                            Spacing="2"
+                            Margin="10,0,0,0">
+                            <Label
+                                Text="{Binding DisplayName}"
+                                FontAttributes="Bold"
+                                TextColor="#262626" />
+                            <Label
+                                Text="{Binding LastMessagePreview}"
+                                FontSize="12"
+                                TextColor="#777"
+                                LineBreakMode="TailTruncation" />
+                        </StackLayout>
+
+                        <!-- Hora + badge não lida -->
+                        <StackLayout
+                            Grid.Column="2"
+                            Spacing="4"
+                            HorizontalOptions="End"
+                            VerticalOptions="Center">
+                            <Label
+                                Text="{Binding LastMessageAt, StringFormat='{0:HH\\:mm}'}"
+                                FontSize="11"
+                                TextColor="#999" />
+                            <Frame
+                                Style="{StaticResource UnreadBadgeStyle}"
+                                Padding="4"
+                                CornerRadius="10"
+                                BackgroundColor="#FF4E8A">
+                                <Label
+                                    Text="{Binding UnreadCount}"
+                                    FontSize="10"
+                                    FontAttributes="Bold"
+                                    TextColor="White"
+                                    HorizontalTextAlignment="Center" />
+                            </Frame>
+                        </StackLayout>
+
+                        <!-- Tap geral do item -->
+                        <Grid.GestureRecognizers>
+                            <TapGestureRecognizer
+                                Tapped="OnChatTapped"
+                                CommandParameter="{Binding .}" />
+                        </Grid.GestureRecognizers>
+                    </Grid>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+    </Grid>
+</ContentPage>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="AmoraApp.Views.MessagesPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    Title="Messages">
+
+    <VerticalStackLayout Padding="20" Spacing="12">
+        <Label
+            Text="Messages (demo)"
+            FontSize="20"
+            FontAttributes="Bold" />
+        <Label
+            Text="Aqui vamos montar a lista de conversas e o chat."
+            LineBreakMode="WordWrap" />
+    </VerticalStackLayout>
+</ContentPage>
