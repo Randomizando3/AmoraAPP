@@ -89,10 +89,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Compile Remove="Services\LocationService.cs" />
-	</ItemGroup>
-
-	<ItemGroup>
 	  <None Remove="002 - APP DE NAMORO.lnk" />
 	</ItemGroup>
 

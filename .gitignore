@@ -1,0 +1,27 @@
+# Ignorar pasta bin e suas subpastas
+bin/
+Bin/
+BIN/
+
+# Ignorar Debug e Release (caso existam fora de bin)
+Debug/
+Release/
+
+
+# Pastas geradas automaticamente
+bin/
+obj/
+
+# Arquivos de usuário/IDE
+*.user
+*.userosscache
+*.suo
+*.vs/
+
+# Arquivos de build do MAUI
+*.db
+*.pdb
+*.mdb
+
+# Outras pastas do Visual Studio
+.vscode/

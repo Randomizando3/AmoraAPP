@@ -32,7 +32,10 @@ namespace AmoraApp.Views
         protected override async void OnAppearing()
         {
             base.OnAppearing();
+
             await _vm.LoadAsync();
+            // Atualiza localização atual (GPS / IP / debug-SP)
+            await _vm.UpdateLocationAsync();
         }
 
         private async void OnBackTapped(object sender, EventArgs e)

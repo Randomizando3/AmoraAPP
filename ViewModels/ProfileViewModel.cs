@@ -93,6 +93,11 @@ namespace AmoraApp.ViewModels
         // Data de nascimento
         [ObservableProperty] private DateTime? birthDate;
 
+        // ===== Localização =====
+        [ObservableProperty] private double latitude;
+        [ObservableProperty] private double longitude;
+        [ObservableProperty] private string currentLocationText = "Localização ainda não capturada";
+
         // Slots de fotos (até 30)
         [ObservableProperty] private ObservableCollection<PhotoSlot> extraPhotoSlots = new();
 
@@ -477,6 +482,12 @@ namespace AmoraApp.ViewModels
                 Religion = profile.Religion;
                 PhotoUrl = profile.PhotoUrl;
 
+                Latitude = profile.Latitude;
+                Longitude = profile.Longitude;
+                CurrentLocationText = string.IsNullOrWhiteSpace(profile.CurrentLocationText)
+                    ? "Localização ainda não capturada"
+                    : profile.CurrentLocationText;
+
                 // Data de nascimento / idade
                 DateTime? birth = null;
                 if (profile.BirthDateUtc > 0)
@@ -575,7 +586,10 @@ namespace AmoraApp.ViewModels
                     Videos = videos,
                     // ainda preenche Gallery pra compatibilidade
                     Gallery = photos,
-                    Interests = GetSelectedInterests()
+                    Interests = GetSelectedInterests(),
+                    Latitude = Latitude,
+                    Longitude = Longitude,
+                    CurrentLocationText = CurrentLocationText ?? ""
                 };
 
                 await _dbService.SaveUserProfileAsync(profile);
@@ -591,6 +605,33 @@ namespace AmoraApp.ViewModels
         }
 
         public async Task RefreshAsync() => await LoadAsync();
+
+        #endregion
+
+        #region Localização (UpdateLocationAsync)
+
+        public async Task UpdateLocationAsync()
+        {
+            try
+            {
+                var result = await LocationService.Instance.GetCurrentLocationAsync();
+                if (result == null)
+                    return;
+
+                Latitude = result.Latitude;
+                Longitude = result.Longitude;
+                CurrentLocationText = string.IsNullOrWhiteSpace(result.Description)
+                    ? $"{result.Latitude:0.0000}, {result.Longitude:0.0000}"
+                    : result.Description;
+
+                // Salva no perfil para ser usado depois no Discover
+                await SaveAsync();
+            }
+            catch (Exception ex)
+            {
+                ErrorMessage = ex.Message;
+            }
+        }
 
         #endregion
     }

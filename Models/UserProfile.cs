@@ -54,5 +54,14 @@ namespace AmoraApp.Models
         // Status online
         public bool IsOnline { get; set; } = false;
         public long LastOnlineUtc { get; set; } = 0;
+
+        // ===== Localização =====
+
+        // Latitude e longitude atuais do usuário
+        public double Latitude { get; set; } = 0;
+        public double Longitude { get; set; } = 0;
+
+        // Texto amigável da última localização (ex.: "São Paulo/SP (debug)" ou "Cidade, Estado, País (IP)")
+        public string CurrentLocationText { get; set; } = string.Empty;
     }
 }

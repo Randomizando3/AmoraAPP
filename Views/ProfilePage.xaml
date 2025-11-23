@@ -387,6 +387,25 @@
                             </Grid>
                         </VerticalStackLayout>
 
+                        <!-- Localização atual (somente leitura) -->
+                        <VerticalStackLayout Spacing="4">
+                            <Label
+                                Style="{StaticResource SectionTitleStyle}"
+                                Text="Localização atual" />
+
+                            <Frame
+                                BackgroundColor="{StaticResource InputBackground}"
+                                BorderColor="{StaticResource InputBorder}"
+                                HasShadow="False"
+                                CornerRadius="10"
+                                Padding="10,6">
+                                <Label
+                                    Text="{Binding CurrentLocationText}"
+                                    FontSize="14"
+                                    TextColor="{StaticResource TextPrimary}" />
+                            </Frame>
+                        </VerticalStackLayout>
+
                         <!-- Data de nascimento + idade -->
                         <VerticalStackLayout Spacing="4">
                             <Label
