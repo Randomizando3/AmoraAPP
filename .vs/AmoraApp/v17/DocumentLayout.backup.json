@@ -3,10 +3,6 @@
   "WorkspaceRootPath": "D:\\PROJETOS\\002 - PROJETOS WORKANA\\002 - APP DE NAMORO\\AmoraApp\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{ED46BB98-5505-442E-85DD-137EB846EC90}|AmoraApp.csproj|d:\\projetos\\002 - projetos workana\\002 - app de namoro\\amoraapp\\views\\discoverpage.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
-      "RelativeMoniker": "D:0:0:{ED46BB98-5505-442E-85DD-137EB846EC90}|AmoraApp.csproj|solutionrelative:views\\discoverpage.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{ED46BB98-5505-442E-85DD-137EB846EC90}|AmoraApp.csproj|d:\\projetos\\002 - projetos workana\\002 - app de namoro\\amoraapp\\views\\filterspage.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{ED46BB98-5505-442E-85DD-137EB846EC90}|AmoraApp.csproj|solutionrelative:views\\filterspage.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
@@ -19,12 +15,16 @@
       "RelativeMoniker": "D:0:0:{ED46BB98-5505-442E-85DD-137EB846EC90}|AmoraApp.csproj|solutionrelative:viewmodels\\discoverviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{ED46BB98-5505-442E-85DD-137EB846EC90}|AmoraApp.csproj|d:\\projetos\\002 - projetos workana\\002 - app de namoro\\amoraapp\\models\\userprofile.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{ED46BB98-5505-442E-85DD-137EB846EC90}|AmoraApp.csproj|solutionrelative:models\\userprofile.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{ED46BB98-5505-442E-85DD-137EB846EC90}|AmoraApp.csproj|d:\\projetos\\002 - projetos workana\\002 - app de namoro\\amoraapp\\views\\discoverpage.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
+      "RelativeMoniker": "D:0:0:{ED46BB98-5505-442E-85DD-137EB846EC90}|AmoraApp.csproj|solutionrelative:views\\discoverpage.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{ED46BB98-5505-442E-85DD-137EB846EC90}|AmoraApp.csproj|d:\\projetos\\002 - projetos workana\\002 - app de namoro\\amoraapp\\views\\profilepage.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{ED46BB98-5505-442E-85DD-137EB846EC90}|AmoraApp.csproj|solutionrelative:views\\profilepage.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{ED46BB98-5505-442E-85DD-137EB846EC90}|AmoraApp.csproj|d:\\projetos\\002 - projetos workana\\002 - app de namoro\\amoraapp\\models\\userprofile.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{ED46BB98-5505-442E-85DD-137EB846EC90}|AmoraApp.csproj|solutionrelative:models\\userprofile.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{ED46BB98-5505-442E-85DD-137EB846EC90}|AmoraApp.csproj|d:\\projetos\\002 - projetos workana\\002 - app de namoro\\amoraapp\\viewmodels\\profileviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -82,24 +82,11 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 3,
+          "SelectedChildIndex": 4,
           "Children": [
             {
               "$type": "Document",
               "DocumentIndex": 5,
-              "Title": "ProfilePage.xaml.cs",
-              "DocumentMoniker": "D:\\PROJETOS\\002 - PROJETOS WORKANA\\002 - APP DE NAMORO\\AmoraApp\\Views\\ProfilePage.xaml.cs",
-              "RelativeDocumentMoniker": "Views\\ProfilePage.xaml.cs",
-              "ToolTip": "D:\\PROJETOS\\002 - PROJETOS WORKANA\\002 - APP DE NAMORO\\AmoraApp\\Views\\ProfilePage.xaml.cs",
-              "RelativeToolTip": "Views\\ProfilePage.xaml.cs",
-              "ViewState": "AgIAALoBAAAAAAAAAAAUwM8BAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-23T16:56:01.253Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 4,
               "Title": "UserProfile.cs",
               "DocumentMoniker": "D:\\PROJETOS\\002 - PROJETOS WORKANA\\002 - APP DE NAMORO\\AmoraApp\\Models\\UserProfile.cs",
               "RelativeDocumentMoniker": "Models\\UserProfile.cs",
@@ -112,26 +99,26 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 2,
               "Title": "DiscoverViewModel.cs",
               "DocumentMoniker": "D:\\PROJETOS\\002 - PROJETOS WORKANA\\002 - APP DE NAMORO\\AmoraApp\\ViewModels\\DiscoverViewModel.cs",
               "RelativeDocumentMoniker": "ViewModels\\DiscoverViewModel.cs",
               "ToolTip": "D:\\PROJETOS\\002 - PROJETOS WORKANA\\002 - APP DE NAMORO\\AmoraApp\\ViewModels\\DiscoverViewModel.cs",
               "RelativeToolTip": "ViewModels\\DiscoverViewModel.cs",
-              "ViewState": "AgIAABACAAAAAAAAAAAUwCUCAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAM8BAAAAAAAAAAAUwOQBAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-11-23T20:51:28.772Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 3,
               "Title": "DiscoverPage.xaml",
               "DocumentMoniker": "D:\\PROJETOS\\002 - PROJETOS WORKANA\\002 - APP DE NAMORO\\AmoraApp\\Views\\DiscoverPage.xaml",
               "RelativeDocumentMoniker": "Views\\DiscoverPage.xaml",
               "ToolTip": "D:\\PROJETOS\\002 - PROJETOS WORKANA\\002 - APP DE NAMORO\\AmoraApp\\Views\\DiscoverPage.xaml",
               "RelativeToolTip": "Views\\DiscoverPage.xaml",
-              "ViewState": "AgIAAEkBAAAAAAAAAAAUwF4BAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAH4BAAAAAAAAAADwv4QBAAAyAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
               "WhenOpened": "2025-11-23T20:51:48.076Z",
               "EditorCaption": ""
@@ -139,27 +126,40 @@
             {
               "$type": "Document",
               "DocumentIndex": 1,
+              "Title": "FiltersPage.xaml",
+              "DocumentMoniker": "D:\\PROJETOS\\002 - PROJETOS WORKANA\\002 - APP DE NAMORO\\AmoraApp\\Views\\FiltersPage.xaml",
+              "RelativeDocumentMoniker": "Views\\FiltersPage.xaml",
+              "ToolTip": "D:\\PROJETOS\\002 - PROJETOS WORKANA\\002 - APP DE NAMORO\\AmoraApp\\Views\\FiltersPage.xaml",
+              "RelativeToolTip": "Views\\FiltersPage.xaml",
+              "ViewState": "AgIAACMBAAAAAAAAAADwvzMBAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
+              "WhenOpened": "2025-11-23T20:52:21.919Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
               "Title": "FiltersPage.xaml.cs",
               "DocumentMoniker": "D:\\PROJETOS\\002 - PROJETOS WORKANA\\002 - APP DE NAMORO\\AmoraApp\\Views\\FiltersPage.xaml.cs",
               "RelativeDocumentMoniker": "Views\\FiltersPage.xaml.cs",
               "ToolTip": "D:\\PROJETOS\\002 - PROJETOS WORKANA\\002 - APP DE NAMORO\\AmoraApp\\Views\\FiltersPage.xaml.cs",
               "RelativeToolTip": "Views\\FiltersPage.xaml.cs",
-              "ViewState": "AgIAAHYAAAAAAAAAAAAUwIsAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAJMAAAAAAAAAAADwv6MAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-11-23T20:52:34.728Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "FiltersPage.xaml",
-              "DocumentMoniker": "D:\\PROJETOS\\002 - PROJETOS WORKANA\\002 - APP DE NAMORO\\AmoraApp\\Views\\FiltersPage.xaml",
-              "RelativeDocumentMoniker": "Views\\FiltersPage.xaml",
-              "ToolTip": "D:\\PROJETOS\\002 - PROJETOS WORKANA\\002 - APP DE NAMORO\\AmoraApp\\Views\\FiltersPage.xaml",
-              "RelativeToolTip": "Views\\FiltersPage.xaml",
-              "ViewState": "AgIAAOIAAAAAAAAAAAAUwPcAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
-              "WhenOpened": "2025-11-23T20:52:21.919Z",
+              "DocumentIndex": 4,
+              "Title": "ProfilePage.xaml.cs",
+              "DocumentMoniker": "D:\\PROJETOS\\002 - PROJETOS WORKANA\\002 - APP DE NAMORO\\AmoraApp\\Views\\ProfilePage.xaml.cs",
+              "RelativeDocumentMoniker": "Views\\ProfilePage.xaml.cs",
+              "ToolTip": "D:\\PROJETOS\\002 - PROJETOS WORKANA\\002 - APP DE NAMORO\\AmoraApp\\Views\\ProfilePage.xaml.cs",
+              "RelativeToolTip": "Views\\ProfilePage.xaml.cs",
+              "ViewState": "AgIAALoBAAAAAAAAAAAUwM8BAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-11-23T16:56:01.253Z",
               "EditorCaption": ""
             },
             {

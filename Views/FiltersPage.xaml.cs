@@ -1,4 +1,5 @@
-﻿using AmoraApp.ViewModels;
+﻿using System.Linq;
+using AmoraApp.ViewModels;
 using Microsoft.Maui.Controls;
 
 namespace AmoraApp.Views
@@ -7,21 +8,37 @@ namespace AmoraApp.Views
     {
         private readonly DiscoverViewModel _discoverVm;
 
-        // Construtor SEM parâmetros (evita erro do XAML preview)
+        // Construtor SEM parâmetros (preview)
         public FiltersPage()
         {
             InitializeComponent();
         }
 
-        // Construtor COM ViewModel (usado pelo DiscoverPage)
+        // Construtor COM ViewModel (usado a partir do Discover)
         public FiltersPage(DiscoverViewModel discoverVm)
         {
             InitializeComponent();
             _discoverVm = discoverVm;
             BindingContext = _discoverVm;
 
-            _discoverVm.SyncFilterInterestsFromFilterList();
             UpdateGenderButtons();
+
+            // Restaura visual dos interesses já selecionados
+            Device.BeginInvokeOnMainThread(() =>
+            {
+                if (_discoverVm.SelectedInterestFilters.Count == 0)
+                    return;
+
+                if (InterestsCollectionView.SelectedItems != null)
+                    InterestsCollectionView.SelectedItems.Clear();
+
+                foreach (var interest in _discoverVm
+                             .SelectedInterestFilters
+                             .ToList())
+                {
+                    InterestsCollectionView.SelectedItems.Add(interest);
+                }
+            });
         }
 
         // ======================
@@ -54,35 +71,32 @@ namespace AmoraApp.Views
             if (_discoverVm == null)
                 return;
 
-            // Girls
             GirlsButton.BackgroundColor =
-                _discoverVm.GenderFilter == "Girls" ? Color.FromHex("#FF4E8A") : Color.FromHex("#F5F5F5");
+                _discoverVm.GenderFilter == "Girls"
+                    ? Color.FromHex("#FF4E8A")
+                    : Color.FromHex("#F5F5F5");
             GirlsButton.TextColor =
-                _discoverVm.GenderFilter == "Girls" ? Colors.White : Color.FromHex("#555555");
+                _discoverVm.GenderFilter == "Girls"
+                    ? Colors.White
+                    : Color.FromHex("#555555");
 
-            // Boys
             BoysButton.BackgroundColor =
-                _discoverVm.GenderFilter == "Boys" ? Color.FromHex("#FF4E8A") : Color.FromHex("#F5F5F5");
+                _discoverVm.GenderFilter == "Boys"
+                    ? Color.FromHex("#FF4E8A")
+                    : Color.FromHex("#F5F5F5");
             BoysButton.TextColor =
-                _discoverVm.GenderFilter == "Boys" ? Colors.White : Color.FromHex("#555555");
+                _discoverVm.GenderFilter == "Boys"
+                    ? Colors.White
+                    : Color.FromHex("#555555");
 
-            // Both
             BothButton.BackgroundColor =
-                _discoverVm.GenderFilter == "Both" ? Color.FromHex("#FF4E8A") : Color.FromHex("#F5F5F5");
+                _discoverVm.GenderFilter == "Both"
+                    ? Color.FromHex("#FF4E8A")
+                    : Color.FromHex("#F5F5F5");
             BothButton.TextColor =
-                _discoverVm.GenderFilter == "Both" ? Colors.White : Color.FromHex("#555555");
-        }
-
-        // ======================
-        //  INTERESSES (chips)
-        // ======================
-
-        private void OnInterestTapped(object sender, TappedEventArgs e)
-        {
-            if (sender is VisualElement ve && ve.BindingContext is FilterInterestItem chip)
-            {
-                chip.IsSelected = !chip.IsSelected;
-            }
+                _discoverVm.GenderFilter == "Both"
+                    ? Colors.White
+                    : Color.FromHex("#555555");
         }
 
         // ======================
@@ -93,18 +107,20 @@ namespace AmoraApp.Views
         {
             if (_discoverVm == null) return;
 
+            // Gênero / idade / distância
             _discoverVm.GenderFilter = "Both";
             _discoverVm.MaxAgeFilter = 35;
             _discoverVm.DistanceFilterKm = 20;
 
+            // Campos de texto
             _discoverVm.ProfessionFilter = string.Empty;
-            _discoverVm.EducationFilter = string.Empty;
             _discoverVm.ReligionFilter = string.Empty;
+            _discoverVm.EducationFilter = string.Empty;
             _discoverVm.OrientationFilter = string.Empty;
 
-            _discoverVm.InterestFilter.Clear();
-            foreach (var item in _discoverVm.AvailableFilterInterests)
-                item.IsSelected = false;
+            // Interesses (VM + UI)
+            _discoverVm.ClearInterestFilters();
+            InterestsCollectionView.SelectedItems?.Clear();
 
             UpdateGenderButtons();
         }
@@ -117,13 +133,21 @@ namespace AmoraApp.Views
         {
             if (_discoverVm == null) return;
 
-            // Atualiza lista de interesses selecionados no ViewModel
-            _discoverVm.InterestFilter = _discoverVm.AvailableFilterInterests
-                .Where(i => i.IsSelected)
-                .Select(i => i.Name)
-                .ToList();
+            // Atualiza a lista de interesses selecionados no VM
+            _discoverVm.ClearInterestFilters();
 
+            if (InterestsCollectionView.SelectedItems != null)
+            {
+                foreach (var item in InterestsCollectionView.SelectedItems)
+                {
+                    if (item is string interest && !string.IsNullOrWhiteSpace(interest))
+                        _discoverVm.AddInterestFilter(interest);
+                }
+            }
+
+            // Aplica filtros na pilha de perfis
             _discoverVm.ApplyFilters();
+
             await Navigation.PopAsync();
         }
 

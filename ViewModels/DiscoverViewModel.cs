@@ -8,24 +8,10 @@ using AmoraApp.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Maui;
+using Microsoft.Maui.ApplicationModel;
 
 namespace AmoraApp.ViewModels
 {
-    // Chip de interesse para os filtros
-    public partial class FilterInterestItem : ObservableObject
-    {
-        [ObservableProperty] private string name;
-        [ObservableProperty] private bool isSelected;
-
-        public FilterInterestItem() { }
-
-        public FilterInterestItem(string name, bool isSelected = false)
-        {
-            this.name = name;
-            this.isSelected = isSelected;
-        }
-    }
-
     public partial class DiscoverViewModel : ObservableObject
     {
         private readonly MatchService _matchService;
@@ -33,17 +19,17 @@ namespace AmoraApp.ViewModels
         private readonly FriendService _friendService;
         private readonly PresenceService _presenceService;
 
-        // Lista completa que veio do Firebase
+        // Lista completa de usuários recebida do Firebase
         private List<UserProfile> _allUsers = new();
 
-        // Histórico simples para o botão Rewind (voltar 1 card)
+        // Histórico p/ botão Rewind
         private readonly Stack<UserProfile> _history = new();
 
-        // Minha posição atual (pra cálculo de distância)
+        // Minha localização
         private double? _myLat;
         private double? _myLon;
 
-        // ====== propriedades observáveis ======
+        // ====== Propriedades observáveis ======
 
         [ObservableProperty]
         private UserProfile? currentUser;
@@ -51,18 +37,15 @@ namespace AmoraApp.ViewModels
         [ObservableProperty]
         private ObservableCollection<UserProfile> users = new();
 
-        // Indica se há usuário atual
         [ObservableProperty]
         private bool hasUser;
 
         [ObservableProperty]
         private bool hasNoUser;
 
-        // Texto “Online / Offline”
         [ObservableProperty]
         private string onlineText = string.Empty;
 
-        // Texto “X km away”
         [ObservableProperty]
         private string distanceText = string.Empty;
 
@@ -70,17 +53,17 @@ namespace AmoraApp.ViewModels
         [ObservableProperty]
         private string genderFilter = "Both";
 
-        // Idade mínima fixa 18
-        public int MinAgeFilter => 18;
+        // Faixa etária
+        [ObservableProperty]
+        private int minAgeFilter = 18;
 
         [ObservableProperty]
         private int maxAgeFilter = 35;
 
-        // Distância em km
+        // Distância em km (200 = sem limite visualmente)
         [ObservableProperty]
         private int distanceFilterKm = 20;
 
-        // Filtros extras
         [ObservableProperty]
         private string professionFilter = string.Empty;
 
@@ -93,15 +76,97 @@ namespace AmoraApp.ViewModels
         [ObservableProperty]
         private string orientationFilter = string.Empty;
 
-        // Lista de nomes de interesses selecionados
-        public List<string> InterestFilter { get; set; } = new();
-
-        // Chips de interesses disponíveis no filtro
+        // Mantido só pra compatibilidade (não usado diretamente)
         [ObservableProperty]
-        private ObservableCollection<FilterInterestItem> availableFilterInterests = new();
+        private string interestFilter = string.Empty;
 
-        // Interesses padrão (mesmos do perfil)
-        private static readonly string[] DefaultInterests =
+        // ====== MULTI-SELEÇÃO DE INTERESSES ======
+
+        public ObservableCollection<string> SelectedInterestFilters { get; } = new();
+
+        public void ClearInterestFilters()
+        {
+            SelectedInterestFilters.Clear();
+            InterestFilter = string.Empty;
+        }
+
+        public void AddInterestFilter(string interest)
+        {
+            if (!string.IsNullOrWhiteSpace(interest) &&
+                !SelectedInterestFilters.Contains(interest))
+            {
+                SelectedInterestFilters.Add(interest);
+            }
+        }
+
+        // ====== Labels auxiliares p/ UI ======
+
+        public string AgeRangeLabel => $"De {MinAgeFilter} até {MaxAgeFilter} anos";
+
+        public string DistanceFilterLabel =>
+            DistanceFilterKm >= 200 ? "Sem limite" : $"{DistanceFilterKm} km";
+
+        // Atualiza rótulos quando valores mudam
+        partial void OnMinAgeFilterChanged(int value)
+        {
+            if (MinAgeFilter < 18)
+                MinAgeFilter = 18;
+
+            if (MinAgeFilter > MaxAgeFilter)
+                MaxAgeFilter = MinAgeFilter;
+
+            OnPropertyChanged(nameof(AgeRangeLabel));
+        }
+
+        partial void OnMaxAgeFilterChanged(int value)
+        {
+            if (MaxAgeFilter > 120)
+                MaxAgeFilter = 120;
+
+            if (MaxAgeFilter < MinAgeFilter)
+                MinAgeFilter = MaxAgeFilter;
+
+            OnPropertyChanged(nameof(AgeRangeLabel));
+        }
+
+        partial void OnDistanceFilterKmChanged(int value)
+        {
+            if (DistanceFilterKm < 1)
+                DistanceFilterKm = 1;
+            if (DistanceFilterKm > 200)
+                DistanceFilterKm = 200;
+
+            OnPropertyChanged(nameof(DistanceFilterLabel));
+        }
+
+        // ====== Opções dos filtros ======
+
+        public IList<string> EducationFilterOptions { get; } = new List<string>
+        {
+            "Ensino fundamental incompleto",
+            "Ensino fundamental completo",
+            "Ensino médio incompleto",
+            "Ensino médio completo",
+            "Técnico",
+            "Superior incompleto",
+            "Superior completo",
+            "Pós-graduação",
+            "Mestrado",
+            "Doutorado",
+            "Prefiro não dizer"
+        };
+
+        public IList<string> OrientationFilterOptions { get; } = new List<string>
+        {
+            "Heterossexual",
+            "Homossexual",
+            "Bissexual",
+            "Pansexual",
+            "Assexual",
+            "Prefiro não dizer"
+        };
+
+        public IList<string> InterestFilterOptions { get; } = new List<string>
         {
             "Música","Filmes","Séries","Viagem","Games","Pets",
             "Gastronomia","Esportes","Livros","Tecnologia",
@@ -119,11 +184,9 @@ namespace AmoraApp.ViewModels
             _authService = authService;
             _friendService = FriendService.Instance;
             _presenceService = PresenceService.Instance;
-
-            InitFilterInterests();
         }
 
-        // Quando CurrentUser muda, atualiza flags e presença/distância
+        // Quando CurrentUser muda → atualizar UI
         partial void OnCurrentUserChanged(UserProfile value)
         {
             HasUser = value != null;
@@ -132,34 +195,12 @@ namespace AmoraApp.ViewModels
             _ = UpdateCurrentDistanceAndPresenceAsync();
         }
 
-        // Inicializa chips de interesses do filtro
-        private void InitFilterInterests()
-        {
-            AvailableFilterInterests.Clear();
-
-            foreach (var name in DefaultInterests)
-            {
-                bool selected = InterestFilter.Any(i =>
-                    string.Equals(i, name, StringComparison.OrdinalIgnoreCase));
-
-                AvailableFilterInterests.Add(new FilterInterestItem(name, selected));
-            }
-        }
-
-        // Re-sincroniza chips quando filtros mudarem
-        public void SyncFilterInterestsFromFilterList()
-        {
-            foreach (var item in AvailableFilterInterests)
-            {
-                item.IsSelected = InterestFilter.Any(i =>
-                    string.Equals(i, item.Name, StringComparison.OrdinalIgnoreCase));
-            }
-        }
+        // ================ CARREGAMENTO ================
 
         public async Task InitializeAsync()
         {
             if (CurrentUser != null || Users.Count > 0)
-                return; // já carregou
+                return;
 
             await LoadAsync();
         }
@@ -170,7 +211,6 @@ namespace AmoraApp.ViewModels
             if (string.IsNullOrWhiteSpace(uid))
                 return;
 
-            // Tenta pegar minha localização atual (GPS/IP/debug)
             var myLoc = await LocationService.Instance.GetCurrentLocationAsync();
             if (myLoc != null)
             {
@@ -180,13 +220,11 @@ namespace AmoraApp.ViewModels
 
             var list = await _matchService.GetUsersForDiscoverAsync(uid);
 
-            // Garante que campos não venham nulos
             _allUsers = list
                 .Where(u => u != null)
                 .Select(u =>
                 {
                     u.PhotoUrl ??= string.Empty;
-                    u.Gallery ??= new List<string>();
                     u.Interests ??= new List<string>();
                     return u;
                 })
@@ -195,27 +233,20 @@ namespace AmoraApp.ViewModels
             ApplyFiltersInternal();
         }
 
-        // Chama quando mudar filtros
-        public void ApplyFilters()
-        {
-            ApplyFiltersInternal();
-        }
+        // ================ FILTROS ================
+
+        public void ApplyFilters() => ApplyFiltersInternal();
 
         private void ApplyFiltersInternal()
         {
             Users.Clear();
             _history.Clear();
 
-            var filtered = _allUsers
-                .Where(PassesFilters)
-                .ToList();
-
-            foreach (var u in filtered)
+            foreach (var u in _allUsers.Where(PassesFilters))
                 Users.Add(u);
 
             CurrentUser = Users.FirstOrDefault();
 
-            // Se não houver usuários, apaga textos de status
             if (CurrentUser == null)
             {
                 OnlineText = string.Empty;
@@ -228,66 +259,56 @@ namespace AmoraApp.ViewModels
             // Gênero
             if (GenderFilter == "Girls" && !IsFemale(u.Gender))
                 return false;
-
             if (GenderFilter == "Boys" && !IsMale(u.Gender))
                 return false;
 
-            // Idade
+            // Idade (entre min e max)
             if (u.Age < MinAgeFilter || u.Age > MaxAgeFilter)
                 return false;
 
-            // Distância (se tivermos minha localização e a do outro)
-            if (_myLat.HasValue && _myLon.HasValue &&
+            // Distância (só filtra se slider < 200 = limite)
+            if (DistanceFilterKm < 200 &&
+                _myLat.HasValue && _myLon.HasValue &&
                 u.Latitude != 0 && u.Longitude != 0)
             {
-                var d = HaversineKm(
-                    _myLat.Value, _myLon.Value,
-                    u.Latitude, u.Longitude);
-
-                if (d > DistanceFilterKm)
+                var dist = HaversineKm(_myLat.Value, _myLon.Value, u.Latitude, u.Longitude);
+                if (dist > DistanceFilterKm)
                     return false;
             }
 
             // Profissão
-            if (!string.IsNullOrWhiteSpace(ProfessionFilter))
-            {
-                if (string.IsNullOrWhiteSpace(u.JobTitle) ||
-                    !u.JobTitle.Contains(ProfessionFilter, StringComparison.OrdinalIgnoreCase))
-                    return false;
-            }
+            if (!string.IsNullOrWhiteSpace(ProfessionFilter) &&
+                (string.IsNullOrWhiteSpace(u.JobTitle) ||
+                 !u.JobTitle.Contains(ProfessionFilter, StringComparison.OrdinalIgnoreCase)))
+                return false;
 
             // Escolaridade
-            if (!string.IsNullOrWhiteSpace(EducationFilter))
-            {
-                if (string.IsNullOrWhiteSpace(u.EducationLevel) ||
-                    !u.EducationLevel.Contains(EducationFilter, StringComparison.OrdinalIgnoreCase))
-                    return false;
-            }
+            if (!string.IsNullOrWhiteSpace(EducationFilter) &&
+                (string.IsNullOrWhiteSpace(u.EducationLevel) ||
+                 !u.EducationLevel.Contains(EducationFilter, StringComparison.OrdinalIgnoreCase)))
+                return false;
 
             // Religião
-            if (!string.IsNullOrWhiteSpace(ReligionFilter))
-            {
-                if (string.IsNullOrWhiteSpace(u.Religion) ||
-                    !u.Religion.Contains(ReligionFilter, StringComparison.OrdinalIgnoreCase))
-                    return false;
-            }
+            if (!string.IsNullOrWhiteSpace(ReligionFilter) &&
+                (string.IsNullOrWhiteSpace(u.Religion) ||
+                 !u.Religion.Contains(ReligionFilter, StringComparison.OrdinalIgnoreCase)))
+                return false;
 
             // Orientação sexual
-            if (!string.IsNullOrWhiteSpace(OrientationFilter))
-            {
-                if (string.IsNullOrWhiteSpace(u.SexualOrientation) ||
-                    !u.SexualOrientation.Contains(OrientationFilter, StringComparison.OrdinalIgnoreCase))
-                    return false;
-            }
+            if (!string.IsNullOrWhiteSpace(OrientationFilter) &&
+                (string.IsNullOrWhiteSpace(u.SexualOrientation) ||
+                 !u.SexualOrientation.Contains(OrientationFilter, StringComparison.OrdinalIgnoreCase)))
+                return false;
 
-            // Interesses (pelo menos 1 em comum)
-            if (InterestFilter != null && InterestFilter.Count > 0)
+            // INTERESSES MULTI-SELEÇÃO
+            if (SelectedInterestFilters.Count > 0)
             {
                 var userInterests = u.Interests ?? new List<string>();
 
-                bool hasMatch = userInterests.Any(ui =>
-                    InterestFilter.Any(fi =>
-                        string.Equals(fi, ui, StringComparison.OrdinalIgnoreCase)));
+                bool hasMatch =
+                    userInterests.Any(ui =>
+                        SelectedInterestFilters.Any(fi =>
+                            fi.Equals(ui, StringComparison.OrdinalIgnoreCase)));
 
                 if (!hasMatch)
                     return false;
@@ -310,29 +331,25 @@ namespace AmoraApp.ViewModels
             return gender.Contains("masc") || gender.Contains("homem");
         }
 
-        // ============= AÇÕES DE LIKE / DISLIKE / ADD =============
+        // ================ LIKE / DISLIKE / FRIEND ================
 
         [RelayCommand]
         private async Task LikeAsync()
         {
-            if (CurrentUser == null)
-                return;
+            if (CurrentUser == null) return;
 
             var me = _authService.CurrentUserUid;
-            if (string.IsNullOrEmpty(me))
-                return;
+            if (string.IsNullOrWhiteSpace(me)) return;
 
-            var target = CurrentUser;
+            var match = await _matchService.LikeUserAsync(me, CurrentUser.Id);
 
-            var isMatch = await _matchService.LikeUserAsync(me, target.Id);
-
-            if (isMatch)
+            if (match)
             {
                 await MainThread.InvokeOnMainThreadAsync(async () =>
                 {
                     await App.Current.MainPage.DisplayAlert(
                         "É um match! 💗",
-                        $"Você e {target.DisplayName} combinaram!",
+                        $"Você e {CurrentUser.DisplayName} combinaram!",
                         "OK");
                 });
             }
@@ -343,126 +360,81 @@ namespace AmoraApp.ViewModels
         [RelayCommand]
         private async Task DislikeAsync()
         {
-            if (CurrentUser == null)
-                return;
+            if (CurrentUser == null) return;
 
             var me = _authService.CurrentUserUid;
-            if (string.IsNullOrEmpty(me))
-                return;
+            if (string.IsNullOrWhiteSpace(me)) return;
 
-            var target = CurrentUser;
-
-            await _matchService.DislikeUserAsync(me, target.Id);
+            await _matchService.DislikeUserAsync(me, CurrentUser.Id);
 
             GoToNextUser();
         }
 
-        /// <summary>
-        /// Botão "+" no Discover → amizade
-        /// </summary>
         [RelayCommand]
         private async Task AddFriendAsync()
         {
-            if (CurrentUser == null)
-                return;
+            if (CurrentUser == null) return;
 
             var me = _authService.CurrentUserUid;
-            if (string.IsNullOrEmpty(me))
-                return;
+            if (string.IsNullOrWhiteSpace(me)) return;
 
             var other = CurrentUser.Id;
 
-            // 1) Já são amigos?
             if (await _friendService.AreFriendsAsync(me, other))
             {
-                await MainThread.InvokeOnMainThreadAsync(async () =>
-                {
-                    await App.Current.MainPage.DisplayAlert(
-                        "Já são amigos",
-                        $"{CurrentUser.DisplayName} já está na sua lista de amigos.",
-                        "OK");
-                });
+                await App.Current.MainPage.DisplayAlert("Já são amigos",
+                    $"{CurrentUser.DisplayName} já está na sua lista.", "OK");
                 return;
             }
 
-            // 2) O outro já enviou solicitação pra mim? (other -> me)
             if (await _friendService.HasIncomingRequestAsync(me, other))
             {
                 await _friendService.AcceptFriendshipAsync(me, other);
-
-                await MainThread.InvokeOnMainThreadAsync(async () =>
-                {
-                    await App.Current.MainPage.DisplayAlert(
-                        "Amizade aceita",
-                        $"Você e {CurrentUser.DisplayName} agora são amigos.",
-                        "OK");
-                });
+                await App.Current.MainPage.DisplayAlert("Amizade aceita",
+                    $"Agora você e {CurrentUser.DisplayName} são amigos!", "OK");
                 return;
             }
 
-            // 3) Eu já enviei solicitação pra ele(a)? (me -> other)
             if (await _friendService.HasOutgoingRequestAsync(me, other))
             {
-                await MainThread.InvokeOnMainThreadAsync(async () =>
-                {
-                    await App.Current.MainPage.DisplayAlert(
-                        "Solicitação já enviada",
-                        $"Você já enviou uma solicitação para {CurrentUser.DisplayName}.",
-                        "OK");
-                });
+                await App.Current.MainPage.DisplayAlert("Solicitação pendente",
+                    $"Você já enviou uma solicitação.", "OK");
                 return;
             }
 
-            // 4) Nova solicitação
             await _friendService.CreateFriendRequestAsync(me, other);
 
-            await MainThread.InvokeOnMainThreadAsync(async () =>
-            {
-                await App.Current.MainPage.DisplayAlert(
-                    "Solicitação enviada",
-                    $"Sua solicitação de amizade foi enviada para {CurrentUser.DisplayName}.",
-                    "OK");
-            });
+            await App.Current.MainPage.DisplayAlert("Solicitação enviada",
+                $"Enviada para {CurrentUser.DisplayName}.", "OK");
         }
 
-        // Botão REWIND: volta para o último user que saiu da fila
         [RelayCommand]
         private void Rewind()
         {
-            if (_history.Count == 0)
-                return;
+            if (_history.Count == 0) return;
 
             var previous = _history.Pop();
-
             if (CurrentUser != null)
-            {
-                // devolve o atual para a fila (no começo)
                 Users.Insert(0, CurrentUser);
-            }
 
             CurrentUser = previous;
         }
 
-        // Chamado internamente após like/dislike/swipe
         private void GoToNextUser()
         {
-            if (CurrentUser == null)
-                return;
+            if (CurrentUser == null) return;
 
-            var current = CurrentUser;
+            var cur = CurrentUser;
 
-            // Guarda no histórico
-            _history.Push(current);
+            _history.Push(cur);
 
-            // Remove do começo da fila, se ainda estiver lá
-            if (Users.Contains(current))
-                Users.Remove(current);
+            if (Users.Contains(cur))
+                Users.Remove(cur);
 
-            // Próximo da fila vira CurrentUser
             CurrentUser = Users.FirstOrDefault();
         }
 
-        // ================== DISTÂNCIA / PRESENÇA ==================
+        // ================ DISTÂNCIA / PRESENÇA ================
 
         private async Task UpdateCurrentDistanceAndPresenceAsync()
         {
@@ -477,21 +449,19 @@ namespace AmoraApp.ViewModels
             if (_myLat.HasValue && _myLon.HasValue &&
                 CurrentUser.Latitude != 0 && CurrentUser.Longitude != 0)
             {
-                var d = HaversineKm(
-                    _myLat.Value, _myLon.Value,
-                    CurrentUser.Latitude, CurrentUser.Longitude);
+                var d = HaversineKm(_myLat.Value, _myLon.Value,
+                                    CurrentUser.Latitude, CurrentUser.Longitude);
 
-                if (d < 1)
-                    DistanceText = "Menos de 1 km de você";
-                else
-                    DistanceText = $"{Math.Round(d)} km de você";
+                DistanceText = d < 1
+                    ? "Menos de 1 km de você"
+                    : $"{Math.Round(d)} km de você";
             }
             else
             {
                 DistanceText = string.Empty;
             }
 
-            // Presença (online / último acesso)
+            // Presença
             try
             {
                 var presence = await _presenceService.GetPresenceAsync(CurrentUser.Id);
@@ -502,13 +472,11 @@ namespace AmoraApp.ViewModels
                 }
 
                 if (presence.Value.IsOnline)
-                {
                     OnlineText = "Online";
-                }
                 else
                 {
-                    var lastSeen = DateTimeOffset.FromUnixTimeSeconds(presence.Value.LastSeenUtc).ToLocalTime();
-                    var diff = DateTimeOffset.Now - lastSeen;
+                    var last = DateTimeOffset.FromUnixTimeSeconds(presence.Value.LastSeenUtc).ToLocalTime();
+                    var diff = DateTimeOffset.Now - last;
 
                     if (diff.TotalMinutes < 1)
                         OnlineText = "Visto agora";
@@ -522,22 +490,25 @@ namespace AmoraApp.ViewModels
             }
             catch
             {
-                // se der erro de rede, só deixa vazio
                 OnlineText = string.Empty;
             }
         }
 
+        // ================ HAVERSINE ================
+
         private static double HaversineKm(double lat1, double lon1, double lat2, double lon2)
         {
-            const double R = 6371.0; // raio médio da Terra em km
+            const double R = 6371.0;
 
             double dLat = ToRadians(lat2 - lat1);
             double dLon = ToRadians(lon2 - lon1);
 
             double a =
                 Math.Sin(dLat / 2) * Math.Sin(dLat / 2) +
-                Math.Cos(ToRadians(lat1)) * Math.Cos(ToRadians(lat2)) *
-                Math.Sin(dLon / 2) * Math.Sin(dLon / 2);
+                Math.Cos(ToRadians(lat1)) *
+                Math.Cos(ToRadians(lat2)) *
+                Math.Sin(dLon / 2) *
+                Math.Sin(dLon / 2);
 
             double c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
 
