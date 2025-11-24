@@ -22,6 +22,9 @@ namespace AmoraApp.Models
 
         public string City { get; set; } = string.Empty;
 
+        // Telefone / celular
+        public string PhoneNumber { get; set; } = string.Empty;
+
         // Campo tradicional de idade (mantido pra filtros / compatibilidade)
         public int Age { get; set; } = 18;
 
@@ -36,6 +39,9 @@ namespace AmoraApp.Models
 
         // Religião (campo extra)
         public string Religion { get; set; } = string.Empty;
+
+        // O que busca no app (multi-seleção: amizade, namoro, casamento, casual)
+        public List<string> LookingFor { get; set; } = new();
 
         // Foto principal (usada em Discover, bolhas de story, etc.)
         public string PhotoUrl { get; set; } = string.Empty;

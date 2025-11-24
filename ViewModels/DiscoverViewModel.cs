@@ -118,6 +118,25 @@ namespace AmoraApp.ViewModels
             }
         }
 
+        // ====== MULTI-SELEÇÃO DE "BUSCO POR" (amizade / namoro / etc.) ======
+
+        // Itens selecionados no filtro
+        public ObservableCollection<string> SelectedLookingForFilters { get; } = new();
+
+        public void ClearLookingForFilters()
+        {
+            SelectedLookingForFilters.Clear();
+        }
+
+        public void AddLookingForFilter(string goal)
+        {
+            if (!string.IsNullOrWhiteSpace(goal) &&
+                !SelectedLookingForFilters.Contains(goal))
+            {
+                SelectedLookingForFilters.Add(goal);
+            }
+        }
+
         // ====== Labels auxiliares p/ UI ======
 
         public string AgeRangeLabel => $"De {MinAgeFilter} até {MaxAgeFilter} anos";
@@ -192,6 +211,15 @@ namespace AmoraApp.ViewModels
             "Arte","Natureza","Praia","Balada","Café"
         };
 
+        // Opções de “Busco por”
+        public IList<string> LookingForFilterOptions { get; } = new List<string>
+        {
+            "Amizade",
+            "Namoro",
+            "Casamento",
+            "Casual"
+        };
+
         public DiscoverViewModel()
             : this(MatchService.Instance, FirebaseAuthService.Instance)
         {
@@ -245,6 +273,8 @@ namespace AmoraApp.ViewModels
                 {
                     u.PhotoUrl ??= string.Empty;
                     u.Interests ??= new List<string>();
+                    // garante lista de "busco por" não nula
+                    u.LookingFor ??= new List<string>();
                     return u;
                 })
                 .ToList();
@@ -337,6 +367,20 @@ namespace AmoraApp.ViewModels
                             fi.Equals(ui, StringComparison.OrdinalIgnoreCase)));
 
                 if (!hasMatch)
+                    return false;
+            }
+
+            // "BUSCO POR" (multi) — usa a lista LookingFor do perfil
+            if (SelectedLookingForFilters.Count > 0)
+            {
+                var goals = u.LookingFor ?? new List<string>();
+
+                bool hasGoalMatch =
+                    goals.Any(g =>
+                        SelectedLookingForFilters.Any(f =>
+                            f.Equals(g, StringComparison.OrdinalIgnoreCase)));
+
+                if (!hasGoalMatch)
                     return false;
             }
 

@@ -41,7 +41,7 @@ namespace AmoraApp.ViewModels
         }
     }
 
-    // Chip de interesse
+    // Chip genérico (interesse / "busco por")
     public partial class InterestItem : ObservableObject
     {
         [ObservableProperty] private string name;
@@ -63,14 +63,13 @@ namespace AmoraApp.ViewModels
 
         private const int MaxPhotos = 30;
         private const int MaxVideos = 20;
-        private const int MaxCitySuggestions = 40;
 
         // Campos básicos
         [ObservableProperty] private string displayName;
         [ObservableProperty] private string email;
         [ObservableProperty] private string bio;
 
-        // Cargo / profissão
+        // Profissão
         [ObservableProperty] private string jobTitle;
 
         // Escolaridade (nível) + instituição
@@ -78,6 +77,9 @@ namespace AmoraApp.ViewModels
         [ObservableProperty] private string educationInstitution;
 
         [ObservableProperty] private string city;
+
+        // Telefone / celular
+        [ObservableProperty] private string phoneNumber;
 
         // Gênero
         [ObservableProperty] private string gender;
@@ -107,9 +109,8 @@ namespace AmoraApp.ViewModels
         // Interesses
         [ObservableProperty] private ObservableCollection<InterestItem> interests = new();
 
-        // Autocomplete de cidades
-        [ObservableProperty] private ObservableCollection<string> citySuggestions = new();
-        [ObservableProperty] private bool isCitySuggestionsVisible;
+        // "Busco por" (amizade, namoro, etc.)
+        [ObservableProperty] private ObservableCollection<InterestItem> relationshipGoals = new();
 
         // Autocomplete de profissões
         [ObservableProperty] private ObservableCollection<string> jobSuggestions = new();
@@ -120,20 +121,6 @@ namespace AmoraApp.ViewModels
         [ObservableProperty] private string errorMessage;
 
         public string CurrentUserId { get; set; } = string.Empty;
-
-        // Mock de cidades do Brasil
-        private readonly List<string> _allBrazilCities = new()
-        {
-            "São Paulo","Rio de Janeiro","Belo Horizonte","Curitiba","Porto Alegre",
-            "Salvador","Fortaleza","Recife","Brasília","Goiânia","Florianópolis",
-            "Vitória","Manaus","Belém","Natal","João Pessoa","Maceió","Aracaju",
-            "Campo Grande","Cuiabá","São Luís","Teresina","Boa Vista","Macapá",
-            "Rio Branco","Porto Velho","Palmas",
-            "Campinas","Guarulhos","São Bernardo do Campo","Santo André","Osasco",
-            "São José dos Campos","Ribeirão Preto","Sorocaba","Santos","Jundiaí",
-            "Piracicaba","São José do Rio Preto","Mogi das Cruzes","Diadema",
-            "Joinville","Blumenau","Londrina","Maringá","Caxias do Sul","Pelotas"
-        };
 
         // Sugestões de profissões
         private readonly List<string> _allJobTitles = new()
@@ -172,6 +159,12 @@ namespace AmoraApp.ViewModels
             "Arte","Natureza","Praia","Balada","Café"
         };
 
+        // Opções do "Busco por"
+        private static readonly string[] DefaultRelationshipGoals =
+        {
+            "Amizade","Namoro","Casamento","Casual"
+        };
+
         // Opções de escolaridade / gênero / orientação sexual
         public IList<string> EducationLevelOptions { get; } = new List<string>
         {
@@ -190,9 +183,12 @@ namespace AmoraApp.ViewModels
 
         public IList<string> GenderOptions { get; } = new List<string>
         {
-            "Masculino",
-            "Feminino",
+            "Homem",
+            "Mulher",
+            "Homem trans",
+            "Mulher trans",
             "Não-binário",
+            "Outro",
             "Prefiro não dizer"
         };
 
@@ -238,6 +234,7 @@ namespace AmoraApp.ViewModels
             InitPhotoSlots();
             InitVideoSlots();
             InitInterests(null);
+            InitRelationshipGoals(null);
         }
 
         #region Inicialização slots
@@ -347,37 +344,35 @@ namespace AmoraApp.ViewModels
 
         #endregion
 
-        #region Cidade (autocomplete)
+        #region "Busco por" (relationship goals)
 
-        public void OnCityTextChanged(string text)
+        private void InitRelationshipGoals(IEnumerable<string> selected)
         {
-            UpdateCitySuggestions(text);
+            RelationshipGoals.Clear();
+
+            var selectedSet = new HashSet<string>(
+                selected ?? Array.Empty<string>(),
+                StringComparer.OrdinalIgnoreCase);
+
+            foreach (var name in DefaultRelationshipGoals)
+            {
+                RelationshipGoals.Add(new InterestItem(name, selectedSet.Contains(name)));
+            }
         }
 
-        private void UpdateCitySuggestions(string text)
+        [RelayCommand]
+        private void ToggleRelationshipGoal(InterestItem item)
         {
-            CitySuggestions.Clear();
+            if (item == null) return;
+            item.IsSelected = !item.IsSelected;
+        }
 
-            if (string.IsNullOrWhiteSpace(text))
-            {
-                IsCitySuggestionsVisible = false;
-                return;
-            }
-
-            var term = text.Trim().ToLowerInvariant();
-
-            var matches = _allBrazilCities
-                .Where(c =>
-                    c.ToLowerInvariant().StartsWith(term) ||
-                    c.ToLowerInvariant().Contains(" " + term))
-                .OrderBy(c => c)
-                .Take(MaxCitySuggestions)
+        private List<string> GetSelectedRelationshipGoals()
+        {
+            return RelationshipGoals
+                .Where(i => i.IsSelected)
+                .Select(i => i.Name)
                 .ToList();
-
-            foreach (var c in matches)
-                CitySuggestions.Add(c);
-
-            IsCitySuggestionsVisible = CitySuggestions.Count > 0;
         }
 
         #endregion
@@ -477,6 +472,7 @@ namespace AmoraApp.ViewModels
                 EducationLevel = profile.EducationLevel;
                 EducationInstitution = profile.EducationInstitution;
                 City = profile.City;
+                PhoneNumber = profile.PhoneNumber;
                 Gender = profile.Gender;
                 SexualOrientation = profile.SexualOrientation;
                 Religion = profile.Religion;
@@ -517,6 +513,7 @@ namespace AmoraApp.ViewModels
                 ApplyVideosToSlots(videos);
 
                 InitInterests(profile.Interests ?? new List<string>());
+                InitRelationshipGoals(profile.LookingFor ?? new List<string>());
             }
             catch (Exception ex)
             {
@@ -576,6 +573,7 @@ namespace AmoraApp.ViewModels
                     EducationLevel = EducationLevel ?? "",
                     EducationInstitution = EducationInstitution ?? "",
                     City = City ?? "",
+                    PhoneNumber = PhoneNumber ?? "",
                     Gender = Gender ?? "",
                     SexualOrientation = SexualOrientation ?? "",
                     Religion = Religion ?? "",
@@ -587,6 +585,7 @@ namespace AmoraApp.ViewModels
                     // ainda preenche Gallery pra compatibilidade
                     Gallery = photos,
                     Interests = GetSelectedInterests(),
+                    LookingFor = GetSelectedRelationshipGoals(),
                     Latitude = Latitude,
                     Longitude = Longitude,
                     CurrentLocationText = CurrentLocationText ?? ""

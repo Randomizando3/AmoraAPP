@@ -208,19 +208,19 @@
                 </VerticalStackLayout>
 
 
-                <!-- ORIENTAÇÃO SEXUAL (temporário — será multi em seguida) -->
-                <!-- ORIENTAÇÃO SEXUAL (agora com Name para o .cs acessar) -->
+                <!-- ORIENTAÇÃO SEXUAL -->
                 <VerticalStackLayout>
                     <Label Text="Orientação sexual"
-           FontSize="16"
-           TextColor="#222"
-           FontAttributes="Bold" />
+                           FontSize="16"
+                           TextColor="#222"
+                           FontAttributes="Bold" />
 
                     <CollectionView
-        x:Name="OrientationsCollectionView"
-        Margin="0,6,0,0"
-        ItemsSource="{Binding OrientationFilterOptions}"
-        SelectionMode="Multiple">
+                        x:Name="OrientationsCollectionView"
+                        Margin="0,6,0,0"
+                        ItemsSource="{Binding OrientationFilterOptions}"
+                        SelectionMode="Multiple"
+                        SelectionChanged="OnOrientationsSelectionChanged">
 
                         <CollectionView.ItemsLayout>
                             <GridItemsLayout Orientation="Horizontal" Span="2" />
@@ -229,9 +229,9 @@
                         <CollectionView.ItemTemplate>
                             <DataTemplate>
                                 <Frame Margin="0,6,8,0"
-                       Padding="12,6"
-                       CornerRadius="14"
-                       HasShadow="False">
+                                       Padding="12,6"
+                                       CornerRadius="14"
+                                       HasShadow="False">
 
                                     <VisualStateManager.VisualStateGroups>
                                         <VisualStateGroup>
@@ -252,15 +252,65 @@
                                     </VisualStateManager.VisualStateGroups>
 
                                     <Label Text="{Binding .}"
-                           FontSize="13"
-                           TextColor="#222" />
+                                           FontSize="13"
+                                           TextColor="#222" />
                                 </Frame>
                             </DataTemplate>
                         </CollectionView.ItemTemplate>
                     </CollectionView>
                 </VerticalStackLayout>
 
+                <!-- BUSCO POR (amizade / namoro / casamento / casual) -->
+                <VerticalStackLayout>
+                    <Label Text="Busco por"
+                           FontSize="16"
+                           TextColor="#222"
+                           FontAttributes="Bold" />
 
+                    <CollectionView
+                        x:Name="LookingForCollectionView"
+                        Margin="0,6,0,0"
+                        ItemsSource="{Binding LookingForFilterOptions}"
+                        SelectionMode="Multiple"
+                        SelectionChanged="OnLookingForSelectionChanged">
+
+                        <CollectionView.ItemsLayout>
+                            <GridItemsLayout Orientation="Horizontal" Span="2" />
+                        </CollectionView.ItemsLayout>
+
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <Frame Margin="0,6,8,0"
+                                       Padding="12,6"
+                                       CornerRadius="14"
+                                       HasShadow="False">
+
+                                    <VisualStateManager.VisualStateGroups>
+                                        <VisualStateGroup>
+                                            <VisualState x:Name="Normal">
+                                                <VisualState.Setters>
+                                                    <Setter Property="BackgroundColor" Value="#F5F5F5" />
+                                                    <Setter Property="BorderColor" Value="#DDDDDD" />
+                                                </VisualState.Setters>
+                                            </VisualState>
+
+                                            <VisualState x:Name="Selected">
+                                                <VisualState.Setters>
+                                                    <Setter Property="BackgroundColor" Value="#FF4E8A" />
+                                                    <Setter Property="BorderColor" Value="#FF4E8A" />
+                                                </VisualState.Setters>
+                                            </VisualState>
+                                        </VisualStateGroup>
+                                    </VisualStateManager.VisualStateGroups>
+
+                                    <Label Text="{Binding .}"
+                                           FontSize="13"
+                                           TextColor="#222" />
+                                </Frame>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </VerticalStackLayout>
 
                 <!-- INTERESSES (multi) -->
                 <VerticalStackLayout>
@@ -273,7 +323,8 @@
                         x:Name="InterestsCollectionView"
                         Margin="0,6,0,0"
                         ItemsSource="{Binding InterestFilterOptions}"
-                        SelectionMode="Multiple">
+                        SelectionMode="Multiple"
+                        SelectionChanged="OnInterestsSelectionChanged">
 
                         <CollectionView.ItemsLayout>
                             <GridItemsLayout Orientation="Horizontal" Span="3" />

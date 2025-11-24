@@ -23,7 +23,7 @@ namespace AmoraApp.Views
 
             UpdateGenderButtons();
 
-            // Restaura visual dos interesses já selecionados
+            // Restaura visual dos interesses / orientação / busco por já selecionados
             Device.BeginInvokeOnMainThread(() =>
             {
                 // INTERESSES
@@ -51,6 +51,20 @@ namespace AmoraApp.Views
                                  .ToList())
                     {
                         OrientationsCollectionView.SelectedItems.Add(ori);
+                    }
+                }
+
+                // BUSCO POR (amizade / etc.)
+                if (LookingForCollectionView.SelectedItems != null)
+                    LookingForCollectionView.SelectedItems.Clear();
+
+                if (_discoverVm.SelectedLookingForFilters.Count > 0)
+                {
+                    foreach (var goal in _discoverVm
+                                 .SelectedLookingForFilters
+                                 .ToList())
+                    {
+                        LookingForCollectionView.SelectedItems.Add(goal);
                     }
                 }
             });
@@ -159,6 +173,28 @@ namespace AmoraApp.Views
         }
 
         // ======================
+        //  SELEÇÃO "BUSCO POR"
+        // ======================
+
+        private void OnLookingForSelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (_discoverVm == null) return;
+
+            _discoverVm.ClearLookingForFilters();
+
+            var cv = (CollectionView)sender;
+            if (cv.SelectedItems == null) return;
+
+            foreach (var item in cv.SelectedItems)
+            {
+                if (item is string goal && !string.IsNullOrWhiteSpace(goal))
+                {
+                    _discoverVm.AddLookingForFilter(goal);
+                }
+            }
+        }
+
+        // ======================
         //  RESETAR FILTROS
         // ======================
 
@@ -184,6 +220,10 @@ namespace AmoraApp.Views
             // Interesses (VM + UI)
             _discoverVm.ClearInterestFilters();
             InterestsCollectionView.SelectedItems?.Clear();
+
+            // Busco por (VM + UI)
+            _discoverVm.ClearLookingForFilters();
+            LookingForCollectionView.SelectedItems?.Clear();
 
             UpdateGenderButtons();
         }
@@ -215,6 +255,17 @@ namespace AmoraApp.Views
                 {
                     if (item is string ori && !string.IsNullOrWhiteSpace(ori))
                         _discoverVm.AddOrientationFilter(ori);
+                }
+            }
+
+            // Sincroniza "BUSCO POR" multi do CollectionView → VM
+            _discoverVm.ClearLookingForFilters();
+            if (LookingForCollectionView.SelectedItems != null)
+            {
+                foreach (var item in LookingForCollectionView.SelectedItems)
+                {
+                    if (item is string goal && !string.IsNullOrWhiteSpace(goal))
+                        _discoverVm.AddLookingForFilter(goal);
                 }
             }
 

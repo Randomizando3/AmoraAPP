@@ -15,9 +15,6 @@ namespace AmoraApp.Views
     {
         private readonly ProfileViewModel _vm;
 
-        // controla o primeiro TextChanged (vindo do binding) da cidade
-        private bool _cityEntryInitialized;
-
         public ProfilePage() : this(new ProfileViewModel())
         {
         }
@@ -53,48 +50,8 @@ namespace AmoraApp.Views
             if (JobEntry.IsFocused)
                 JobEntry.Unfocus();
 
-            _vm.CitySuggestions.Clear();
-            _vm.IsCitySuggestionsVisible = false;
-
             _vm.JobSuggestions.Clear();
             _vm.IsJobSuggestionsVisible = false;
-        }
-
-        // ======== CIDADE / DROPDOWN ========
-
-        private void CityEntry_Focused(object sender, FocusEventArgs e)
-        {
-            _vm.OnCityTextChanged(CityEntry.Text ?? string.Empty);
-        }
-
-        private void CityEntry_Unfocused(object sender, FocusEventArgs e)
-        {
-            _vm.CitySuggestions.Clear();
-            _vm.IsCitySuggestionsVisible = false;
-        }
-
-        private void CityEntry_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            if (!_cityEntryInitialized)
-            {
-                _cityEntryInitialized = true;
-                return;
-            }
-
-            _vm.OnCityTextChanged(e.NewTextValue ?? string.Empty);
-        }
-
-        private void OnCitySuggestionSelected(object sender, SelectionChangedEventArgs e)
-        {
-            if (e.CurrentSelection?.FirstOrDefault() is string selectedCity)
-            {
-                _vm.City = selectedCity;
-                _vm.CitySuggestions.Clear();
-                _vm.IsCitySuggestionsVisible = false;
-
-                if (sender is CollectionView cv)
-                    cv.SelectedItem = null;
-            }
         }
 
         // ======== PROFISSÃO / AUTOCOMPLETE ========
