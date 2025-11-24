@@ -6,6 +6,7 @@
     BackgroundColor="White"
     Shell.NavBarIsVisible="False">
 
+    <!-- 3 LINHAS: HEADER / CARD (MEIO) / BOTÕES -->
     <Grid RowDefinitions="Auto,*,Auto">
 
         <!-- FUNDO -->
@@ -14,7 +15,7 @@
             Aspect="AspectFill"
             Grid.RowSpan="3" />
 
-        <!-- HEADER -->
+        <!-- HEADER (linha 0) -->
         <Grid Grid.Row="0"
               Padding="16,24,16,8"
               ColumnDefinitions="*,Auto"
@@ -40,32 +41,32 @@
                 Clicked="OnFilterHeaderClicked" />
         </Grid>
 
-        <!-- CARD CENTRAL -->
+        <!-- CARD NO MEIO (linha 1) OCUPANDO TODO O ESPAÇO SOBRANDO -->
         <Grid Grid.Row="1"
-              Padding="0,-150,0,-130"
-              VerticalOptions="Center">
+              Padding="16,0,16,0">
 
             <Border
                 x:Name="SwipeCard"
-                WidthRequest="320"
-                HeightRequest="480"
                 BackgroundColor="White"
                 Stroke="#E5E5E5"
                 StrokeThickness="2"
                 HorizontalOptions="Center"
-                VerticalOptions="Center">
+                VerticalOptions="FillAndExpand"   
+                MaximumWidthRequest="340"
+                Margin="0,8,0,8">
 
                 <Border.StrokeShape>
                     <RoundRectangle CornerRadius="20" />
                 </Border.StrokeShape>
 
-                <Grid>
+                <Grid RowDefinitions="3*,Auto,Auto">
+                    <!-- foto maior, infos e tags embaixo -->
 
                     <!-- CARD COM PERFIL -->
-                    <Grid IsVisible="{Binding HasUser}">
-                        <Grid RowDefinitions="2*,Auto,Auto">
+                    <Grid Grid.RowSpan="3" IsVisible="{Binding HasUser}">
+                        <Grid RowDefinitions="3*,Auto,Auto">
 
-                            <!-- FOTO -->
+                            <!-- FOTO (ocupa boa parte de cima) -->
                             <Grid Grid.Row="0">
                                 <Border StrokeThickness="0">
                                     <Border.StrokeShape>
@@ -147,7 +148,6 @@
                                                          Value="">
                                                 <Setter Property="IsVisible" Value="False" />
                                             </DataTrigger>
-
                                             <DataTrigger TargetType="Border"
                                                          Binding="{Binding OnlineText}"
                                                          Value="{x:Null}">
@@ -165,21 +165,18 @@
                                                FontSize="11" />
                                     </Border>
 
-                                    <!-- DISTÂNCIA BADGE (corrigido) -->
+                                    <!-- DISTÂNCIA BADGE -->
                                     <Border
                                         BackgroundColor="#F0F0F0"
                                         Stroke="#DDDDDD"
                                         StrokeThickness="2">
 
                                         <Border.Triggers>
-                                            <!-- Se DistanceText for vazio -->
                                             <DataTrigger TargetType="Border"
                                                          Binding="{Binding DistanceText}"
                                                          Value="">
                                                 <Setter Property="IsVisible" Value="False" />
                                             </DataTrigger>
-
-                                            <!-- Se DistanceText for nulo -->
                                             <DataTrigger TargetType="Border"
                                                          Binding="{Binding DistanceText}"
                                                          Value="{x:Null}">
@@ -199,7 +196,7 @@
 
                                 </StackLayout>
 
-                                <!-- Interesses (chips) -->
+                                <!-- Interesses -->
                                 <FlexLayout
                                     Wrap="Wrap"
                                     AlignItems="Center"
@@ -261,9 +258,10 @@
                 </Border.GestureRecognizers>
 
             </Border>
+
         </Grid>
 
-        <!-- BOTÕES -->
+        <!-- BOTÕES (linha 2, fixos embaixo) -->
         <Grid
             Grid.Row="2"
             Padding="0,0,0,12"
