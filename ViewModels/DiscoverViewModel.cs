@@ -74,7 +74,7 @@ namespace AmoraApp.ViewModels
         private string religionFilter = string.Empty;
 
         [ObservableProperty]
-        private string orientationFilter = string.Empty;
+        private string orientationFilter = string.Empty; // mantido só pra compat
 
         // Mantido só pra compatibilidade (não usado diretamente)
         [ObservableProperty]
@@ -96,6 +96,25 @@ namespace AmoraApp.ViewModels
                 !SelectedInterestFilters.Contains(interest))
             {
                 SelectedInterestFilters.Add(interest);
+            }
+        }
+
+        // ====== MULTI-SELEÇÃO DE ORIENTAÇÃO SEXUAL ======
+
+        public ObservableCollection<string> SelectedOrientationFilters { get; } = new();
+
+        public void ClearOrientationFilters()
+        {
+            SelectedOrientationFilters.Clear();
+            OrientationFilter = string.Empty;
+        }
+
+        public void AddOrientationFilter(string orientation)
+        {
+            if (!string.IsNullOrWhiteSpace(orientation) &&
+                !SelectedOrientationFilters.Contains(orientation))
+            {
+                SelectedOrientationFilters.Add(orientation);
             }
         }
 
@@ -294,13 +313,20 @@ namespace AmoraApp.ViewModels
                  !u.Religion.Contains(ReligionFilter, StringComparison.OrdinalIgnoreCase)))
                 return false;
 
-            // Orientação sexual
-            if (!string.IsNullOrWhiteSpace(OrientationFilter) &&
-                (string.IsNullOrWhiteSpace(u.SexualOrientation) ||
-                 !u.SexualOrientation.Contains(OrientationFilter, StringComparison.OrdinalIgnoreCase)))
-                return false;
+            // ORIENTAÇÃO SEXUAL (multi)
+            if (SelectedOrientationFilters.Count > 0)
+            {
+                if (string.IsNullOrWhiteSpace(u.SexualOrientation))
+                    return false;
 
-            // INTERESSES MULTI-SELEÇÃO
+                bool hasOrientationMatch = SelectedOrientationFilters.Any(o =>
+                    u.SexualOrientation.Contains(o, StringComparison.OrdinalIgnoreCase));
+
+                if (!hasOrientationMatch)
+                    return false;
+            }
+
+            // INTERESSES (multi)
             if (SelectedInterestFilters.Count > 0)
             {
                 var userInterests = u.Interests ?? new List<string>();

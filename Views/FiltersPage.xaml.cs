@@ -26,17 +26,32 @@ namespace AmoraApp.Views
             // Restaura visual dos interesses já selecionados
             Device.BeginInvokeOnMainThread(() =>
             {
-                if (_discoverVm.SelectedInterestFilters.Count == 0)
-                    return;
-
+                // INTERESSES
                 if (InterestsCollectionView.SelectedItems != null)
                     InterestsCollectionView.SelectedItems.Clear();
 
-                foreach (var interest in _discoverVm
-                             .SelectedInterestFilters
-                             .ToList())
+                if (_discoverVm.SelectedInterestFilters.Count > 0)
                 {
-                    InterestsCollectionView.SelectedItems.Add(interest);
+                    foreach (var interest in _discoverVm
+                                 .SelectedInterestFilters
+                                 .ToList())
+                    {
+                        InterestsCollectionView.SelectedItems.Add(interest);
+                    }
+                }
+
+                // ORIENTAÇÃO SEXUAL
+                if (OrientationsCollectionView.SelectedItems != null)
+                    OrientationsCollectionView.SelectedItems.Clear();
+
+                if (_discoverVm.SelectedOrientationFilters.Count > 0)
+                {
+                    foreach (var ori in _discoverVm
+                                 .SelectedOrientationFilters
+                                 .ToList())
+                    {
+                        OrientationsCollectionView.SelectedItems.Add(ori);
+                    }
                 }
             });
         }
@@ -100,6 +115,50 @@ namespace AmoraApp.Views
         }
 
         // ======================
+        //  SELEÇÃO INTERESSES
+        // ======================
+
+        private void OnInterestsSelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (_discoverVm == null) return;
+
+            _discoverVm.ClearInterestFilters();
+
+            var cv = (CollectionView)sender;
+            if (cv.SelectedItems == null) return;
+
+            foreach (var item in cv.SelectedItems)
+            {
+                if (item is string interest && !string.IsNullOrWhiteSpace(interest))
+                {
+                    _discoverVm.AddInterestFilter(interest);
+                }
+            }
+        }
+
+        // ======================
+        //  SELEÇÃO ORIENTAÇÃO
+        // ======================
+
+        private void OnOrientationsSelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (_discoverVm == null) return;
+
+            _discoverVm.ClearOrientationFilters();
+
+            var cv = (CollectionView)sender;
+            if (cv.SelectedItems == null) return;
+
+            foreach (var item in cv.SelectedItems)
+            {
+                if (item is string ori && !string.IsNullOrWhiteSpace(ori))
+                {
+                    _discoverVm.AddOrientationFilter(ori);
+                }
+            }
+        }
+
+        // ======================
         //  RESETAR FILTROS
         // ======================
 
@@ -109,6 +168,7 @@ namespace AmoraApp.Views
 
             // Gênero / idade / distância
             _discoverVm.GenderFilter = "Both";
+            _discoverVm.MinAgeFilter = 18;
             _discoverVm.MaxAgeFilter = 35;
             _discoverVm.DistanceFilterKm = 20;
 
@@ -116,7 +176,10 @@ namespace AmoraApp.Views
             _discoverVm.ProfessionFilter = string.Empty;
             _discoverVm.ReligionFilter = string.Empty;
             _discoverVm.EducationFilter = string.Empty;
-            _discoverVm.OrientationFilter = string.Empty;
+
+            // Orientação sexual (VM + UI)
+            _discoverVm.ClearOrientationFilters();
+            OrientationsCollectionView.SelectedItems?.Clear();
 
             // Interesses (VM + UI)
             _discoverVm.ClearInterestFilters();
@@ -133,15 +196,25 @@ namespace AmoraApp.Views
         {
             if (_discoverVm == null) return;
 
-            // Atualiza a lista de interesses selecionados no VM
+            // Sincroniza INTERESSES multi do CollectionView → VM
             _discoverVm.ClearInterestFilters();
-
             if (InterestsCollectionView.SelectedItems != null)
             {
                 foreach (var item in InterestsCollectionView.SelectedItems)
                 {
                     if (item is string interest && !string.IsNullOrWhiteSpace(interest))
                         _discoverVm.AddInterestFilter(interest);
+                }
+            }
+
+            // Sincroniza ORIENTAÇÃO multi do CollectionView → VM
+            _discoverVm.ClearOrientationFilters();
+            if (OrientationsCollectionView.SelectedItems != null)
+            {
+                foreach (var item in OrientationsCollectionView.SelectedItems)
+                {
+                    if (item is string ori && !string.IsNullOrWhiteSpace(ori))
+                        _discoverVm.AddOrientationFilter(ori);
                 }
             }
 

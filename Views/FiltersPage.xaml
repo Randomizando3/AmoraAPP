@@ -72,60 +72,62 @@
                     </HorizontalStackLayout>
                 </VerticalStackLayout>
 
-                <!-- IDADE -->
+
+                <!-- FAIXA DE IDADE -->
                 <VerticalStackLayout>
                     <Label Text="Faixa de idade"
-           FontSize="16"
-           TextColor="#222"
-           FontAttributes="Bold" />
+                           FontSize="16"
+                           TextColor="#222"
+                           FontAttributes="Bold" />
 
                     <Label Text="{Binding AgeRangeLabel}"
-           HorizontalOptions="Center"
-           Margin="0,4,0,8"
-           TextColor="#555" />
+                           HorizontalOptions="Center"
+                           Margin="0,4,0,8"
+                           TextColor="#555" />
 
                     <Label Text="Idade mínima"
-           FontSize="13"
-           TextColor="#777" />
+                           FontSize="13"
+                           TextColor="#777" />
 
                     <Slider
-        x:Name="MinAgeSlider"
-        Minimum="18"
-        Maximum="120"
-        Value="{Binding MinAgeFilter, Mode=TwoWay}"
-        Margin="0,2,0,6" />
+                        x:Name="MinAgeSlider"
+                        Minimum="18"
+                        Maximum="120"
+                        Value="{Binding MinAgeFilter, Mode=TwoWay}"
+                        Margin="0,2,0,6" />
 
                     <Label Text="Idade máxima"
-           FontSize="13"
-           TextColor="#777" />
+                           FontSize="13"
+                           TextColor="#777" />
 
                     <Slider
-        x:Name="MaxAgeSlider"
-        Minimum="18"
-        Maximum="120"
-        Value="{Binding MaxAgeFilter, Mode=TwoWay}"
-        Margin="0,2,0,0" />
+                        x:Name="MaxAgeSlider"
+                        Minimum="18"
+                        Maximum="120"
+                        Value="{Binding MaxAgeFilter, Mode=TwoWay}"
+                        Margin="0,2,0,0" />
                 </VerticalStackLayout>
 
 
                 <!-- DISTÂNCIA -->
                 <VerticalStackLayout>
                     <Label Text="Distância máxima"
-           FontSize="16"
-           TextColor="#222"
-           FontAttributes="Bold" />
+                           FontSize="16"
+                           TextColor="#222"
+                           FontAttributes="Bold" />
 
                     <Slider
-        x:Name="DistanceSlider"
-        Minimum="1"
-        Maximum="200"
-        Value="{Binding DistanceFilterKm, Mode=TwoWay}"
-        Margin="0,6,0,0" />
+                        x:Name="DistanceSlider"
+                        Minimum="1"
+                        Maximum="200"
+                        Value="{Binding DistanceFilterKm, Mode=TwoWay}"
+                        Margin="0,6,0,0" />
 
                     <Label Text="{Binding DistanceFilterLabel}"
-           HorizontalOptions="Center"
-           TextColor="#555" />
+                           HorizontalOptions="Center"
+                           TextColor="#555" />
                 </VerticalStackLayout>
+
 
                 <!-- PROFISSÃO -->
                 <VerticalStackLayout>
@@ -139,6 +141,7 @@
                         Placeholder="Ex.: Desenvolvedor, Designer, Professor..."
                         Margin="0,6,0,0" />
                 </VerticalStackLayout>
+
 
                 <!-- ESCOLARIDADE -->
                 <VerticalStackLayout>
@@ -162,14 +165,16 @@
                                        Padding="12,6"
                                        CornerRadius="14"
                                        HasShadow="False">
+
                                     <VisualStateManager.VisualStateGroups>
-                                        <VisualStateGroup x:Name="CommonStates">
+                                        <VisualStateGroup>
                                             <VisualState x:Name="Normal">
                                                 <VisualState.Setters>
                                                     <Setter Property="BackgroundColor" Value="#F5F5F5" />
                                                     <Setter Property="BorderColor" Value="#DDDDDD" />
                                                 </VisualState.Setters>
                                             </VisualState>
+
                                             <VisualState x:Name="Selected">
                                                 <VisualState.Setters>
                                                     <Setter Property="BackgroundColor" Value="#FF4E8A" />
@@ -187,6 +192,7 @@
                         </CollectionView.ItemTemplate>
                     </CollectionView>
                 </VerticalStackLayout>
+
 
                 <!-- RELIGIÃO -->
                 <VerticalStackLayout>
@@ -201,18 +207,21 @@
                         Margin="0,6,0,0" />
                 </VerticalStackLayout>
 
-                <!-- ORIENTAÇÃO SEXUAL -->
+
+                <!-- ORIENTAÇÃO SEXUAL (temporário — será multi em seguida) -->
+                <!-- ORIENTAÇÃO SEXUAL (agora com Name para o .cs acessar) -->
                 <VerticalStackLayout>
                     <Label Text="Orientação sexual"
-                           FontSize="16"
-                           TextColor="#222"
-                           FontAttributes="Bold" />
+           FontSize="16"
+           TextColor="#222"
+           FontAttributes="Bold" />
 
                     <CollectionView
-                        Margin="0,6,0,0"
-                        ItemsSource="{Binding OrientationFilterOptions}"
-                        SelectionMode="Single"
-                        SelectedItem="{Binding OrientationFilter, Mode=TwoWay}">
+        x:Name="OrientationsCollectionView"
+        Margin="0,6,0,0"
+        ItemsSource="{Binding OrientationFilterOptions}"
+        SelectionMode="Multiple">
+
                         <CollectionView.ItemsLayout>
                             <GridItemsLayout Orientation="Horizontal" Span="2" />
                         </CollectionView.ItemsLayout>
@@ -220,17 +229,19 @@
                         <CollectionView.ItemTemplate>
                             <DataTemplate>
                                 <Frame Margin="0,6,8,0"
-                                       Padding="12,6"
-                                       CornerRadius="14"
-                                       HasShadow="False">
+                       Padding="12,6"
+                       CornerRadius="14"
+                       HasShadow="False">
+
                                     <VisualStateManager.VisualStateGroups>
-                                        <VisualStateGroup x:Name="CommonStates">
+                                        <VisualStateGroup>
                                             <VisualState x:Name="Normal">
                                                 <VisualState.Setters>
                                                     <Setter Property="BackgroundColor" Value="#F5F5F5" />
                                                     <Setter Property="BorderColor" Value="#DDDDDD" />
                                                 </VisualState.Setters>
                                             </VisualState>
+
                                             <VisualState x:Name="Selected">
                                                 <VisualState.Setters>
                                                     <Setter Property="BackgroundColor" Value="#FF4E8A" />
@@ -241,13 +252,15 @@
                                     </VisualStateManager.VisualStateGroups>
 
                                     <Label Text="{Binding .}"
-                                           FontSize="13"
-                                           TextColor="#222" />
+                           FontSize="13"
+                           TextColor="#222" />
                                 </Frame>
                             </DataTemplate>
                         </CollectionView.ItemTemplate>
                     </CollectionView>
                 </VerticalStackLayout>
+
+
 
                 <!-- INTERESSES (multi) -->
                 <VerticalStackLayout>
@@ -261,6 +274,7 @@
                         Margin="0,6,0,0"
                         ItemsSource="{Binding InterestFilterOptions}"
                         SelectionMode="Multiple">
+
                         <CollectionView.ItemsLayout>
                             <GridItemsLayout Orientation="Horizontal" Span="3" />
                         </CollectionView.ItemsLayout>
@@ -271,14 +285,16 @@
                                        Padding="10,4"
                                        CornerRadius="14"
                                        HasShadow="False">
+
                                     <VisualStateManager.VisualStateGroups>
-                                        <VisualStateGroup x:Name="CommonStates">
+                                        <VisualStateGroup>
                                             <VisualState x:Name="Normal">
                                                 <VisualState.Setters>
                                                     <Setter Property="BackgroundColor" Value="#FFE7F4" />
                                                     <Setter Property="BorderColor" Value="#F3C9E2" />
                                                 </VisualState.Setters>
                                             </VisualState>
+
                                             <VisualState x:Name="Selected">
                                                 <VisualState.Setters>
                                                     <Setter Property="BackgroundColor" Value="#FF4E8A" />
@@ -294,31 +310,35 @@
                                 </Frame>
                             </DataTemplate>
                         </CollectionView.ItemTemplate>
+
                     </CollectionView>
                 </VerticalStackLayout>
 
             </VerticalStackLayout>
         </ScrollView>
 
-        <!-- FOOTER: RESET + APLICAR -->
+        <!-- FOOTER -->
         <Grid Grid.Row="2"
               Padding="16,12"
               ColumnDefinitions="*,*"
               ColumnSpacing="12">
 
-            <Button Text="Redefinir"
+            <Button Grid.Column="0"
+                    Text="Redefinir"
                     BackgroundColor="#EDEDED"
                     TextColor="#444"
                     CornerRadius="16"
                     Clicked="OnResetClicked" />
 
-            <Button Text="Aplicar"
+            <Button Grid.Column="1"
+                    Text="Aplicar"
                     BackgroundColor="#FF4E8A"
                     TextColor="White"
                     CornerRadius="16"
                     Clicked="OnApplyFilterClicked" />
 
         </Grid>
+
     </Grid>
 
 </ContentPage>
