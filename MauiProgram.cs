@@ -44,7 +44,7 @@ namespace AmoraApp
                     {
                         // Tamanho da janela estilo smartphone
                         const int width = 360;
-                        const int height = 720;
+                        const int height = 760;
 
                         try
                         {

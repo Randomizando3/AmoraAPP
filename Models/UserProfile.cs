@@ -64,15 +64,14 @@ namespace AmoraApp.Models
 
         // ===== Localização =====
 
-        // Latitude e longitude atuais do usuário
         public double Latitude { get; set; } = 0;
         public double Longitude { get; set; } = 0;
-
-        // Texto amigável da última localização (ex.: "São Paulo/SP (debug)" ou "Cidade, Estado, País (IP)")
         public string CurrentLocationText { get; set; } = string.Empty;
 
-        // Distância calculada em relação ao usuário logado (NÃO salva no Firebase)
         [JsonIgnore]
         public double DistanceKm { get; set; } = 0;
+
+        // ===== Email =====
+        public bool EmailVerified { get; set; } = false;
     }
 }

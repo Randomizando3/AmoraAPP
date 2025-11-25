@@ -2,15 +2,18 @@
 using Firebase.Auth;
 using Firebase.Auth.Providers;
 using System.Threading.Tasks;
+using Microsoft.Maui.Storage;
 
 namespace AmoraApp.Services
 {
     public class FirebaseAuthService
     {
-        // Singleton simples
+        // Singleton
         public static FirebaseAuthService Instance { get; } = new FirebaseAuthService();
 
         private readonly FirebaseAuthClient _client;
+
+        private const string AuthUidKey = "auth_uid";
 
         private FirebaseAuthService()
         {
@@ -29,8 +32,20 @@ namespace AmoraApp.Services
 
         public FirebaseAuthClient Client => _client;
 
-        // ✅ Propriedade que estava faltando
-        public string? CurrentUserUid => _client.User?.Uid;
+        // Agora tenta pegar do cliente; se não tiver, usa o UID salvo em Preferences
+        public string? CurrentUserUid
+        {
+            get
+            {
+                if (_client.User != null)
+                    return _client.User.Uid;
+
+                if (Preferences.ContainsKey(AuthUidKey))
+                    return Preferences.Get(AuthUidKey, null);
+
+                return null;
+            }
+        }
 
         public User? GetCurrentUser()
         {
@@ -54,6 +69,12 @@ namespace AmoraApp.Services
             var userCredential = await _client.CreateUserWithEmailAndPasswordAsync(
                 email, password, displayName);
 
+            if (userCredential?.User != null)
+            {
+                // salva UID para auto-login futuro
+                Preferences.Set(AuthUidKey, userCredential.User.Uid);
+            }
+
             return userCredential;
         }
 
@@ -62,12 +83,22 @@ namespace AmoraApp.Services
             string password)
         {
             var userCredential = await _client.SignInWithEmailAndPasswordAsync(email, password);
+
+            if (userCredential?.User != null)
+            {
+                // salva UID para auto-login futuro
+                Preferences.Set(AuthUidKey, userCredential.User.Uid);
+            }
+
             return userCredential;
         }
 
         public void Logout()
         {
             _client.SignOut();
+
+            // limpa o UID salvo (não auto-loga mais)
+            Preferences.Remove(AuthUidKey);
         }
     }
 }

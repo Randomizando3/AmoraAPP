@@ -9,7 +9,10 @@
     <!-- ESTILOS DO TABBAR (cores do menu inferior) -->
     <Shell.Resources>
         <Style TargetType="TabBar">
-            <Setter Property="Shell.TabBarBackgroundColor" Value="White" />
+            <!-- TabBar bem branca -->
+            <Setter Property="Shell.TabBarBackgroundColor" Value="#FFFFFFFF" />
+
+            <!-- Ícones / textos -->
             <Setter Property="Shell.TabBarForegroundColor" Value="#FF4E8A" />
             <Setter Property="Shell.TabBarTitleColor" Value="#FF4E8A" />
             <Setter Property="Shell.TabBarUnselectedColor" Value="#999999" />
@@ -17,40 +20,38 @@
     </Shell.Resources>
 
     <!--
-        IMPORTANTE:
-        - Em ANDROID / iOS: isso vira um TAB BAR embaixo (igual Tinder).
-        - Em WINDOWS: por bug do MAUI ele aparece em cima, mesmo assim.
+        - Android / iOS: ícone + texto
+        - Windows (WinUI): somente ícone (Title vazio)
     -->
-
     <TabBar>
 
         <!-- Discover (swipe) -->
         <ShellContent
-            Title="Discover"
-            Icon="tab_discover.png"
             Route="discover"
-            ContentTemplate="{DataTemplate views:DiscoverPage}" />
+            Icon="home.png"
+            ContentTemplate="{DataTemplate views:DiscoverPage}"
+            Title="{OnPlatform Android='Discover', iOS='Discover', WinUI=''}" />
 
         <!-- Feed -->
         <ShellContent
-            Title="Feed"
-            Icon="tab_feed.png"
             Route="feed"
-            ContentTemplate="{DataTemplate views:FeedPage}" />
+            Icon="feed.png"
+            ContentTemplate="{DataTemplate views:FeedPage}"
+            Title="{OnPlatform Android='Feed', iOS='Feed', WinUI=''}" />
 
         <!-- Chat -->
         <ShellContent
-            Title="Chat"
-            Icon="tab_chat.png"
             Route="chatlist"
-            ContentTemplate="{DataTemplate views:ChatListPage}" />
+            Icon="chat.png"
+            ContentTemplate="{DataTemplate views:ChatListPage}"
+            Title="{OnPlatform Android='Chat', iOS='Chat', WinUI=''}" />
 
         <!-- Profile -->
         <ShellContent
-            Title="Profile"
-            Icon="tab_profile.png"
             Route="profile"
-            ContentTemplate="{DataTemplate views:ProfilePage}" />
+            Icon="user.png"
+            ContentTemplate="{DataTemplate views:ProfilePage}"
+            Title="{OnPlatform Android='Profile', iOS='Profile', WinUI=''}" />
 
     </TabBar>
 </Shell>

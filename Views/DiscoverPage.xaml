@@ -6,16 +6,13 @@
     BackgroundColor="White"
     Shell.NavBarIsVisible="False">
 
-    <!-- 3 LINHAS: HEADER / CARD (MEIO) / BOTÕES -->
     <Grid RowDefinitions="Auto,*,Auto">
 
-        <!-- FUNDO -->
         <Image
             Source="background.jpg"
             Aspect="AspectFill"
             Grid.RowSpan="3" />
 
-        <!-- HEADER (linha 0) -->
         <Grid Grid.Row="0"
               Padding="16,24,16,8"
               ColumnDefinitions="*,Auto"
@@ -41,7 +38,6 @@
                 Clicked="OnFilterHeaderClicked" />
         </Grid>
 
-        <!-- CARD NO MEIO (linha 1) OCUPANDO TODO O ESPAÇO SOBRANDO -->
         <Grid Grid.Row="1"
               Padding="16,0,16,0">
 
@@ -50,9 +46,10 @@
                 BackgroundColor="White"
                 Stroke="#E5E5E5"
                 StrokeThickness="2"
-                HorizontalOptions="Center"
-                VerticalOptions="FillAndExpand"   
-                MaximumWidthRequest="340"
+                HorizontalOptions="FillAndExpand"
+                VerticalOptions="FillAndExpand"
+                MinimumWidthRequest="320"
+                MaximumWidthRequest="360"
                 Margin="0,8,0,8">
 
                 <Border.StrokeShape>
@@ -60,18 +57,16 @@
                 </Border.StrokeShape>
 
                 <Grid RowDefinitions="3*,Auto,Auto">
-                    <!-- foto maior, infos e tags embaixo -->
 
-                    <!-- CARD COM PERFIL -->
                     <Grid Grid.RowSpan="3" IsVisible="{Binding HasUser}">
                         <Grid RowDefinitions="3*,Auto,Auto">
 
-                            <!-- FOTO (ocupa boa parte de cima) -->
                             <Grid Grid.Row="0">
                                 <Border StrokeThickness="0">
                                     <Border.StrokeShape>
                                         <RoundRectangle CornerRadius="20,20,0,0" />
                                     </Border.StrokeShape>
+
                                     <Image
                                         Source="{Binding CurrentUser.PhotoUrl}"
                                         Aspect="AspectFill"
@@ -80,67 +75,57 @@
                                 </Border>
                             </Grid>
 
-                            <!-- NOME + INFOS -->
                             <StackLayout Grid.Row="1"
                                          Padding="16,10,16,4"
                                          Spacing="2">
 
                                 <StackLayout Orientation="Horizontal" Spacing="4">
-                                    <Label
-                                        Text="{Binding CurrentUser.DisplayName}"
-                                        FontSize="20"
-                                        FontAttributes="Bold"
-                                        TextColor="#222222" />
-                                    <Label
-                                        Text=", "
-                                        FontSize="20"
-                                        FontAttributes="Bold"
-                                        TextColor="#222222" />
-                                    <Label
-                                        Text="{Binding CurrentUser.Age}"
-                                        FontSize="20"
-                                        FontAttributes="Bold"
-                                        TextColor="#222222" />
+                                    <Label Text="{Binding CurrentUser.DisplayName}"
+                                           FontSize="20"
+                                           FontAttributes="Bold"
+                                           TextColor="#222222" />
+
+                                    <Label Text=", "
+                                           FontSize="20"
+                                           FontAttributes="Bold"
+                                           TextColor="#222222" />
+
+                                    <Label Text="{Binding CurrentUser.Age}"
+                                           FontSize="20"
+                                           FontAttributes="Bold"
+                                           TextColor="#222222" />
                                 </StackLayout>
 
-                                <Label
-                                    Text="{Binding CurrentUser.City}"
-                                    FontSize="13"
-                                    TextColor="#777777" />
+                                <Label Text="{Binding CurrentUser.City}"
+                                       FontSize="13"
+                                       TextColor="#777777" />
 
-                                <Label
-                                    Text="{Binding CurrentUser.JobTitle}"
-                                    FontSize="13"
-                                    TextColor="#555555"
-                                    LineBreakMode="TailTruncation" />
+                                <Label Text="{Binding CurrentUser.JobTitle}"
+                                       FontSize="13"
+                                       TextColor="#555555"
+                                       LineBreakMode="TailTruncation" />
 
-                                <Label
-                                    Text="{Binding CurrentUser.EducationLevel}"
-                                    FontSize="12"
-                                    TextColor="#888888"
-                                    LineBreakMode="TailTruncation" />
+                                <Label Text="{Binding CurrentUser.EducationLevel}"
+                                       FontSize="12"
+                                       TextColor="#888888"
+                                       LineBreakMode="TailTruncation" />
 
-                                <Label
-                                    Text="{Binding CurrentUser.Bio}"
-                                    FontSize="13"
-                                    TextColor="#666666"
-                                    LineBreakMode="TailTruncation" />
+                                <Label Text="{Binding CurrentUser.Bio}"
+                                       FontSize="13"
+                                       TextColor="#666666"
+                                       LineBreakMode="TailTruncation" />
+
                             </StackLayout>
 
-                            <!-- TAGS + INTERESSES -->
-                            <StackLayout
-                                Grid.Row="2"
-                                Padding="16,0,16,12"
-                                Spacing="8">
+                            <StackLayout Grid.Row="2"
+                                         Padding="16,0,16,12"
+                                         Spacing="8">
 
-                                <!-- Online + distância -->
                                 <StackLayout Orientation="Horizontal" Spacing="10">
 
-                                    <!-- ONLINE BADGE -->
-                                    <Border
-                                        BackgroundColor="#FFE7F4"
-                                        Stroke="#F3C9E2"
-                                        StrokeThickness="2">
+                                    <Border BackgroundColor="#FFE7F4"
+                                            Stroke="#F3C9E2"
+                                            StrokeThickness="2">
 
                                         <Border.Triggers>
                                             <DataTrigger TargetType="Border"
@@ -165,11 +150,9 @@
                                                FontSize="11" />
                                     </Border>
 
-                                    <!-- DISTÂNCIA BADGE -->
-                                    <Border
-                                        BackgroundColor="#F0F0F0"
-                                        Stroke="#DDDDDD"
-                                        StrokeThickness="2">
+                                    <Border BackgroundColor="#F0F0F0"
+                                            Stroke="#DDDDDD"
+                                            StrokeThickness="2">
 
                                         <Border.Triggers>
                                             <DataTrigger TargetType="Border"
@@ -196,45 +179,34 @@
 
                                 </StackLayout>
 
-                                <!-- Interesses -->
-                                <FlexLayout
-                                    Wrap="Wrap"
-                                    AlignItems="Center"
-                                    BindableLayout.ItemsSource="{Binding CurrentUser.Interests}">
+                                <FlexLayout Wrap="Wrap"
+                                            AlignItems="Center"
+                                            BindableLayout.ItemsSource="{Binding CurrentUser.Interests}">
                                     <BindableLayout.ItemTemplate>
                                         <DataTemplate>
-                                            <Frame
-                                                Padding="8,4"
-                                                Margin="0,4,6,4"
-                                                BackgroundColor="#FFE7F4"
-                                                BorderColor="#F3C9E2"
-                                                CornerRadius="12"
-                                                HasShadow="False">
-                                                <Label
-                                                    Text="{Binding .}"
-                                                    FontSize="11"
-                                                    TextColor="#FF4E8A" />
+                                            <Frame Padding="8,4"
+                                                   Margin="0,4,6,4"
+                                                   BackgroundColor="#FFE7F4"
+                                                   BorderColor="#F3C9E2"
+                                                   CornerRadius="12"
+                                                   HasShadow="False">
+                                                <Label Text="{Binding .}"
+                                                       FontSize="11"
+                                                       TextColor="#FF4E8A" />
                                             </Frame>
                                         </DataTemplate>
                                     </BindableLayout.ItemTemplate>
                                 </FlexLayout>
-
                             </StackLayout>
 
                         </Grid>
                     </Grid>
 
-                    <!-- CARD VAZIO -->
                     <Grid IsVisible="{Binding HasNoUser}">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="*" />
-                        </Grid.RowDefinitions>
-
-                        <StackLayout
-                            HorizontalOptions="Center"
-                            VerticalOptions="Center"
-                            Padding="24"
-                            Spacing="8">
+                        <StackLayout HorizontalOptions="Center"
+                                     VerticalOptions="Center"
+                                     Padding="24"
+                                     Spacing="8">
 
                             <Label Text="Nada por aqui por enquanto"
                                    FontAttributes="Bold"
@@ -251,7 +223,6 @@
 
                 </Grid>
 
-                <!-- SWIPE + TAP -->
                 <Border.GestureRecognizers>
                     <PanGestureRecognizer PanUpdated="OnSwipe" />
                     <TapGestureRecognizer Tapped="OnCardTapped" />
@@ -261,127 +232,112 @@
 
         </Grid>
 
-        <!-- BOTÕES (linha 2, fixos embaixo) -->
-        <Grid
-            Grid.Row="2"
-            Padding="0,0,0,12"
-            WidthRequest="320"
-            HorizontalOptions="Center"
-            VerticalOptions="End"
-            ColumnDefinitions="*,*,*,*,*"
-            ColumnSpacing="12">
+        <Grid Grid.Row="2"
+              Padding="0,0,0,12"
+              WidthRequest="320"
+              HorizontalOptions="Center"
+              VerticalOptions="End"
+              ColumnDefinitions="*,*,*,*,*"
+              ColumnSpacing="12">
 
-            <!-- BACK -->
-            <Border
-                Grid.Column="0"
-                HeightRequest="50"
-                BackgroundColor="#F9F9F9"
-                Stroke="#E0E0E0"
-                StrokeThickness="2">
+            <Border Grid.Column="0"
+                    HeightRequest="50"
+                    BackgroundColor="#F9F9F9"
+                    Stroke="#E0E0E0"
+                    StrokeThickness="2">
                 <Border.StrokeShape>
                     <RoundRectangle CornerRadius="25" />
                 </Border.StrokeShape>
-                <Image
-                    Source="back.png"
-                    WidthRequest="22"
-                    HeightRequest="22"
-                    HorizontalOptions="Center"
-                    VerticalOptions="Center">
+                <Image Source="back.png"
+                       WidthRequest="22"
+                       HeightRequest="22"
+                       HorizontalOptions="Center"
+                       VerticalOptions="Center">
                     <Image.GestureRecognizers>
                         <TapGestureRecognizer Command="{Binding RewindCommand}" />
                     </Image.GestureRecognizers>
                 </Image>
             </Border>
 
-            <!-- NO -->
-            <Border
-                Grid.Column="1"
-                HeightRequest="56"
-                BackgroundColor="White"
-                Stroke="#E0E0E0"
-                StrokeThickness="2">
+            <Border Grid.Column="1"
+                    HeightRequest="56"
+                    BackgroundColor="White"
+                    Stroke="#E0E0E0"
+                    StrokeThickness="2">
                 <Border.StrokeShape>
                     <RoundRectangle CornerRadius="28" />
                 </Border.StrokeShape>
-                <Image
-                    Source="no.png"
-                    WidthRequest="28"
-                    HeightRequest="28"
-                    HorizontalOptions="Center"
-                    VerticalOptions="Center">
+                <Image Source="no.png"
+                       WidthRequest="28"
+                       HeightRequest="28"
+                       HorizontalOptions="Center"
+                       VerticalOptions="Center">
                     <Image.GestureRecognizers>
                         <TapGestureRecognizer Command="{Binding DislikeCommand}" />
                     </Image.GestureRecognizers>
                 </Image>
             </Border>
 
-            <!-- ADD -->
-            <Border
-                Grid.Column="2"
-                HeightRequest="50"
-                BackgroundColor="White"
-                Stroke="#E0E0E0"
-                StrokeThickness="2">
+            <Border Grid.Column="2"
+                    HeightRequest="50"
+                    BackgroundColor="White"
+                    Stroke="#E0E0E0"
+                    StrokeThickness="2">
                 <Border.StrokeShape>
                     <RoundRectangle CornerRadius="25" />
                 </Border.StrokeShape>
-                <Image
-                    Source="add.png"
-                    WidthRequest="22"
-                    HeightRequest="22"
-                    HorizontalOptions="Center"
-                    VerticalOptions="Center">
+                <Image Source="add.png"
+                       WidthRequest="22"
+                       HeightRequest="22"
+                       HorizontalOptions="Center"
+                       VerticalOptions="Center">
                     <Image.GestureRecognizers>
                         <TapGestureRecognizer Command="{Binding AddFriendCommand}" />
                     </Image.GestureRecognizers>
                 </Image>
             </Border>
 
-            <!-- LIKE -->
-            <Border
-                Grid.Column="3"
-                HeightRequest="56"
-                BackgroundColor="White"
-                Stroke="#E0E0E0"
-                StrokeThickness="2">
+            <Border Grid.Column="3"
+                    HeightRequest="56"
+                    BackgroundColor="White"
+                    Stroke="#E0E0E0"
+                    StrokeThickness="2">
                 <Border.StrokeShape>
                     <RoundRectangle CornerRadius="28" />
                 </Border.StrokeShape>
-                <Image
-                    Source="heart.png"
-                    WidthRequest="28"
-                    HeightRequest="28"
-                    HorizontalOptions="Center"
-                    VerticalOptions="Center">
+                <Image Source="heart.png"
+                       WidthRequest="28"
+                       HeightRequest="28"
+                       HorizontalOptions="Center"
+                       VerticalOptions="Center">
                     <Image.GestureRecognizers>
                         <TapGestureRecognizer Command="{Binding LikeCommand}" />
                     </Image.GestureRecognizers>
                 </Image>
             </Border>
 
-            <!-- BOOST -->
-            <Border
-                Grid.Column="4"
-                HeightRequest="50"
-                Stroke="#E0E0E0"
-                StrokeThickness="2">
+            <Border Grid.Column="4"
+                    HeightRequest="50"
+                    Stroke="#E0E0E0"
+                    StrokeThickness="2">
                 <Border.StrokeShape>
                     <RoundRectangle CornerRadius="25" />
                 </Border.StrokeShape>
+
                 <Grid>
                     <Grid.Background>
-                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                        <LinearGradientBrush StartPoint="0,0"
+                                             EndPoint="1,1">
                             <GradientStop Color="#FF4E8A" Offset="0" />
                             <GradientStop Color="#FF9966" Offset="1" />
                         </LinearGradientBrush>
                     </Grid.Background>
 
-                    <Image
-                        Source="boost.png"
-                        WidthRequest="22"
-                        HeightRequest="22"
-                        HorizontalOptions="Center"
-                        VerticalOptions="Center">
+                    <Image Source="boost.png"
+                           WidthRequest="22"
+                           HeightRequest="22"
+                           HorizontalOptions="Center"
+                           VerticalOptions="Center">
                         <Image.GestureRecognizers>
                             <TapGestureRecognizer Tapped="OnBoostTapped" />
                         </Image.GestureRecognizers>
