@@ -11,6 +11,7 @@ using CommunityToolkit.Mvvm.Input;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Storage;
 using Microsoft.Maui.Media;
+using Firebase.Auth;
 
 namespace AmoraApp.ViewModels
 {
@@ -25,7 +26,9 @@ namespace AmoraApp.ViewModels
         [ObservableProperty] private string displayName;
 
         [ObservableProperty] private bool isBusy;
+
         [ObservableProperty] private string errorMessage;
+        [ObservableProperty] private bool hasError;
 
         // ===== Assistente de registro (etapas) =====
         [ObservableProperty] private bool isStepName = true;
@@ -39,11 +42,11 @@ namespace AmoraApp.ViewModels
         [ObservableProperty] private string verificationCode;
         private string _generatedCode;
 
-        // ===== Foto de perfil (pré-cadastro) =====
+        // Foto de perfil (pré-cadastro)
         [ObservableProperty] private string photoUrl;
         private byte[] _photoBytes;
 
-        // ===== Campos de perfil mínimos =====
+        // Campos de perfil mínimos
         [ObservableProperty] private string bio;
         [ObservableProperty] private string city;
         [ObservableProperty] private int age = 18;
@@ -55,6 +58,7 @@ namespace AmoraApp.ViewModels
         [ObservableProperty] private DateTime birthDate = DateTime.Today.AddYears(-18);
         public string AgeDisplay => $"{Age} anos";
 
+        // Atualiza idade quando muda BirthDate
         partial void OnBirthDateChanged(DateTime oldValue, DateTime newValue)
         {
             var today = DateTime.Today;
@@ -71,8 +75,13 @@ namespace AmoraApp.ViewModels
             OnPropertyChanged(nameof(AgeDisplay));
         }
 
-        // ===== Pílulas: O que busca & Interesses =====
+        // Atualiza HasError sempre que ErrorMessage mudar
+        partial void OnErrorMessageChanged(string value)
+        {
+            HasError = !string.IsNullOrWhiteSpace(value);
+        }
 
+        // ===== Itens selecionáveis (chips) =====
         public partial class SelectableItem : ObservableObject
         {
             public string Name { get; set; } = string.Empty;
@@ -132,23 +141,27 @@ namespace AmoraApp.ViewModels
             {
                 if (string.IsNullOrWhiteSpace(Email) || string.IsNullOrWhiteSpace(Password))
                 {
-                    ErrorMessage = "Preencha email e senha.";
+                    ErrorMessage = "Preencha seu e-mail e sua senha.";
                     return;
                 }
 
                 var cred = await _authService.LoginWithEmailPasswordAsync(Email.Trim(), Password);
                 var uid = cred.User.Uid;
 
-                // 🔐 Salva o UID localmente para auto-login futuro
+                // UID salvo para auto-login
                 Preferences.Set("auth_uid", uid);
 
                 await PresenceService.Instance.SetOnlineAsync(uid);
 
                 Application.Current.MainPage = new AppShell();
             }
+            catch (FirebaseAuthException)
+            {
+                ErrorMessage = "Não foi possível entrar. Verifique seu e-mail e senha e tente novamente.";
+            }
             catch (Exception ex)
             {
-                ErrorMessage = ex.Message;
+                ErrorMessage = "Erro inesperado ao entrar: " + ex.Message;
             }
             finally
             {
@@ -159,7 +172,6 @@ namespace AmoraApp.ViewModels
         // =========================================================
         // FLUXO DE REGISTRO EM ETAPAS
         // =========================================================
-
         [RelayCommand]
         private async Task NextStepAsync()
         {
@@ -183,12 +195,12 @@ namespace AmoraApp.ViewModels
                 return;
             }
 
-            // Etapa 2: Email + senha
+            // Etapa 2: E-mail + senha
             if (IsStepEmail)
             {
                 if (string.IsNullOrWhiteSpace(Email) || string.IsNullOrWhiteSpace(Password))
                 {
-                    ErrorMessage = "Informe um email e uma senha.";
+                    ErrorMessage = "Informe um e-mail e uma senha.";
                     return;
                 }
 
@@ -227,13 +239,13 @@ namespace AmoraApp.ViewModels
             {
                 if (string.IsNullOrWhiteSpace(VerificationCode))
                 {
-                    ErrorMessage = "Digite o código que você recebeu por email.";
+                    ErrorMessage = "Digite o código que você recebeu por e-mail.";
                     return;
                 }
 
                 if (VerificationCode.Trim() != _generatedCode)
                 {
-                    ErrorMessage = "Código inválido. Verifique o email e tente novamente.";
+                    ErrorMessage = "Código inválido. Verifique o e-mail e tente novamente.";
                     return;
                 }
 
@@ -252,7 +264,6 @@ namespace AmoraApp.ViewModels
 
         // =========================================================
         // FOTO DE PERFIL – CÂMERA OU GALERIA
-        // (se já estiver com compressão, mantém do jeito que você preferir)
         // =========================================================
         [RelayCommand]
         private async Task ChangePhotoAsync()
@@ -409,7 +420,7 @@ namespace AmoraApp.ViewModels
 
                 var uid = cred.User.Uid;
 
-                // 🔐 Salva o UID localmente para auto-login futuro
+                // UID salvo para auto-login
                 Preferences.Set("auth_uid", uid);
 
                 var profile = new UserProfile
@@ -457,7 +468,7 @@ namespace AmoraApp.ViewModels
         }
 
         // =========================================================
-        // Navegação login/register (se ainda usar NavigationPage)
+        // Navegação login / register
         // =========================================================
         [RelayCommand]
         private async Task GoToRegisterAsync()
@@ -471,6 +482,27 @@ namespace AmoraApp.ViewModels
         {
             if (Application.Current.MainPage is NavigationPage nav)
                 await nav.PopAsync();
+        }
+
+        // =========================================================
+        // SOCIAL LOGINS (placeholder)
+        // =========================================================
+        [RelayCommand]
+        private async Task LoginWithGoogleAsync()
+        {
+            await Application.Current.MainPage.DisplayAlert(
+                "Login com Google",
+                "Login com Google será configurado usando OAuth/Firebase. Por enquanto, use seu e-mail e senha.",
+                "OK");
+        }
+
+        [RelayCommand]
+        private async Task LoginWithAppleAsync()
+        {
+            await Application.Current.MainPage.DisplayAlert(
+                "Login com Apple",
+                "Login com Apple será configurado em uma próxima etapa.",
+                "OK");
         }
     }
 }

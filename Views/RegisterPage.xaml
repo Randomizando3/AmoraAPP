@@ -430,8 +430,8 @@
 
                 <Button.Background>
                     <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
-                        <GradientStop Color="#FF0054" Offset="0" />
-                        <GradientStop Color="#FFEE0077" Offset="1" />
+                        <GradientStop Color="#5d259c" Offset="0" />
+                        <GradientStop Color="#5d25c0" Offset="1" />
                     </LinearGradientBrush>
                 </Button.Background>
             </Button>

@@ -8,7 +8,6 @@ namespace AmoraApp.Services
 {
     public class FirebaseAuthService
     {
-        // Singleton
         public static FirebaseAuthService Instance { get; } = new FirebaseAuthService();
 
         private readonly FirebaseAuthClient _client;
@@ -32,12 +31,11 @@ namespace AmoraApp.Services
 
         public FirebaseAuthClient Client => _client;
 
-        // Agora tenta pegar do cliente; se não tiver, usa o UID salvo em Preferences
         public string? CurrentUserUid
         {
             get
             {
-                if (_client.User != null)
+                if (_client?.User != null)
                     return _client.User.Uid;
 
                 if (Preferences.ContainsKey(AuthUidKey))
@@ -49,12 +47,12 @@ namespace AmoraApp.Services
 
         public User? GetCurrentUser()
         {
-            return _client.User;
+            return _client?.User;
         }
 
         public async Task<string?> GetIdTokenAsync()
         {
-            var user = _client.User;
+            var user = _client?.User;
             if (user == null)
                 return null;
 
@@ -70,10 +68,7 @@ namespace AmoraApp.Services
                 email, password, displayName);
 
             if (userCredential?.User != null)
-            {
-                // salva UID para auto-login futuro
                 Preferences.Set(AuthUidKey, userCredential.User.Uid);
-            }
 
             return userCredential;
         }
@@ -85,20 +80,28 @@ namespace AmoraApp.Services
             var userCredential = await _client.SignInWithEmailAndPasswordAsync(email, password);
 
             if (userCredential?.User != null)
-            {
-                // salva UID para auto-login futuro
                 Preferences.Set(AuthUidKey, userCredential.User.Uid);
-            }
 
             return userCredential;
         }
 
         public void Logout()
         {
-            _client.SignOut();
-
-            // limpa o UID salvo (não auto-loga mais)
+            // remove o UID salvo sempre
             Preferences.Remove(AuthUidKey);
+
+            // SE não houver usuário, não chamar SignOut (pois dá NullReference)
+            if (_client?.User == null)
+                return;
+
+            try
+            {
+                _client.SignOut();
+            }
+            catch
+            {
+                // Se der erro, ignoramos — o logout externo já foi feito
+            }
         }
     }
 }

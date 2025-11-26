@@ -31,7 +31,6 @@ namespace AmoraApp.Views
             base.OnAppearing();
 
             await _vm.LoadAsync();
-            // Atualiza localização atual (GPS / IP / debug-SP)
             await _vm.UpdateLocationAsync();
         }
 
@@ -41,7 +40,6 @@ namespace AmoraApp.Views
                 await Navigation.PopAsync();
         }
 
-        // Tap no fundo da página → tira foco e fecha dropdowns
         private void OnRootTapped(object sender, EventArgs e)
         {
             if (CityEntry.IsFocused)
@@ -53,8 +51,6 @@ namespace AmoraApp.Views
             _vm.JobSuggestions.Clear();
             _vm.IsJobSuggestionsVisible = false;
         }
-
-        // ======== PROFISSÃO / AUTOCOMPLETE ========
 
         private void JobEntry_Focused(object sender, FocusEventArgs e)
         {
@@ -84,8 +80,6 @@ namespace AmoraApp.Views
                     cv.SelectedItem = null;
             }
         }
-
-        // ======== FOTO PRINCIPAL ========
 
         private async void OnChangePhotoClicked(object sender, EventArgs e)
         {
@@ -130,8 +124,6 @@ namespace AmoraApp.Views
                 }
             }
         }
-
-        // ======== FOTOS EXTRAS (30 slots) ========
 
         private async void OnExtraPhotoSlotTapped(object sender, TappedEventArgs e)
         {
@@ -241,8 +233,6 @@ namespace AmoraApp.Views
             }
         }
 
-        // ======== VÍDEOS (20 slots) ========
-
         private async void OnVideoSlotTapped(object sender, TappedEventArgs e)
         {
             if (e.Parameter is not VideoSlot slot)
@@ -327,8 +317,6 @@ namespace AmoraApp.Views
             }
         }
 
-        // ======== SALVAR ========
-
         private async void OnSaveClicked(object sender, EventArgs e)
         {
             await _vm.SaveAsync();
@@ -338,8 +326,6 @@ namespace AmoraApp.Views
             else
                 await DisplayAlert("Erro", _vm.ErrorMessage, "OK");
         }
-
-        // ======== HELPERS UPLOAD (IMAGEM) ========
 
         private async Task<string?> PickFromGalleryAndUploadAsync(string fileName)
         {
@@ -390,8 +376,6 @@ namespace AmoraApp.Views
             }
         }
 
-        // ======== HELPERS UPLOAD (VÍDEO) ========
-
         private async Task<string?> PickVideoFromGalleryAndUploadAsync(string fileName)
         {
             try
@@ -406,7 +390,6 @@ namespace AmoraApp.Views
                     return null;
 
                 using var stream = await result.OpenReadAsync();
-                // Reutilizando o mesmo serviço (nome "Image" mas aceita stream)
                 var url = await FirebaseStorageService.Instance.UploadImageAsync(stream, fileName);
                 return url;
             }
@@ -415,6 +398,23 @@ namespace AmoraApp.Views
                 await DisplayAlert("Erro ao selecionar/enviar vídeo", ex.Message, "OK");
                 return null;
             }
+        }
+
+        private async void OnLogoutClicked(object sender, EventArgs e)
+        {
+            var confirm = await DisplayAlert(
+                "Sair",
+                "Tem certeza que deseja sair da sua conta?",
+                "Sair",
+                "Cancelar");
+
+            if (!confirm)
+                return;
+
+            FirebaseAuthService.Instance.Logout();
+
+            Application.Current.MainPage =
+                new NavigationPage(new LoginPage(new AuthViewModel()));
         }
     }
 }

@@ -3,119 +3,202 @@
     x:Class="AmoraApp.Views.LoginPage"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    BackgroundColor="#FFF5F9"
-    Shell.NavBarIsVisible="False">
+    BackgroundColor="#fcfcfc"
+    Shell.NavBarIsVisible="False"
+    Shell.BackgroundColor="#fcfcfc">
 
-    <Grid RowDefinitions="Auto,*" Padding="24,40,24,24">
+    <Grid RowDefinitions="Auto,*"
+          Padding="20,0,20,8">
 
         <!-- HEADER -->
-        <VerticalStackLayout Grid.Row="0" Spacing="6">
+        <VerticalStackLayout Grid.Row="0"
+                             Spacing="4"
+                             Margin="0,6,0,6"
+                             HorizontalOptions="Center">
+
+            <Image
+                Source="logo.png"
+                HeightRequest="150"
+                WidthRequest="150"
+                HorizontalOptions="Center" />
+
             <Label
-                Text="Welcome to AmoraApp"
-                FontSize="24"
+                Text="Encontros que florescem em amor"
+                FontSize="18"
                 FontAttributes="Bold"
-                TextColor="#262626" />
+                TextColor="#5d259c"
+                HorizontalTextAlignment="Center"
+                Margin="0,-4,0,0" />
+
             <Label
-                Text="Login to continue finding matches."
-                FontSize="14"
-                TextColor="#777777" />
+                Text="Entre para continuar encontrando matches."
+                FontSize="13"
+                TextColor="#777777"
+                HorizontalTextAlignment="Center" />
         </VerticalStackLayout>
 
-        <!-- FORM -->
+        <!-- FORMULÁRIO -->
         <ScrollView Grid.Row="1">
-            <VerticalStackLayout Spacing="18">
+            <VerticalStackLayout Spacing="8">
 
+                <!-- CARD COM CAMPOS -->
                 <Frame
                     CornerRadius="18"
-                    Padding="18"
+                    Padding="12"
                     BackgroundColor="White"
                     HasShadow="True">
-                    <VerticalStackLayout Spacing="12">
 
-                        <Label Text="Email Address" TextColor="#555" FontSize="13" />
+                    <VerticalStackLayout Spacing="4">
+
+                        <Label Text="E-mail"
+                               TextColor="#555"
+                               FontSize="12" />
+
                         <Entry
-                            Placeholder="your@email.com"
+                            Placeholder="seu@email.com"
                             Text="{Binding Email}"
                             Keyboard="Email"
                             TextColor="#222"
-                            PlaceholderColor="#BBBBBB" />
+                            PlaceholderColor="#BBBBBB"
+                            HeightRequest="40" />
 
-                        <Label Text="Password" TextColor="#555" FontSize="13" />
+                        <Label Text="Senha"
+                               TextColor="#555"
+                               FontSize="12"
+                               Margin="0,2,0,0" />
+
                         <Entry
                             Placeholder="••••••••"
                             Text="{Binding Password}"
                             IsPassword="True"
                             TextColor="#222"
-                            PlaceholderColor="#BBBBBB" />
+                            PlaceholderColor="#BBBBBB"
+                            HeightRequest="40" />
 
-                        <Label
-                            Text="{Binding ErrorMessage}"
-                            TextColor="Red"
-                            FontSize="12" />
+                        <!-- BLOCO DE ERRO: só aparece quando HasError = true -->
+                        <Border
+                            Padding="6"
+                            Margin="0,4,0,0"
+                            BackgroundColor="#FFF5F5"
+                            Stroke="#F5C2C0"
+                            StrokeThickness="1"
+                            IsVisible="{Binding HasError}">
+
+                            <HorizontalStackLayout Spacing="6">
+                                <Label
+                                    Text="⚠"
+                                    FontSize="13"
+                                    TextColor="#D92D20"
+                                    VerticalOptions="Center" />
+                                <Label
+                                    Text="{Binding ErrorMessage}"
+                                    FontSize="12"
+                                    TextColor="#D92D20"
+                                    VerticalOptions="Center" />
+                            </HorizontalStackLayout>
+                        </Border>
 
                         <ActivityIndicator
                             IsRunning="{Binding IsBusy}"
                             IsVisible="{Binding IsBusy}"
-                            Color="#FF4E8A" />
-
-                        <Button
-                            Text="Login"
-                            Command="{Binding LoginCommand}"
-                            CornerRadius="22"
-                            HeightRequest="48"
-                            TextColor="White"
-                            Margin="0,8,0,0">
-                            <Button.Background>
-                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
-                                    <GradientStop Color="#FF4E8A" Offset="0.0" />
-                                    <GradientStop Color="#FF74A8" Offset="1.0" />
-                                </LinearGradientBrush>
-                            </Button.Background>
-                        </Button>
+                            Color="#5d259c"
+                            Margin="0,2,0,0" />
                     </VerticalStackLayout>
                 </Frame>
 
-                <Button
-                    Text="Create new account"
-                    Command="{Binding RegisterCommand}"
-                    BackgroundColor="Transparent"
-                    TextColor="#FF4E8A" />
+                <!-- BOTÕES ALINHADOS (MESMA LARGURA) -->
+                <VerticalStackLayout Spacing="6">
 
-                <!-- Login social fake por enquanto -->
-                <VerticalStackLayout Spacing="8">
+                    <Button
+                        Text="Entrar"
+                        Command="{Binding LoginCommand}"
+                        CornerRadius="22"
+                        HeightRequest="44"
+                        TextColor="White"
+                        Margin="0,0,0,0"
+                        HorizontalOptions="FillAndExpand">
+                        <Button.Background>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                <GradientStop Color="#5d259c" Offset="0.0" />
+                                <GradientStop Color="#5d25c0" Offset="1.0" />
+                            </LinearGradientBrush>
+                        </Button.Background>
+                    </Button>
+
+                    <Button
+                        Text="Criar nova conta"
+                        Command="{Binding GoToRegisterCommand}"
+                        BackgroundColor="Transparent"
+                        TextColor="#5d259c"
+                        HeightRequest="44"
+                        CornerRadius="22"
+                        BorderColor="#5d259c"
+                        BorderWidth="1"
+                        Margin="0,0,0,0"
+                        HorizontalOptions="FillAndExpand" />
+                </VerticalStackLayout>
+
+                <!-- SOCIAL LOGIN -->
+                <VerticalStackLayout Spacing="2"
+                                     Margin="0,2,0,4">
                     <Label
-                        Text="Or continue with"
+                        Text="Ou continue com"
                         HorizontalOptions="Center"
                         TextColor="#777"
                         FontSize="13" />
 
-                    <HorizontalStackLayout Spacing="12" HorizontalOptions="Center">
+                    <HorizontalStackLayout Spacing="12"
+                                           HorizontalOptions="Center">
+
                         <Frame
-                            WidthRequest="44"
-                            HeightRequest="44"
-                            CornerRadius="22"
-                            BackgroundColor="White"
-                            HasShadow="True">
-                            <Label
-                                Text="G"
-                                FontSize="20"
-                                HorizontalOptions="Center"
-                                VerticalOptions="Center" />
+                            WidthRequest="50"
+                            HeightRequest="50"
+                            CornerRadius="25"
+                            BackgroundColor="#eeeeee"
+                            HasShadow="True"
+                            Padding="0">
+                            <Grid HorizontalOptions="Center"
+                                  VerticalOptions="Center">
+                                <Image
+                                    Source="google.png"
+                                    WidthRequest="24"
+                                    HeightRequest="24"
+                                    HorizontalOptions="Center"
+                                    VerticalOptions="Center"
+                                    Aspect="AspectFit">
+                                    <Image.GestureRecognizers>
+                                        <TapGestureRecognizer Command="{Binding LoginWithGoogleCommand}" />
+                                    </Image.GestureRecognizers>
+                                </Image>
+                            </Grid>
                         </Frame>
+
                         <Frame
-                            WidthRequest="44"
-                            HeightRequest="44"
-                            CornerRadius="22"
-                            BackgroundColor="White"
-                            HasShadow="True">
-                            <Label
-                                Text=""
-                                FontSize="18"
-                                HorizontalOptions="Center"
-                                VerticalOptions="Center" />
+                            WidthRequest="50"
+                            HeightRequest="50"
+                            CornerRadius="25"
+                            BackgroundColor="#eeeeee"
+                            HasShadow="True"
+                            Padding="0">
+                            <Grid HorizontalOptions="Center"
+                                  VerticalOptions="Center">
+                                <Image
+                                    Source="apple.png"
+                                    WidthRequest="24"
+                                    HeightRequest="24"
+                                    HorizontalOptions="Center"
+                                    VerticalOptions="Center"
+                                    Aspect="AspectFit">
+                                    <Image.GestureRecognizers>
+                                        <TapGestureRecognizer Command="{Binding LoginWithAppleCommand}" />
+                                    </Image.GestureRecognizers>
+                                </Image>
+                            </Grid>
                         </Frame>
+
                     </HorizontalStackLayout>
                 </VerticalStackLayout>
+
             </VerticalStackLayout>
         </ScrollView>
     </Grid>
