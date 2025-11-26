@@ -2,8 +2,10 @@
 using AmoraApp.Services;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Storage;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace AmoraApp.Views
@@ -158,7 +160,76 @@ namespace AmoraApp.Views
             await SendCurrentMessageAsync();
         }
 
-        // ===== ENVIO DE MENSAGEM =====
+        // Novo: clique no botão de imagem
+        private async void OnAttachImageClicked(object sender, EventArgs e)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(CurrentUserId))
+                {
+                    await DisplayAlert("Erro",
+                        "Usuário atual não identificado. Faça login novamente.",
+                        "OK");
+                    return;
+                }
+
+                if (string.IsNullOrWhiteSpace(OtherUserId))
+                {
+                    await DisplayAlert("Erro",
+                        "Contato inválido para esta conversa.",
+                        "OK");
+                    return;
+                }
+
+                if (string.IsNullOrWhiteSpace(_chatId))
+                {
+                    _chatId = await ChatService.Instance.GetOrCreateChatAsync(CurrentUserId, OtherUserId);
+                    Console.WriteLine($"[ChatPage] ChatId criado no envio de imagem: '{_chatId}'");
+                }
+
+                var pickResult = await FilePicker.Default.PickAsync(new PickOptions
+                {
+                    PickerTitle = "Selecione uma imagem",
+                    FileTypes = FilePickerFileType.Images
+                });
+
+                if (pickResult == null)
+                    return;
+
+                using var stream = await pickResult.OpenReadAsync();
+                using var ms = new MemoryStream();
+                await stream.CopyToAsync(ms);
+                var bytes = ms.ToArray();
+                var base64 = Convert.ToBase64String(bytes);
+
+                var msg = new ChatMessage
+                {
+                    ChatId = _chatId,
+                    SenderId = CurrentUserId,
+                    Text = string.Empty,          // preview é tratado no ChatService
+                    ImageBase64 = base64,
+                    CreatedAt = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
+                    ReadBy = new Dictionary<string, bool>
+                    {
+                        [CurrentUserId] = true
+                    }
+                };
+
+                await ChatService.Instance.SendMessageAsync(_chatId, msg);
+
+                AddBubble(msg);
+                ScrollToBottom();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ChatPage] Erro ao anexar imagem: {ex}");
+                await DisplayAlert("Erro",
+                    "Não foi possível enviar a imagem.",
+                    "OK");
+            }
+        }
+
+        // ===== ENVIO DE MENSAGEM DE TEXTO =====
 
         private async Task SendCurrentMessageAsync()
         {
@@ -251,6 +322,41 @@ namespace AmoraApp.Views
         {
             bool isMine = msg.SenderId == CurrentUserId;
 
+            var layout = new VerticalStackLayout
+            {
+                Spacing = 4
+            };
+
+            if (!string.IsNullOrWhiteSpace(msg.Text))
+            {
+                layout.Children.Add(new Label
+                {
+                    Text = msg.Text,
+                    TextColor = isMine ? Colors.White : Color.FromArgb("#262626")
+                });
+            }
+
+            if (!string.IsNullOrWhiteSpace(msg.ImageBase64))
+            {
+                try
+                {
+                    var bytes = Convert.FromBase64String(msg.ImageBase64);
+                    var imgSource = ImageSource.FromStream(() => new MemoryStream(bytes));
+
+                    layout.Children.Add(new Image
+                    {
+                        Source = imgSource,
+                        Aspect = Aspect.AspectFill,
+                        HeightRequest = 180,
+                        WidthRequest = 220
+                    });
+                }
+                catch
+                {
+                    // se der erro ao decodificar, ignora a imagem
+                }
+            }
+
             var bubble = new Frame
             {
                 BackgroundColor = isMine ? Color.FromArgb("#FF4E8A") : Colors.White,
@@ -258,16 +364,10 @@ namespace AmoraApp.Views
                 Padding = new Thickness(10),
                 HorizontalOptions = isMine ? LayoutOptions.End : LayoutOptions.Start,
                 MaximumWidthRequest = 260,
-                HasShadow = false
+                HasShadow = false,
+                Content = layout
             };
 
-            var textLabel = new Label
-            {
-                Text = msg.Text,
-                TextColor = isMine ? Colors.White : Color.FromArgb("#262626")
-            };
-
-            bubble.Content = textLabel;
             MessagesStack.Children.Add(bubble);
         }
 
@@ -284,6 +384,40 @@ namespace AmoraApp.Views
                     // ignora erro de scroll
                 }
             });
+        }
+
+        // ===== CHAMADA EM TEMPO REAL (Jitsi) =====
+
+        private async void OnCallTapped(object sender, EventArgs e)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(CurrentUserId) || string.IsNullOrWhiteSpace(OtherUserId))
+                {
+                    await DisplayAlert("Erro",
+                        "Usuário ou contato inválido para iniciar chamada.",
+                        "OK");
+                    return;
+                }
+
+                if (string.IsNullOrWhiteSpace(_chatId))
+                {
+                    _chatId = await ChatService.Instance.GetOrCreateChatAsync(CurrentUserId, OtherUserId);
+                }
+
+                // Usa Jitsi Meet (gratuito) com uma sala baseada no chatId
+                var roomName = $"amoraapp-{_chatId}";
+                var callUrl = $"https://meet.jit.si/{Uri.EscapeDataString(roomName)}";
+
+                await Launcher.OpenAsync(callUrl);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ChatPage] Erro ao iniciar chamada: {ex}");
+                await DisplayAlert("Erro",
+                    "Não foi possível iniciar a chamada.",
+                    "OK");
+            }
         }
     }
 }

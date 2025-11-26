@@ -125,6 +125,7 @@ namespace AmoraApp.Views
 
                 if (!string.IsNullOrEmpty(url) && BindingContext is FeedViewModel vm)
                 {
+                    // Ao setar aqui, o preview aparece no card de novo post
                     vm.NewPostImageUrl = url;
                 }
             }

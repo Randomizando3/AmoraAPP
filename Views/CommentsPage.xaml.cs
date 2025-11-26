@@ -29,6 +29,8 @@ namespace AmoraApp.Views
             var list = await FirebaseDatabaseService.Instance.GetCommentsAsync(_post.Id);
 
             Comments.Clear();
+            if (list == null) return;
+
             foreach (var c in list)
                 Comments.Add(c);
         }
@@ -39,20 +41,32 @@ namespace AmoraApp.Views
             if (string.IsNullOrWhiteSpace(text))
                 return;
 
-            var user = FirebaseAuthService.Instance.GetCurrentUser();
-            if (user == null)
+            var auth = FirebaseAuthService.Instance;
+
+            // tenta pegar UID de forma resiliente
+            var uid = auth.CurrentUserUid;
+            var user = auth.GetCurrentUser();
+            if (string.IsNullOrEmpty(uid) && user != null)
+                uid = user.Uid;
+
+            if (string.IsNullOrEmpty(uid))
             {
                 await DisplayAlert("Erro", "Usuário não logado.", "OK");
                 return;
             }
 
-            var profile = await FirebaseDatabaseService.Instance.GetUserProfileAsync(user.Uid);
-            var name = profile?.DisplayName ?? user.Info.DisplayName ?? user.Info.Email;
+            var profile = await FirebaseDatabaseService.Instance.GetUserProfileAsync(uid);
+
+            var name =
+                profile?.DisplayName ??
+                user?.Info?.DisplayName ??
+                user?.Info?.Email ??
+                "Usuário";
 
             var comment = new Comment
             {
                 PostId = _post.Id,
-                UserId = user.Uid,
+                UserId = uid,
                 UserName = name,
                 Text = text
             };

@@ -3,15 +3,42 @@
     x:Class="AmoraApp.Views.MessagesPage"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    Title="Messages">
+    BackgroundColor="#F1F2F6"
+    Title="Mensagens"
+    Shell.NavBarIsVisible="False">
 
-    <VerticalStackLayout Padding="20" Spacing="12">
-        <Label
-            Text="Messages (demo)"
-            FontSize="20"
-            FontAttributes="Bold" />
-        <Label
-            Text="Aqui vamos montar a lista de conversas e o chat."
-            LineBreakMode="WordWrap" />
-    </VerticalStackLayout>
+    <Grid Padding="16,32,16,16" RowDefinitions="Auto,*">
+
+        <!-- Cabeçalho -->
+        <Grid Grid.Row="0" ColumnDefinitions="Auto,*" VerticalOptions="Center">
+            <Label
+                Text="Mensagens"
+                FontSize="22"
+                FontAttributes="Bold"
+                TextColor="#262626"
+                VerticalOptions="Center" />
+        </Grid>
+
+        <!-- Card explicativo -->
+        <Frame
+            Grid.Row="1"
+            Margin="0,16,0,0"
+            CornerRadius="8"
+            HasShadow="True"
+            BackgroundColor="White"
+            Padding="16">
+
+            <VerticalStackLayout Spacing="8">
+                <Label
+                    Text="Aqui você vê suas conversas, matches e amigos."
+                    FontSize="14"
+                    TextColor="#444" />
+
+                <Label
+                    Text="Use a aba de conversas para abrir um chat ou iniciar uma nova conversa a partir dos seus matches e amigos."
+                    FontSize="13"
+                    TextColor="#777" />
+            </VerticalStackLayout>
+        </Frame>
+    </Grid>
 </ContentPage>

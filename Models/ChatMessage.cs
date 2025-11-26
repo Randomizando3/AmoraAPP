@@ -15,6 +15,9 @@ namespace AmoraApp.Models
 
         public string Text { get; set; } = string.Empty;
 
+        // Imagem opcional (base64)
+        public string? ImageBase64 { get; set; } = null;
+
         // Unix timestamp em milissegundos
         public long CreatedAt { get; set; }
 
@@ -22,7 +25,6 @@ namespace AmoraApp.Models
         public bool IsRead { get; set; } = false;
 
         // Mapa de quem já leu a mensagem (para double-check)
-        // key = userId, value = true (já leu)
         public Dictionary<string, bool>? ReadBy { get; set; }
     }
 }

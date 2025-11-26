@@ -159,7 +159,10 @@ namespace AmoraApp.Services
             if (string.IsNullOrWhiteSpace(chatId))
                 throw new ArgumentException("chatId é obrigatório.");
 
-            if (message == null || string.IsNullOrWhiteSpace(message.SenderId) || string.IsNullOrWhiteSpace(message.Text))
+            // Agora aceita: texto OU imagem
+            if (message == null
+                || string.IsNullOrWhiteSpace(message.SenderId)
+                || (string.IsNullOrWhiteSpace(message.Text) && string.IsNullOrWhiteSpace(message.ImageBase64)))
                 throw new ArgumentException("Mensagem inválida.");
 
             message.ChatId = chatId;
@@ -184,18 +187,23 @@ namespace AmoraApp.Services
             var pushResult = JsonSerializer.Deserialize<FirebasePushResult>(resultJson, _jsonOptions);
             var newId = pushResult?.Name ?? string.Empty;
 
+            // Texto de preview para lista (se não tiver texto, usa marcador de imagem)
+            var lastPreview = !string.IsNullOrWhiteSpace(message.Text)
+                ? message.Text
+                : (!string.IsNullOrWhiteSpace(message.ImageBase64) ? "[Imagem]" : string.Empty);
+
             // Atualiza header com última mensagem
             var headerUrl = $"{BaseUrl}/chats/{chatId}.json";
             var patch = new
             {
-                lastMessageText = message.Text,
+                lastMessageText = lastPreview,
                 lastMessageAt = message.CreatedAt
             };
             var patchJson = JsonSerializer.Serialize(patch, _jsonOptions);
             var patchContent = new StringContent(patchJson, Encoding.UTF8, "application/json");
             await _httpClient.PatchAsync(headerUrl, patchContent);
 
-            // Atualiza unread count (chatMeta)
+            // ==== unread count (igual estava) ====
             var header = await GetChatHeaderAsync(chatId);
             if (header != null && !string.IsNullOrWhiteSpace(message.SenderId))
             {
@@ -223,6 +231,7 @@ namespace AmoraApp.Services
                 }
             }
         }
+
 
         /// <summary>
         /// Marca mensagens como lidas (readBy[userId] = true) e zera unreadCount para esse usuário.

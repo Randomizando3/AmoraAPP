@@ -104,9 +104,22 @@ namespace AmoraApp.ViewModels
                         post.UserPhotoUrl = p?.PhotoUrl ?? string.Empty;
                     }
 
-                    // Atualiza likes baseado em /postLikes
-                    var (likes, _) = await _dbService.GetPostLikesAsync(post.Id, meId);
+                    // Atualiza likes baseado em /postLikes e se eu já dei like
+                    var (likes, likedByMe) = await _dbService.GetPostLikesAsync(post.Id, meId);
                     post.Likes = likes;
+                    post.LikedByMe = likedByMe;
+
+                    // Carrega 1 ou 2 comentários mais recentes para preview
+                    var comments = await _dbService.GetCommentsAsync(post.Id);
+                    if (comments != null)
+                    {
+                        var list = new List<Comment>(comments);
+                        list.Sort((a, b) => a.CreatedAt.CompareTo(b.CreatedAt));
+                        if (list.Count > 2)
+                            list = list.GetRange(list.Count - 2, 2);
+
+                        post.RecentComments = list;
+                    }
 
                     Posts.Add(post);
                 }
@@ -157,7 +170,7 @@ namespace AmoraApp.ViewModels
 
                 var friendStories = await StoryService.Instance.GetStoriesAsync(friendId);
 
-                // 👉 se o amigo não tem story, NÃO mostra a bolha
+                // se o amigo não tem story, não mostra a bolha
                 if (friendStories == null || friendStories.Count == 0)
                     continue;
 
@@ -220,7 +233,7 @@ namespace AmoraApp.ViewModels
                 NewPostText = string.Empty;
                 NewPostImageUrl = string.Empty;
 
-                // recarrega feed (pra já aparecer com avatar)
+                // recarrega feed (pra já aparecer com avatar, likes, comentários, etc.)
                 await LoadFeedAsync();
             }
             catch (Exception ex)
@@ -230,6 +243,43 @@ namespace AmoraApp.ViewModels
             finally
             {
                 IsBusy = false;
+            }
+        }
+
+        // ============================
+        // LIKE EM POST (toggle só no item, sem reload geral)
+        // ============================
+
+        [RelayCommand]
+        private async Task LikePostAsync(Post post)
+        {
+            if (post == null) return;
+
+            // tenta obter UID de forma resiliente
+            var uid = _authService.CurrentUserUid;
+            var user = _authService.GetCurrentUser();
+            if (string.IsNullOrEmpty(uid) && user != null)
+                uid = user.Uid;
+
+            if (string.IsNullOrEmpty(uid))
+            {
+                ErrorMessage = "Usuário não logado.";
+                return;
+            }
+
+            try
+            {
+                // alterna like no backend
+                await _dbService.TogglePostLikeAsync(post.Id, uid);
+
+                // lê só os dados atuais de like desse post
+                var (likes, likedByMe) = await _dbService.GetPostLikesAsync(post.Id, uid);
+                post.Likes = likes;
+                post.LikedByMe = likedByMe;
+            }
+            catch (Exception ex)
+            {
+                ErrorMessage = ex.Message;
             }
         }
 

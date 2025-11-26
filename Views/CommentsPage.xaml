@@ -3,84 +3,119 @@
     x:Class="AmoraApp.Views.CommentsPage"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    BackgroundColor="#FFF5F9"
+    BackgroundColor="#F1F2F6"
     NavigationPage.HasNavigationBar="False">
 
     <Grid RowDefinitions="Auto,*,Auto"
           Padding="16,32,16,16">
 
         <!-- HEADER -->
-        <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto">
-            <Label Text="⟵"
-                   FontSize="22"
-                   VerticalOptions="Center">
-                <Label.GestureRecognizers>
-                    <TapGestureRecognizer Tapped="OnCloseTapped" />
-                </Label.GestureRecognizers>
-            </Label>
+        <Grid Grid.Row="0"
+              ColumnDefinitions="Auto,*"
+              Padding="0,0,0,8"
+              VerticalOptions="Center">
 
-            <Label Grid.Column="1"
-                   Text="Comentários"
-                   FontSize="20"
-                   FontAttributes="Bold"
-                   HorizontalTextAlignment="Center"
-                   VerticalTextAlignment="Center"
-                   TextColor="#262626" />
+            <!-- Botão voltar -->
+            <Frame
+                WidthRequest="32"
+                HeightRequest="32"
+                CornerRadius="16"
+                BackgroundColor="White"
+                HasShadow="True"
+                Padding="6"
+                HorizontalOptions="Start"
+                VerticalOptions="Center">
+                <Frame.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnCloseTapped" />
+                </Frame.GestureRecognizers>
+
+                <Image
+                    Source="back.png"
+                    Aspect="AspectFit"
+                    HorizontalOptions="Center"
+                    VerticalOptions="Center" />
+            </Frame>
+
+            <!-- Título -->
+            <Label
+                Grid.Column="1"
+                Text="Comentários"
+                FontSize="20"
+                FontAttributes="Bold"
+                HorizontalTextAlignment="Center"
+                VerticalTextAlignment="Center"
+                TextColor="#262626"
+                Margin="8,0,0,0" />
         </Grid>
 
-        <!-- LISTA DE COMENTÁRIOS -->
-        <CollectionView
-            Grid.Row="1"
-            x:Name="CommentsList"
-            ItemsSource="{Binding Comments}"
-            Margin="0,12,0,12">
-            <CollectionView.ItemTemplate>
-                <DataTemplate>
-                    <Grid RowDefinitions="Auto,Auto"
-                          Margin="0,0,0,12">
-                        <Label
-                            Grid.Row="0"
-                            Text="{Binding UserName}"
-                            FontAttributes="Bold"
-                            FontSize="13"
-                            TextColor="#262626" />
-                        <Label
-                            Grid.Row="1"
-                            Text="{Binding Text}"
-                            FontSize="13"
-                            TextColor="#444444" />
-                    </Grid>
-                </DataTemplate>
-            </CollectionView.ItemTemplate>
-        </CollectionView>
+        <!-- LISTA DE COMENTÁRIOS (dentro de um card branco) -->
+        <Frame Grid.Row="1"
+               CornerRadius="8"
+               BackgroundColor="White"
+               HasShadow="True"
+               Padding="12"
+               Margin="0,8,0,8">
+
+            <CollectionView
+                x:Name="CommentsList"
+                ItemsSource="{Binding Comments}"
+                Margin="0"
+                SelectionMode="None">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Grid RowDefinitions="Auto,Auto"
+                              Margin="0,0,0,12">
+
+                            <Label
+                                Grid.Row="0"
+                                Text="{Binding UserName}"
+                                FontAttributes="Bold"
+                                FontSize="14"
+                                TextColor="#262626" />
+
+                            <Label
+                                Grid.Row="1"
+                                Text="{Binding Text}"
+                                FontSize="13"
+                                TextColor="#444444" />
+                        </Grid>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </Frame>
 
         <!-- CAIXA DE NOVO COMENTÁRIO -->
         <Grid Grid.Row="2"
               ColumnDefinitions="*,Auto"
               ColumnSpacing="8">
 
-            <!-- “Pílula” branca com Entry dentro -->
+            <!-- Campo de texto em “pílula” -->
             <Frame Grid.Column="0"
                    BackgroundColor="White"
                    CornerRadius="22"
-                   HasShadow="False"
-                   Padding="16,0">
+                   HasShadow="True"
+                   Padding="16,0"
+                   HeightRequest="44">
                 <Entry
                     x:Name="CommentEntry"
                     Placeholder="Escreva um comentário..."
                     BackgroundColor="Transparent"
-                    HeightRequest="44" />
+                    HeightRequest="44"
+                    FontSize="14"
+                    TextColor="#333333" />
             </Frame>
 
+            <!-- Botão Enviar -->
             <Button
                 Grid.Column="1"
                 Text="Enviar"
                 Clicked="OnSendClicked"
-                BackgroundColor="#FF4E8A"
+                BackgroundColor="#5d259c"
                 TextColor="White"
-                CornerRadius="22"
+                CornerRadius="8"
                 HeightRequest="44"
-                Padding="16,0" />
+                Padding="18,0"
+                FontAttributes="Bold" />
         </Grid>
     </Grid>
 </ContentPage>

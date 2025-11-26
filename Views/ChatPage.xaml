@@ -3,24 +3,36 @@
     x:Class="AmoraApp.Views.ChatPage"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    BackgroundColor="#FFF5F9"
+    BackgroundColor="#F1F2F6"
     Shell.NavBarIsVisible="False">
 
     <Grid RowDefinitions="Auto,*,Auto" Padding="12,32,12,12">
 
         <!-- HEADER -->
-        <Grid Grid.Row="0" ColumnDefinitions="Auto,*" Padding="4" VerticalOptions="Center">
+        <Grid Grid.Row="0"
+              ColumnDefinitions="Auto,*,Auto"
+              Padding="4"
+              VerticalOptions="Center">
+
+            <!-- Avatar -->
             <Frame
                 WidthRequest="40"
                 HeightRequest="40"
                 CornerRadius="20"
-                BackgroundColor="White">
+                BackgroundColor="White"
+                HasShadow="True"
+                Padding="0">
                 <Label
                     Text="😊"
                     HorizontalOptions="Center"
                     VerticalOptions="Center" />
             </Frame>
-            <StackLayout Grid.Column="1" Margin="8,0">
+
+            <!-- Nome + status -->
+            <StackLayout Grid.Column="1"
+                         Margin="8,0"
+                         VerticalOptions="Center"
+                         Spacing="2">
                 <Label
                     x:Name="UserNameLabel"
                     Text="Contato"
@@ -32,12 +44,38 @@
                     FontSize="12"
                     TextColor="#FF4E8A" />
             </StackLayout>
+
+            <!-- Botão de chamada em tempo real -->
+            <Frame
+                Grid.Column="2"
+                WidthRequest="36"
+                HeightRequest="36"
+                CornerRadius="18"
+                Padding="0"
+                HasShadow="True">
+                <Frame.Background>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                        <GradientStop Color="#FF4E8A" Offset="0.0" />
+                        <GradientStop Color="#FF74A8" Offset="1.0" />
+                    </LinearGradientBrush>
+                </Frame.Background>
+                <Frame.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnCallTapped" />
+                </Frame.GestureRecognizers>
+                <Label
+                    Text="📞"
+                    TextColor="White"
+                    FontSize="16"
+                    HorizontalOptions="Center"
+                    VerticalOptions="Center" />
+            </Frame>
         </Grid>
 
         <!-- MENSAGENS -->
         <ScrollView
             x:Name="MessagesScroll"
-            Grid.Row="1">
+            Grid.Row="1"
+            Margin="0,12,0,8">
             <VerticalStackLayout
                 x:Name="MessagesStack"
                 Spacing="8" />
@@ -47,17 +85,23 @@
         <Grid
             Grid.Row="2"
             ColumnDefinitions="Auto,*,Auto"
-            Padding="4,8,4,0">
+            Padding="4,4,4,0">
 
-            <!-- Botão de anexar (+) -->
+            <!-- Botão imagem (cam.png) -->
             <Frame
                 Grid.Column="0"
                 WidthRequest="32"
                 HeightRequest="32"
                 CornerRadius="16"
-                BackgroundColor="White">
-                <Label
-                    Text="+"
+                BackgroundColor="White"
+                HasShadow="True"
+                Padding="4">
+                <ImageButton
+                    Source="cam.png"
+                    BackgroundColor="Transparent"
+                    Clicked="OnAttachImageClicked"
+                    WidthRequest="24"
+                    HeightRequest="24"
                     HorizontalOptions="Center"
                     VerticalOptions="Center" />
             </Frame>
@@ -66,13 +110,18 @@
             <Frame
                 Grid.Column="1"
                 Margin="8,0"
-                CornerRadius="20"
-                BackgroundColor="White">
+                CornerRadius="8"
+                BackgroundColor="White"
+                HasShadow="True"
+                Padding="8,4">
                 <Entry
                     x:Name="MessageEntry"
                     Placeholder="Mensagem..."
                     Completed="OnEntryCompleted"
-                    BackgroundColor="Transparent" />
+                    BackgroundColor="Transparent"
+                    FontSize="14"
+                    HorizontalOptions="FillAndExpand"
+                    VerticalOptions="Center" />
             </Frame>
 
             <!-- Botão Enviar -->
@@ -80,7 +129,9 @@
                 Grid.Column="2"
                 WidthRequest="40"
                 HeightRequest="40"
-                CornerRadius="20">
+                CornerRadius="20"
+                HasShadow="True"
+                Padding="0">
                 <Frame.Background>
                     <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
                         <GradientStop Color="#FF4E8A" Offset="0.0" />
