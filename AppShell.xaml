@@ -13,8 +13,8 @@
             <Setter Property="Shell.TabBarBackgroundColor" Value="#FFFFFFFF" />
 
             <!-- Ícones / textos -->
-            <Setter Property="Shell.TabBarForegroundColor" Value="#FF4E8A" />
-            <Setter Property="Shell.TabBarTitleColor" Value="#FF4E8A" />
+            <Setter Property="Shell.TabBarForegroundColor" Value="#5d259c" />
+            <Setter Property="Shell.TabBarTitleColor" Value="#5d259c" />
             <Setter Property="Shell.TabBarUnselectedColor" Value="#999999" />
         </Style>
     </Shell.Resources>

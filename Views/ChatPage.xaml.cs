@@ -114,7 +114,7 @@ namespace AmoraApp.Views
                 if (isOnline)
                 {
                     StatusLabel.Text = "Online";
-                    StatusLabel.TextColor = Color.FromArgb("#FF4E8A");
+                    StatusLabel.TextColor = Color.FromArgb("#5d259c");
                 }
                 else
                 {
@@ -359,7 +359,7 @@ namespace AmoraApp.Views
 
             var bubble = new Frame
             {
-                BackgroundColor = isMine ? Color.FromArgb("#FF4E8A") : Colors.White,
+                BackgroundColor = isMine ? Color.FromArgb("#5d259c") : Colors.White,
                 CornerRadius = 16,
                 Padding = new Thickness(10),
                 HorizontalOptions = isMine ? LayoutOptions.End : LayoutOptions.Start,

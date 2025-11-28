@@ -43,7 +43,7 @@ namespace AmoraApp
                     w.OnWindowCreated(window =>
                     {
                         // Tamanho da janela estilo smartphone
-                        const int width = 360;
+                        const int width = 390;
                         const int height = 760;
 
                         try

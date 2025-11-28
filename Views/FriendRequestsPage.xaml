@@ -90,7 +90,7 @@
                                 Text="Aceitar"
                                 Padding="10,6"
                                 FontSize="12"
-                                BackgroundColor="#FF4E8A"
+                                BackgroundColor="#5d259c"
                                 TextColor="White"
                                 CornerRadius="16"
                                 Clicked="OnAcceptClicked" />

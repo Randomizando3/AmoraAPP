@@ -146,7 +146,7 @@
 
                                         <Label Text="{Binding OnlineText}"
                                                Margin="10,4"
-                                               TextColor="#FF4E8A"
+                                               TextColor="#5d259c"
                                                FontSize="11" />
                                     </Border>
 
@@ -192,7 +192,7 @@
                                                    HasShadow="False">
                                                 <Label Text="{Binding .}"
                                                        FontSize="11"
-                                                       TextColor="#FF4E8A" />
+                                                       TextColor="#5d259c" />
                                             </Frame>
                                         </DataTemplate>
                                     </BindableLayout.ItemTemplate>
@@ -328,7 +328,7 @@
                     <Grid.Background>
                         <LinearGradientBrush StartPoint="0,0"
                                              EndPoint="1,1">
-                            <GradientStop Color="#FF4E8A" Offset="0" />
+                            <GradientStop Color="#5d259c" Offset="0" />
                             <GradientStop Color="#FF9966" Offset="1" />
                         </LinearGradientBrush>
                     </Grid.Background>

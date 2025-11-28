@@ -80,7 +80,7 @@
                         <Frame HeightRequest="120"
                                WidthRequest="120"
                                CornerRadius="60"
-                               BorderColor="#FF4E8A"
+                               BorderColor="#5d259c"
                                BackgroundColor="#FFFFFF"
                                Padding="0">
 
@@ -95,7 +95,7 @@
                                 <!-- + quando não há foto -->
                                 <Label Text="+"
                                        FontSize="36"
-                                       TextColor="#FF4E8A"
+                                       TextColor="#5d259c"
                                        HorizontalOptions="Center"
                                        VerticalOptions="Center">
                                     <Label.Triggers>
@@ -261,8 +261,8 @@
                                                 TargetType="Frame"
                                                 Binding="{Binding IsSelected}"
                                                 Value="True">
-                                                <Setter Property="BackgroundColor" Value="#FF4E8A" />
-                                                <Setter Property="BorderColor" Value="#FF4E8A" />
+                                                <Setter Property="BackgroundColor" Value="#5d259c" />
+                                                <Setter Property="BorderColor" Value="#5d259c" />
                                             </DataTrigger>
                                         </Frame.Triggers>
 
@@ -374,8 +374,8 @@
                                                 TargetType="Frame"
                                                 Binding="{Binding IsSelected}"
                                                 Value="True">
-                                                <Setter Property="BackgroundColor" Value="#FF4E8A" />
-                                                <Setter Property="BorderColor" Value="#FF4E8A" />
+                                                <Setter Property="BackgroundColor" Value="#5d259c" />
+                                                <Setter Property="BorderColor" Value="#5d259c" />
                                             </DataTrigger>
                                         </Frame.Triggers>
 

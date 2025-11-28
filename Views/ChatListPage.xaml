@@ -62,7 +62,7 @@
                                     TargetType="Button"
                                     Binding="{Binding CurrentFilter}"
                                     Value="All">
-                                    <Setter Property="BackgroundColor" Value="#FF4E8A" />
+                                    <Setter Property="BackgroundColor" Value="#5d259c" />
                                     <Setter Property="TextColor" Value="White" />
                                 </DataTrigger>
                             </Button.Triggers>
@@ -83,7 +83,7 @@
                                     TargetType="Button"
                                     Binding="{Binding CurrentFilter}"
                                     Value="Matches">
-                                    <Setter Property="BackgroundColor" Value="#FF4E8A" />
+                                    <Setter Property="BackgroundColor" Value="#5d259c" />
                                     <Setter Property="TextColor" Value="White" />
                                 </DataTrigger>
                             </Button.Triggers>
@@ -104,7 +104,7 @@
                                     TargetType="Button"
                                     Binding="{Binding CurrentFilter}"
                                     Value="Friends">
-                                    <Setter Property="BackgroundColor" Value="#FF4E8A" />
+                                    <Setter Property="BackgroundColor" Value="#5d259c" />
                                     <Setter Property="TextColor" Value="White" />
                                 </DataTrigger>
                             </Button.Triggers>
@@ -125,7 +125,7 @@
                                     TargetType="Button"
                                     Binding="{Binding CurrentFilter}"
                                     Value="Favorites">
-                                    <Setter Property="BackgroundColor" Value="#FF4E8A" />
+                                    <Setter Property="BackgroundColor" Value="#5d259c" />
                                     <Setter Property="TextColor" Value="White" />
                                 </DataTrigger>
                             </Button.Triggers>
@@ -184,7 +184,7 @@
                                         WidthRequest="18"
                                         HeightRequest="18"
                                         CornerRadius="9"
-                                        BackgroundColor="#FF4E8A"
+                                        BackgroundColor="#5d259c"
                                         Padding="0"
                                         HorizontalOptions="End"
                                         VerticalOptions="End"
@@ -356,7 +356,7 @@
                                 WidthRequest="18"
                                 HeightRequest="18"
                                 CornerRadius="9"
-                                BackgroundColor="#FF4E8A"
+                                BackgroundColor="#5d259c"
                                 Padding="0"
                                 HorizontalOptions="End"
                                 VerticalOptions="End"
@@ -419,7 +419,7 @@
                                 Style="{StaticResource UnreadBadgeStyle}"
                                 Padding="4"
                                 CornerRadius="10"
-                                BackgroundColor="#FF4E8A">
+                                BackgroundColor="#5d259c">
                                 <Label
                                     Text="{Binding UnreadCount}"
                                     FontSize="10"

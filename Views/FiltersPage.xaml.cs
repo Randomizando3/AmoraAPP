@@ -102,7 +102,7 @@ namespace AmoraApp.Views
 
             GirlsButton.BackgroundColor =
                 _discoverVm.GenderFilter == "Girls"
-                    ? Color.FromHex("#FF4E8A")
+                    ? Color.FromHex("#5d259c")
                     : Color.FromHex("#F5F5F5");
             GirlsButton.TextColor =
                 _discoverVm.GenderFilter == "Girls"
@@ -111,7 +111,7 @@ namespace AmoraApp.Views
 
             BoysButton.BackgroundColor =
                 _discoverVm.GenderFilter == "Boys"
-                    ? Color.FromHex("#FF4E8A")
+                    ? Color.FromHex("#5d259c")
                     : Color.FromHex("#F5F5F5");
             BoysButton.TextColor =
                 _discoverVm.GenderFilter == "Boys"
@@ -120,7 +120,7 @@ namespace AmoraApp.Views
 
             BothButton.BackgroundColor =
                 _discoverVm.GenderFilter == "Both"
-                    ? Color.FromHex("#FF4E8A")
+                    ? Color.FromHex("#5d259c")
                     : Color.FromHex("#F5F5F5");
             BothButton.TextColor =
                 _discoverVm.GenderFilter == "Both"

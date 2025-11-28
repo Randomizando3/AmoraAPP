@@ -112,7 +112,7 @@
                                         </Border.StrokeShape>
                                         <Label Text="Online"
                                                Margin="10,4"
-                                               TextColor="#FF4E8A"
+                                               TextColor="#5d259c"
                                                FontSize="11" />
                                     </Border>
 
@@ -202,7 +202,7 @@
                                                 <Label
                                                     Text="{Binding .}"
                                                     FontSize="11"
-                                                    TextColor="#FF4E8A" />
+                                                    TextColor="#5d259c" />
                                             </Frame>
                                         </DataTemplate>
                                     </BindableLayout.ItemTemplate>
@@ -224,7 +224,7 @@
             WidthRequest="40"
             HeightRequest="40"
             CornerRadius="20"
-            BackgroundColor="#FF4E8A"
+            BackgroundColor="#5d259c"
             Padding="0"
             HasShadow="True"
             HorizontalOptions="End"

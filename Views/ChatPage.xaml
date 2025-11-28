@@ -42,7 +42,7 @@
                     x:Name="StatusLabel"
                     Text="Online"
                     FontSize="12"
-                    TextColor="#FF4E8A" />
+                    TextColor="#5d259c" />
             </StackLayout>
 
             <!-- Botão de chamada em tempo real -->
@@ -55,8 +55,8 @@
                 HasShadow="True">
                 <Frame.Background>
                     <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
-                        <GradientStop Color="#FF4E8A" Offset="0.0" />
-                        <GradientStop Color="#FF74A8" Offset="1.0" />
+                        <GradientStop Color="#5d259c" Offset="0.0" />
+                        <GradientStop Color="#5d25c0" Offset="1.0" />
                     </LinearGradientBrush>
                 </Frame.Background>
                 <Frame.GestureRecognizers>
@@ -134,8 +134,8 @@
                 Padding="0">
                 <Frame.Background>
                     <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
-                        <GradientStop Color="#FF4E8A" Offset="0.0" />
-                        <GradientStop Color="#FF74A8" Offset="1.0" />
+                        <GradientStop Color="#5d259c" Offset="0.0" />
+                        <GradientStop Color="#5d25c0" Offset="1.0" />
                     </LinearGradientBrush>
                 </Frame.Background>
                 <Frame.GestureRecognizers>

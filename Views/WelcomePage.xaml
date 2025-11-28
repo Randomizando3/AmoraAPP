@@ -55,8 +55,8 @@
                 TextColor="White">
                 <Button.Background>
                     <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
-                        <GradientStop Color="#FF4E8A" Offset="0.0" />
-                        <GradientStop Color="#FF74A8" Offset="1.0" />
+                        <GradientStop Color="#5d259c" Offset="0.0" />
+                        <GradientStop Color="#5d25c0" Offset="1.0" />
                     </LinearGradientBrush>
                 </Button.Background>
             </Button>
@@ -67,8 +67,8 @@
                 CornerRadius="22"
                 HeightRequest="48"
                 BackgroundColor="White"
-                TextColor="#FF4E8A"
-                BorderColor="#FF4E8A"
+                TextColor="#5d259c"
+                BorderColor="#5d259c"
                 BorderWidth="1" />
         </VerticalStackLayout>
     </Grid>

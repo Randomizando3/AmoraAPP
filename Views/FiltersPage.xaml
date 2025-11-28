@@ -177,8 +177,8 @@
 
                                             <VisualState x:Name="Selected">
                                                 <VisualState.Setters>
-                                                    <Setter Property="BackgroundColor" Value="#FF4E8A" />
-                                                    <Setter Property="BorderColor" Value="#FF4E8A" />
+                                                    <Setter Property="BackgroundColor" Value="#5d259c" />
+                                                    <Setter Property="BorderColor" Value="#5d259c" />
                                                 </VisualState.Setters>
                                             </VisualState>
                                         </VisualStateGroup>
@@ -244,8 +244,8 @@
 
                                             <VisualState x:Name="Selected">
                                                 <VisualState.Setters>
-                                                    <Setter Property="BackgroundColor" Value="#FF4E8A" />
-                                                    <Setter Property="BorderColor" Value="#FF4E8A" />
+                                                    <Setter Property="BackgroundColor" Value="#5d259c" />
+                                                    <Setter Property="BorderColor" Value="#5d259c" />
                                                 </VisualState.Setters>
                                             </VisualState>
                                         </VisualStateGroup>
@@ -296,8 +296,8 @@
 
                                             <VisualState x:Name="Selected">
                                                 <VisualState.Setters>
-                                                    <Setter Property="BackgroundColor" Value="#FF4E8A" />
-                                                    <Setter Property="BorderColor" Value="#FF4E8A" />
+                                                    <Setter Property="BackgroundColor" Value="#5d259c" />
+                                                    <Setter Property="BorderColor" Value="#5d259c" />
                                                 </VisualState.Setters>
                                             </VisualState>
                                         </VisualStateGroup>
@@ -348,8 +348,8 @@
 
                                             <VisualState x:Name="Selected">
                                                 <VisualState.Setters>
-                                                    <Setter Property="BackgroundColor" Value="#FF4E8A" />
-                                                    <Setter Property="BorderColor" Value="#FF4E8A" />
+                                                    <Setter Property="BackgroundColor" Value="#5d259c" />
+                                                    <Setter Property="BorderColor" Value="#5d259c" />
                                                 </VisualState.Setters>
                                             </VisualState>
                                         </VisualStateGroup>
@@ -383,7 +383,7 @@
 
             <Button Grid.Column="1"
                     Text="Aplicar"
-                    BackgroundColor="#FF4E8A"
+                    BackgroundColor="#5d259c"
                     TextColor="White"
                     CornerRadius="16"
                     Clicked="OnApplyFilterClicked" />
