@@ -233,6 +233,32 @@ namespace AmoraApp.ViewModels
             _presenceService = PresenceService.Instance;
         }
 
+        /// <summary>
+        /// Construtor para abrir Discover focado em um único usuário (ex: vindo do grupo).
+        /// </summary>
+        public DiscoverViewModel(UserProfile singleUser)
+            : this(MatchService.Instance, FirebaseAuthService.Instance)
+        {
+            if (singleUser != null)
+            {
+                singleUser.PhotoUrl ??= string.Empty;
+                singleUser.Interests ??= new List<string>();
+                singleUser.LookingFor ??= new List<string>();
+
+                _allUsers = new List<UserProfile> { singleUser };
+
+                Users.Clear();
+                Users.Add(singleUser);
+
+                CurrentUser = singleUser;
+
+                HasUser = true;
+                HasNoUser = false;
+
+                _ = UpdateCurrentDistanceAndPresenceAsync();
+            }
+        }
+
         // Quando CurrentUser muda → atualizar UI
         partial void OnCurrentUserChanged(UserProfile value)
         {
@@ -246,6 +272,7 @@ namespace AmoraApp.ViewModels
 
         public async Task InitializeAsync()
         {
+            // Se já foi inicializado (ou veio de construtor singleUser), não recarrega
             if (CurrentUser != null || Users.Count > 0)
                 return;
 
@@ -273,7 +300,6 @@ namespace AmoraApp.ViewModels
                 {
                     u.PhotoUrl ??= string.Empty;
                     u.Interests ??= new List<string>();
-                    // garante lista de "busco por" não nula
                     u.LookingFor ??= new List<string>();
                     return u;
                 })

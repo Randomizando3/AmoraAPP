@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using AmoraApp.Models;
 using AmoraApp.ViewModels;
 using Microsoft.Maui.Controls;
 
@@ -23,6 +24,12 @@ namespace AmoraApp.Views
         {
             InitializeComponent();
             BindingContext = vm;
+        }
+
+        // Construtor para abrir diretamente um usuário específico
+        public DiscoverPage(UserProfile singleUser)
+            : this(new DiscoverViewModel(singleUser))
+        {
         }
 
         protected override async void OnAppearing()

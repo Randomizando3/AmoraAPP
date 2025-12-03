@@ -43,9 +43,6 @@ namespace AmoraApp.Services
             public string GroupName { get; set; } = string.Empty;
             public Dictionary<string, bool>? Members { get; set; }
 
-            // Admin do grupo
-            public string AdminId { get; set; } = string.Empty;
-
             public Dictionary<string, bool>? Favorites { get; set; }
             public Dictionary<string, bool>? Blocked { get; set; }
 
@@ -95,7 +92,7 @@ namespace AmoraApp.Services
         // ============================================================
 
         /// <summary>
-        /// Chat 1x1. Mantido como antes.
+        /// Chat 1x1.
         /// </summary>
         public async Task<string> GetOrCreateChatAsync(string user1Id, string user2Id)
         {
@@ -125,8 +122,7 @@ namespace AmoraApp.Services
                     {
                         [a] = true,
                         [b] = true
-                    },
-                    AdminId = string.Empty
+                    }
                 };
 
                 var body = JsonSerializer.Serialize(header, _jsonOptions);
@@ -148,10 +144,9 @@ namespace AmoraApp.Services
             if (string.IsNullOrWhiteSpace(groupName))
                 throw new ArgumentException("groupName é obrigatório.");
 
-            var members = new HashSet<string>(memberIds ?? Array.Empty<string>())
-            {
-                creatorId // garante criador
-            };
+            var members = new HashSet<string>(memberIds ?? Array.Empty<string>());
+
+            members.Add(creatorId); // garante criador
 
             members.RemoveWhere(string.IsNullOrWhiteSpace);
 
@@ -176,11 +171,10 @@ namespace AmoraApp.Services
                 GroupName = groupName,
                 User1Id = user1,
                 User2Id = user2,
-                Members = members.ToDictionary(m => m, _ => true),
+                Members = members.ToDictionary(m => m, m => true),
                 IsMatch = false,
                 LastMessageText = string.Empty,
-                LastMessageAt = 0,
-                AdminId = creatorId
+                LastMessageAt = 0
             };
 
             var body = JsonSerializer.Serialize(header, _jsonOptions);
@@ -191,85 +185,115 @@ namespace AmoraApp.Services
         }
 
         // ============================================================
-        // GRUPOS - MEMBROS / ADMIN
+        // GRUPOS - MEMBROS
         // ============================================================
 
+        /// <summary>
+        /// Retorna os IDs dos membros de um chat de grupo.
+        /// </summary>
         public async Task<IList<string>> GetGroupMemberIdsAsync(string chatId)
         {
+            if (string.IsNullOrWhiteSpace(chatId))
+                return new List<string>();
+
             var header = await GetChatHeaderAsync(chatId);
             if (header == null)
                 return new List<string>();
 
             if (header.Members != null && header.Members.Count > 0)
-                return header.Members.Keys.Where(x => !string.IsNullOrWhiteSpace(x)).ToList();
+                return header.Members.Keys.ToList();
 
             var list = new List<string>();
             if (!string.IsNullOrWhiteSpace(header.User1Id))
                 list.Add(header.User1Id);
             if (!string.IsNullOrWhiteSpace(header.User2Id) && header.User2Id != header.User1Id)
                 list.Add(header.User2Id);
+
             return list;
         }
 
-        public async Task AddMemberToGroupAsync(string chatId, string userId)
+        /// <summary>
+        /// Usuário sai de um grupo (remove-se de Members e "esconde" o chat).
+        /// </summary>
+        public async Task LeaveGroupAsync(string chatId, string userId)
         {
             if (string.IsNullOrWhiteSpace(chatId) || string.IsNullOrWhiteSpace(userId))
-                throw new ArgumentException("chatId e userId são obrigatórios.");
-
-            var header = await GetChatHeaderAsync(chatId);
-            if (header == null || !header.IsGroup)
-                throw new InvalidOperationException("Chat não é um grupo.");
-
-            header.Members ??= new Dictionary<string, bool>();
-
-            if (header.Members.ContainsKey(userId))
                 return;
 
-            if (header.Members.Count >= 8)
-                throw new InvalidOperationException("O grupo já está com o máximo de 8 membros.");
+            // Remove dos membros
+            var memberPath = $"{BaseUrl}/chats/{chatId}/members/{userId}.json";
+            await _httpClient.DeleteAsync(memberPath);
 
-            header.Members[userId] = true;
-
-            var url = $"{BaseUrl}/chats/{chatId}/members/{userId}.json";
+            // Esconde o chat para o usuário
+            var hiddenPath = $"{BaseUrl}/chatHidden/{userId}/{chatId}.json";
             var content = new StringContent("true", Encoding.UTF8, "application/json");
-            await _httpClient.PutAsync(url, content);
+            await _httpClient.PutAsync(hiddenPath, content);
         }
 
-        public async Task RemoveMemberFromGroupAsync(string chatId, string userId)
+        /// <summary>
+        /// Adiciona novos membros a um grupo.
+        /// </summary>
+        public async Task AddGroupMembersAsync(string chatId, string requesterId, IEnumerable<string> newMemberIds)
         {
-            if (string.IsNullOrWhiteSpace(chatId) || string.IsNullOrWhiteSpace(userId))
-                throw new ArgumentException("chatId e userId são obrigatórios.");
+            if (string.IsNullOrWhiteSpace(chatId) || newMemberIds == null)
+                return;
 
             var header = await GetChatHeaderAsync(chatId);
             if (header == null || !header.IsGroup)
-                throw new InvalidOperationException("Chat não é um grupo.");
-
-            if (header.Members == null || !header.Members.ContainsKey(userId))
                 return;
 
-            // Não deixa remover o admin por aqui
-            if (!string.IsNullOrWhiteSpace(header.AdminId) && header.AdminId == userId)
-                throw new InvalidOperationException("Não é possível remover o administrador do grupo.");
+            // Opcional: aqui você poderia validar se requesterId é admin
 
-            var url = $"{BaseUrl}/chats/{chatId}/members/{userId}.json";
-            await _httpClient.DeleteAsync(url);
+            foreach (var id in newMemberIds)
+            {
+                if (string.IsNullOrWhiteSpace(id))
+                    continue;
+
+                var path = $"{BaseUrl}/chats/{chatId}/members/{id}.json";
+                var content = new StringContent("true", Encoding.UTF8, "application/json");
+                await _httpClient.PutAsync(path, content);
+            }
         }
 
-        public async Task DeleteGroupAsync(string chatId)
+        /// <summary>
+        /// Remove um membro específico de um grupo.
+        /// </summary>
+        public async Task RemoveGroupMemberAsync(string chatId, string requesterId, string memberId)
+        {
+            if (string.IsNullOrWhiteSpace(chatId) || string.IsNullOrWhiteSpace(memberId))
+                return;
+
+            var header = await GetChatHeaderAsync(chatId);
+            if (header == null || !header.IsGroup)
+                return;
+
+            // Opcional: validar admin
+
+            var path = $"{BaseUrl}/chats/{chatId}/members/{memberId}.json";
+            await _httpClient.DeleteAsync(path);
+        }
+
+        /// <summary>
+        /// Exclui um grupo (apaga header e mensagens).
+        /// </summary>
+        public async Task DeleteGroupAsync(string chatId, string requesterId)
         {
             if (string.IsNullOrWhiteSpace(chatId))
                 return;
 
-            // Remove header, mensagens, metas, hidden
-            var tasks = new[]
-            {
-                _httpClient.DeleteAsync($"{BaseUrl}/chats/{chatId}.json"),
-                _httpClient.DeleteAsync($"{BaseUrl}/chatMessages/{chatId}.json"),
-                _httpClient.DeleteAsync($"{BaseUrl}/chatMeta/{chatId}.json"),
-                _httpClient.DeleteAsync($"{BaseUrl}/chatHidden/{chatId}.json")
-            };
+            var header = await GetChatHeaderAsync(chatId);
+            if (header == null || !header.IsGroup)
+                return;
 
-            await Task.WhenAll(tasks);
+            // Opcional: validar admin
+
+            // Remove header
+            var chatPath = $"{BaseUrl}/chats/{chatId}.json";
+            await _httpClient.DeleteAsync(chatPath);
+
+            // Remove mensagens
+            var msgPath = $"{BaseUrl}/chatMessages/{chatId}.json";
+            await _httpClient.DeleteAsync(msgPath);
         }
 
         // ============================================================
@@ -314,7 +338,7 @@ namespace AmoraApp.Services
             if (string.IsNullOrWhiteSpace(chatId))
                 throw new ArgumentException("chatId é obrigatório.");
 
-            // Agora aceita: texto OU imagem OU áudio
+            // texto OU imagem OU áudio
             if (message == null
                 || string.IsNullOrWhiteSpace(message.SenderId)
                 || (string.IsNullOrWhiteSpace(message.Text)
@@ -327,7 +351,7 @@ namespace AmoraApp.Services
             if (message.CreatedAt == 0)
                 message.CreatedAt = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
 
-            // Garante que o remetente já conta como "leu"
+            // Remetente já conta como "leu"
             message.ReadBy ??= new Dictionary<string, bool>();
             if (!string.IsNullOrWhiteSpace(message.SenderId))
                 message.ReadBy[message.SenderId] = true;
@@ -382,11 +406,11 @@ namespace AmoraApp.Services
                         members.Add(header.User2Id);
                 }
 
-                foreach (var uid in members.Where(m => !string.IsNullOrWhiteSpace(m)))
+                foreach (var userId in members.Where(m => !string.IsNullOrWhiteSpace(m)))
                 {
-                    var metaPath = $"{BaseUrl}/chatMeta/{chatId}/{uid}/unreadCount.json";
+                    var metaPath = $"{BaseUrl}/chatMeta/{chatId}/{userId}/unreadCount.json";
 
-                    if (uid == senderId)
+                    if (userId == senderId)
                     {
                         // remetente -> zera
                         await _httpClient.PutAsync(
@@ -484,7 +508,7 @@ namespace AmoraApp.Services
                 }
 
                 // Participa?
-                bool participates;
+                bool participates = false;
 
                 if (!header.IsGroup)
                 {
@@ -521,9 +545,7 @@ namespace AmoraApp.Services
                     membersCount = set.Count;
                 }
 
-                bool isGroupAdmin = header.IsGroup &&
-                                    !string.IsNullOrWhiteSpace(header.AdminId) &&
-                                    header.AdminId == userId;
+                bool isGroupAdmin = header.IsGroup && header.User1Id == userId;
 
                 if (isGroup)
                 {
@@ -531,7 +553,7 @@ namespace AmoraApp.Services
                         ? "Grupo"
                         : $"Grupo {header.GroupName}";
                     otherId = string.Empty;
-                    photoUrl = string.Empty; // depois pode por avatar fixo
+                    photoUrl = string.Empty; // aqui depois dá pra por um avatar de grupo fixo
                 }
                 else
                 {

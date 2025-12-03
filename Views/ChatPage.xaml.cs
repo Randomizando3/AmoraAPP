@@ -103,6 +103,7 @@ namespace AmoraApp.Views
                     StatusLabel.Text = $"{_chatItem.MembersCount} membros";
                 else
                     StatusLabel.Text = "Grupo";
+
                 StatusLabel.TextColor = Colors.Gray;
             }
             else
@@ -729,7 +730,8 @@ namespace AmoraApp.Views
                 if (!labelToId.TryGetValue(chosen, out var selectedId))
                     return;
 
-                await ChatService.Instance.AddMemberToGroupAsync(_chatId, selectedId);
+                // 🔥 usa AddGroupMembersAsync com requesterId
+                await ChatService.Instance.AddGroupMembersAsync(_chatId, CurrentUserId, new[] { selectedId });
 
                 await DisplayAlert("Pronto",
                     "Membro adicionado ao grupo.",
@@ -802,7 +804,8 @@ namespace AmoraApp.Views
                 if (!labelToId.TryGetValue(chosen, out var selectedId))
                     return;
 
-                await ChatService.Instance.RemoveMemberFromGroupAsync(_chatId, selectedId);
+                // 🔥 usa RemoveGroupMemberAsync com requesterId
+                await ChatService.Instance.RemoveGroupMemberAsync(_chatId, CurrentUserId, selectedId);
 
                 await DisplayAlert("Pronto",
                     "Membro removido do grupo.",
@@ -829,10 +832,11 @@ namespace AmoraApp.Views
 
             try
             {
-                if (string.IsNullOrWhiteSpace(_chatId))
+                if (string.IsNullOrWhiteSpace(_chatId) || string.IsNullOrWhiteSpace(CurrentUserId))
                     return;
 
-                await ChatService.Instance.DeleteGroupAsync(_chatId);
+                // 🔥 agora passa também o requesterId
+                await ChatService.Instance.DeleteGroupAsync(_chatId, CurrentUserId);
 
                 await DisplayAlert("Pronto",
                     "Grupo excluído.",
