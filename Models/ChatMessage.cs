@@ -7,7 +7,7 @@ namespace AmoraApp.Models
     {
         public string Id { get; set; } = string.Empty;
 
-        // ID do chat (ex: userA_userB)
+        // ID do chat (ex: userA_userB ou group_...)
         public string ChatId { get; set; } = string.Empty;
 
         // Quem enviou
@@ -17,6 +17,9 @@ namespace AmoraApp.Models
 
         // Imagem opcional (base64)
         public string? ImageBase64 { get; set; } = null;
+
+        // Áudio opcional (URL no Firebase Storage)
+        public string? AudioUrl { get; set; } = null;
 
         // Unix timestamp em milissegundos
         public long CreatedAt { get; set; }

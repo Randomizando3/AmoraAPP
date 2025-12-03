@@ -3,6 +3,7 @@ bin/
 Bin/
 BIN/
 
+
 # Ignorar Debug e Release (caso existam fora de bin)
 Debug/
 Release/
@@ -25,3 +26,5 @@ obj/
 
 # Outras pastas do Visual Studio
 .vscode/
+.vs/
+.vs

@@ -1,7 +1,10 @@
 ﻿using AmoraApp.Models;
+using AmoraApp.Services;
 using AmoraApp.ViewModels;
 using Microsoft.Maui.Controls;
 using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace AmoraApp.Views
 {
@@ -35,33 +38,55 @@ namespace AmoraApp.Views
                 tapped.Parameter is not ChatItem chat)
                 return;
 
-            string favLabel = chat.IsFavorite
+            var uid = FirebaseAuthService.Instance.CurrentUserUid;
+            if (string.IsNullOrWhiteSpace(uid))
+            {
+                await DisplayAlert("Erro", "Usuário não logado.", "OK");
+                return;
+            }
+
+            var options = new List<string>
+            {
+                "Abrir conversa"
+            };
+
+            var favLabel = chat.IsFavorite
                 ? "Remover dos favoritos"
                 : "Adicionar aos favoritos";
+
+            if (chat.IsGroup)
+            {
+                // Grupo: por aqui só abre conversa e favorita.
+                options.Add(favLabel);
+            }
+            else
+            {
+                // Chat 1x1: opções extras
+                if (!string.IsNullOrWhiteSpace(chat.UserId))
+                {
+                    options.Add("Criar grupo com este contato");
+                }
+
+                options.Add(favLabel);
+                options.Add("Bloquear usuário");
+                options.Add("Excluir chat");
+            }
 
             var action = await DisplayActionSheet(
                 chat.DisplayName,
                 "Cancelar",
                 null,
-                "Abrir conversa",
-                favLabel,
-                "Bloquear usuário",
-                "Excluir chat");
+                options.ToArray());
 
             switch (action)
             {
                 case "Abrir conversa":
-                    if (!string.IsNullOrWhiteSpace(chat.UserId))
-                    {
-                        // IMPORTANTE: sempre abrimos o ChatPage com o UserId e o nome do outro usuário
-                        await Navigation.PushAsync(new ChatPage(chat.UserId, chat.DisplayName));
-                    }
-                    else
-                    {
-                        await DisplayAlert("Erro",
-                            "Usuário inválido para iniciar a conversa.",
-                            "OK");
-                    }
+                    // Abre a página de chat passando o ChatItem completo (suporta 1x1 e grupos)
+                    await Navigation.PushAsync(new ChatPage(chat));
+                    break;
+
+                case "Criar grupo com este contato":
+                    await CreateGroupWithContactAsync(chat);
                     break;
 
                 case "Adicionar aos favoritos":
@@ -82,6 +107,67 @@ namespace AmoraApp.Views
 
                 default:
                     break;
+            }
+        }
+
+        /// <summary>
+        /// Cria rapidamente um grupo com o contato selecionado (você + ele).
+        /// Depois abre diretamente a ChatPage do grupo.
+        /// </summary>
+        private async Task CreateGroupWithContactAsync(ChatItem chat)
+        {
+            try
+            {
+                var me = FirebaseAuthService.Instance.CurrentUserUid;
+                if (string.IsNullOrWhiteSpace(me))
+                {
+                    await DisplayAlert("Erro",
+                        "Usuário não logado.",
+                        "OK");
+                    return;
+                }
+
+                if (string.IsNullOrWhiteSpace(chat.UserId))
+                {
+                    await DisplayAlert("Erro",
+                        "Contato inválido para criar grupo.",
+                        "OK");
+                    return;
+                }
+
+                var groupName = await DisplayPromptAsync(
+                    "Novo grupo",
+                    "Nome do grupo:",
+                    "Criar",
+                    "Cancelar");
+
+                if (string.IsNullOrWhiteSpace(groupName))
+                    return;
+
+                var trimmedName = groupName.Trim();
+
+                var chatIdGroup = await ChatService.Instance.CreateGroupChatAsync(
+                    me,
+                    trimmedName,
+                    new[] { me, chat.UserId });
+
+                var groupItem = new ChatItem
+                {
+                    ChatId = chatIdGroup,
+                    IsGroup = true,
+                    GroupName = trimmedName,
+                    DisplayName = $"Grupo {trimmedName}",
+                    MembersCount = 2,
+                    IsGroupAdmin = true
+                };
+
+                await Navigation.PushAsync(new ChatPage(groupItem));
+            }
+            catch (Exception ex)
+            {
+                await DisplayAlert("Erro",
+                    "Não foi possível criar o grupo.\n" + ex.Message,
+                    "OK");
             }
         }
     }

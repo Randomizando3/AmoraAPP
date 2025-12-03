@@ -28,7 +28,7 @@ namespace AmoraApp.ViewModels
         private string currentFilter = "All";
 
         /// <summary>
-        /// Lista completa de chats (matches + amigos + conversas com outras pessoas).
+        /// Lista completa de chats (matches + amigos + conversas com outras pessoas + grupos).
         /// </summary>
         [ObservableProperty]
         private ObservableCollection<ChatItem> chats = new();
@@ -39,13 +39,13 @@ namespace AmoraApp.ViewModels
         public ObservableCollection<ChatItem> FilteredChats { get; } = new();
 
         /// <summary>
-        /// Carrossel horizontal de matches.
+        /// Carrossel horizontal de matches (somente 1x1).
         /// </summary>
         [ObservableProperty]
         private ObservableCollection<ChatItem> matches = new();
 
         /// <summary>
-        /// Carrossel horizontal de amigos.
+        /// Carrossel horizontal de amigos (somente 1x1).
         /// </summary>
         [ObservableProperty]
         private ObservableCollection<ChatItem> friends = new();
@@ -75,7 +75,7 @@ namespace AmoraApp.ViewModels
         }
 
         /// <summary>
-        /// Carrega matches, amigos e conversa com últimas mensagens reais do Firebase.
+        /// Carrega matches, amigos e conversas (incluindo grupos) com últimas mensagens reais do Firebase.
         /// </summary>
         public async Task InitializeAsync()
         {
@@ -90,11 +90,14 @@ namespace AmoraApp.ViewModels
                 if (string.IsNullOrWhiteSpace(me))
                     return;
 
-                // Dicionário para montar apenas 1 ChatItem por usuário
-                var map = new Dictionary<string, ChatItem>();
+                // Dicionário para montar apenas 1 ChatItem por usuário (apenas 1x1)
+                var mapByUser = new Dictionary<string, ChatItem>();
+
+                // Lista separada para grupos
+                var groupChats = new List<ChatItem>();
 
                 // =====================================================
-                // 1) MATCHES
+                // 1) MATCHES (1x1)
                 // =====================================================
                 var matchIds = await _matchService.GetMatchesAsync(me);
 
@@ -103,7 +106,7 @@ namespace AmoraApp.ViewModels
                     if (string.IsNullOrWhiteSpace(otherId))
                         continue;
 
-                    if (!map.TryGetValue(otherId, out var chat))
+                    if (!mapByUser.TryGetValue(otherId, out var chat))
                     {
                         var profile = await _db.GetUserProfileAsync(otherId);
                         if (profile == null)
@@ -118,10 +121,11 @@ namespace AmoraApp.ViewModels
                             IsFriend = false,
                             LastMessagePreview = string.Empty,
                             LastMessageAt = DateTime.MinValue,
-                            UnreadCount = 0
+                            UnreadCount = 0,
+                            IsGroup = false
                         };
 
-                        map[otherId] = chat;
+                        mapByUser[otherId] = chat;
                     }
                     else
                     {
@@ -130,7 +134,7 @@ namespace AmoraApp.ViewModels
                 }
 
                 // =====================================================
-                // 2) AMIGOS
+                // 2) AMIGOS (1x1)
                 // =====================================================
                 var friendIds = await _friendService.GetFriendsAsync(me);
 
@@ -139,7 +143,7 @@ namespace AmoraApp.ViewModels
                     if (string.IsNullOrWhiteSpace(friendId) || friendId == me)
                         continue;
 
-                    if (!map.TryGetValue(friendId, out var chat))
+                    if (!mapByUser.TryGetValue(friendId, out var chat))
                     {
                         var profile = await _db.GetUserProfileAsync(friendId);
                         if (profile == null)
@@ -154,10 +158,11 @@ namespace AmoraApp.ViewModels
                             IsFriend = true,
                             LastMessagePreview = string.Empty,
                             LastMessageAt = DateTime.MinValue,
-                            UnreadCount = 0
+                            UnreadCount = 0,
+                            IsGroup = false
                         };
 
-                        map[friendId] = chat;
+                        mapByUser[friendId] = chat;
                     }
                     else
                     {
@@ -166,24 +171,40 @@ namespace AmoraApp.ViewModels
                 }
 
                 // =====================================================
-                // 3) CHATS DO FIREBASE (última mensagem real)
+                // 3) CHATS DO FIREBASE (1x1 + GRUPOS)
                 // =====================================================
                 var chatsFromService = await _chatService.GetChatsForUserAsync(me);
 
                 foreach (var chatFromService in chatsFromService)
                 {
+                    if (chatFromService == null)
+                        continue;
+
+                    // ---- GRUPO ----
+                    if (chatFromService.IsGroup)
+                    {
+                        // garante que não duplica
+                        if (groupChats.All(g => g.ChatId != chatFromService.ChatId))
+                        {
+                            groupChats.Add(chatFromService);
+                        }
+                        continue;
+                    }
+
+                    // ---- 1x1 ----
                     if (string.IsNullOrWhiteSpace(chatFromService.UserId))
                         continue;
 
-                    if (!map.TryGetValue(chatFromService.UserId, out var existing))
+                    if (!mapByUser.TryGetValue(chatFromService.UserId, out var existing))
                     {
                         // ainda não estava como amigo/match, entra como chat normal
-                        map[chatFromService.UserId] = chatFromService;
+                        mapByUser[chatFromService.UserId] = chatFromService;
                     }
                     else
                     {
                         // já é amigo ou match -> mescla informações
                         existing.IsMatch |= chatFromService.IsMatch;
+                        existing.IsFriend |= chatFromService.IsFriend;
                         existing.IsFavorite |= chatFromService.IsFavorite;
 
                         if (!string.IsNullOrWhiteSpace(chatFromService.LastMessagePreview))
@@ -198,14 +219,22 @@ namespace AmoraApp.ViewModels
 
                 // =====================================================
                 // 4) Fallback de placeholder (se ainda não tiver mensagem)
+                //    Aplica para 1x1 e grupos
                 // =====================================================
-                foreach (var c in map.Values)
+                foreach (var c in mapByUser.Values.Concat(groupChats))
                 {
                     if (string.IsNullOrWhiteSpace(c.LastMessagePreview))
                     {
-                        c.LastMessagePreview = c.IsMatch
-                            ? "Vocês deram match! 💗"
-                            : "Comece a conversar 👋";
+                        if (!c.IsGroup)
+                        {
+                            c.LastMessagePreview = c.IsMatch
+                                ? "Vocês deram match! 💗"
+                                : "Comece a conversar 👋";
+                        }
+                        else
+                        {
+                            c.LastMessagePreview = "Novo grupo criado. Diga um oi! 👋";
+                        }
                     }
 
                     if (c.LastMessageAt == DateTime.MinValue)
@@ -213,17 +242,20 @@ namespace AmoraApp.ViewModels
                 }
 
                 // ---------- Monta coleções ----------
-                var allChats = map.Values
+                var allChats = mapByUser.Values
+                    .Concat(groupChats)
                     .Where(c => !c.IsBlocked)
                     .ToList();
 
                 Chats = new ObservableCollection<ChatItem>(allChats);
 
+                // Carrossel de matches: apenas 1x1
                 Matches = new ObservableCollection<ChatItem>(
-                    allChats.Where(c => c.IsMatch));
+                    allChats.Where(c => !c.IsGroup && c.IsMatch));
 
+                // Carrossel de amigos: apenas 1x1
                 Friends = new ObservableCollection<ChatItem>(
-                    allChats.Where(c => c.IsFriend));
+                    allChats.Where(c => !c.IsGroup && c.IsFriend));
 
                 ApplyOrdering();
             }
@@ -259,8 +291,8 @@ namespace AmoraApp.ViewModels
 
             chat.IsFavorite = !chat.IsFavorite;
 
-            // Se tiver ChatId e userId, salva no Firebase
-            if (!string.IsNullOrWhiteSpace(chat.ChatId) && !string.IsNullOrWhiteSpace(chat.UserId))
+            // Se tiver ChatId, salva no Firebase (grupo ou 1x1)
+            if (!string.IsNullOrWhiteSpace(chat.ChatId))
             {
                 var me = _auth.CurrentUserUid;
                 if (!string.IsNullOrWhiteSpace(me))
@@ -273,7 +305,7 @@ namespace AmoraApp.ViewModels
         }
 
         /// <summary>
-        /// Bloqueia o usuário (some das listas).
+        /// Bloqueia o usuário / grupo (some das listas).
         /// </summary>
         [RelayCommand]
         private async Task BlockChat(ChatItem chat)
@@ -301,6 +333,8 @@ namespace AmoraApp.ViewModels
 
         /// <summary>
         /// Remove o chat (soft delete pro usuário).
+        /// OBS: para grupos, a lógica de sair/excluir grupo está no code-behind da ChatListPage.
+        /// Aqui é usado principalmente para chats 1x1.
         /// </summary>
         [RelayCommand]
         private async Task DeleteChat(ChatItem chat)
@@ -338,16 +372,23 @@ namespace AmoraApp.ViewModels
             switch (CurrentFilter)
             {
                 case "Matches":
-                    source = source.Where(c => c.IsMatch);
+                    // Só 1x1 com match
+                    source = source.Where(c => !c.IsGroup && c.IsMatch);
                     break;
+
                 case "Friends":
-                    source = source.Where(c => c.IsFriend);
+                    // Só 1x1 amigos
+                    source = source.Where(c => !c.IsGroup && c.IsFriend);
                     break;
+
                 case "Favorites":
+                    // Favoritos (1x1 + grupos)
                     source = source.Where(c => c.IsFavorite);
                     break;
+
                 case "All":
                 default:
+                    // Todos (1x1 + grupos)
                     break;
             }
 

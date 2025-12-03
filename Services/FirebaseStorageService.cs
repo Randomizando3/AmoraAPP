@@ -17,11 +17,12 @@ namespace AmoraApp.Services
         private FirebaseStorageService() { }
 
         /// <summary>
-        /// Faz upload de uma imagem para o Firebase Storage e retorna a URL pública.
+        /// Upload genérico de arquivo para o Firebase Storage e retorna a URL pública.
         /// </summary>
-        /// <param name="fileStream">Stream da imagem</param>
+        /// <param name="fileStream">Stream do arquivo</param>
         /// <param name="fileName">Caminho/nome do arquivo dentro do bucket</param>
-        public async Task<string?> UploadImageAsync(Stream fileStream, string fileName)
+        /// <param name="contentType">MIME type (ex: image/jpeg, audio/mpeg, application/octet-stream)</param>
+        public async Task<string?> UploadFileAsync(Stream fileStream, string fileName, string contentType = "application/octet-stream")
         {
             if (fileStream == null)
                 throw new ArgumentNullException(nameof(fileStream));
@@ -29,12 +30,12 @@ namespace AmoraApp.Services
             if (string.IsNullOrWhiteSpace(fileName))
                 throw new ArgumentNullException(nameof(fileName));
 
-            // ?? Bucket configurado no FirebaseSettings
-            var bucket = FirebaseSettings.StorageBucket; // ex: "seu-projeto.appspot.com"
+            // Bucket configurado no FirebaseSettings (ex: "seu-projeto.appspot.com")
+            var bucket = FirebaseSettings.StorageBucket;
             if (string.IsNullOrWhiteSpace(bucket))
                 throw new InvalidOperationException("FirebaseSettings.StorageBucket não está configurado.");
 
-            // ?? Token opcional (se regras exigirem auth)
+            // Token opcional (se regras exigirem auth)
             var token = await FirebaseAuthService.Instance.GetIdTokenAsync();
 
             // Endpoint do Firebase Storage (API v0)
@@ -53,15 +54,15 @@ namespace AmoraApp.Services
             try
             {
                 using var content = new StreamContent(fileStream);
-                content.Headers.ContentType = new MediaTypeHeaderValue("image/jpeg");
+                content.Headers.ContentType = new MediaTypeHeaderValue(contentType);
 
                 var response = await _http.PostAsync(uploadUrl, content);
                 var json = await response.Content.ReadAsStringAsync();
 
                 if (!response.IsSuccessStatusCode)
                 {
-                    // Joga a resposta do Firebase pra cima pra você ver no DisplayAlert
-                    throw new Exception($"Erro ao enviar para Firebase Storage. Status: {(int)response.StatusCode} - {response.ReasonPhrase}\nResposta: {json}");
+                    throw new Exception(
+                        $"Erro ao enviar para Firebase Storage. Status: {(int)response.StatusCode} - {response.ReasonPhrase}\nResposta: {json}");
                 }
 
                 using var doc = JsonDocument.Parse(json);
@@ -85,7 +86,8 @@ namespace AmoraApp.Services
                 }
 
                 // Monta URL pública
-                var baseUrl = $"https://firebasestorage.googleapis.com/v0/b/{bucket}/o/{Uri.EscapeDataString(storedName)}?alt=media";
+                var baseUrl =
+                    $"https://firebasestorage.googleapis.com/v0/b/{bucket}/o/{Uri.EscapeDataString(storedName)}?alt=media";
 
                 if (!string.IsNullOrEmpty(downloadToken))
                     baseUrl += $"&token={downloadToken}";
@@ -94,9 +96,19 @@ namespace AmoraApp.Services
             }
             catch (Exception ex)
             {
-                // Deixa a exceção subir pra aparecer certinho no DisplayAlert
                 throw new Exception("Falha ao fazer upload no Firebase Storage: " + ex.Message, ex);
             }
+        }
+
+        /// <summary>
+        /// Mantido para compatibilidade: upload de imagem (usa image/jpeg).
+        /// </summary>
+        /// <param name="fileStream">Stream da imagem</param>
+        /// <param name="fileName">Caminho/nome do arquivo dentro do bucket</param>
+        public Task<string?> UploadImageAsync(Stream fileStream, string fileName)
+        {
+            // Reaproveita o método genérico, só fixando o contentType de imagem
+            return UploadFileAsync(fileStream, fileName, "image/jpeg");
         }
     }
 }

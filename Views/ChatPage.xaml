@@ -13,6 +13,10 @@
               ColumnDefinitions="Auto,*,Auto"
               Padding="4"
               VerticalOptions="Center">
+            <Grid.GestureRecognizers>
+                <!-- Clique no header abre gerenciamento de grupo (se for grupo e admin) -->
+                <TapGestureRecognizer Tapped="OnHeaderTapped" />
+            </Grid.GestureRecognizers>
 
             <!-- Avatar -->
             <Frame
@@ -84,7 +88,7 @@
         <!-- INPUT -->
         <Grid
             Grid.Row="2"
-            ColumnDefinitions="Auto,*,Auto"
+            ColumnDefinitions="Auto,Auto,*,Auto"
             Padding="4,4,4,0">
 
             <!-- Botão imagem (cam.png) -->
@@ -106,9 +110,29 @@
                     VerticalOptions="Center" />
             </Frame>
 
-            <!-- Campo de mensagem -->
+            <!-- Botão áudio (mic.png) -->
             <Frame
                 Grid.Column="1"
+                WidthRequest="32"
+                HeightRequest="32"
+                CornerRadius="16"
+                BackgroundColor="White"
+                HasShadow="True"
+                Padding="4"
+                Margin="4,0,0,0">
+                <ImageButton
+                    Source="mic.png"
+                    BackgroundColor="Transparent"
+                    Clicked="OnAttachAudioClicked"
+                    WidthRequest="24"
+                    HeightRequest="24"
+                    HorizontalOptions="Center"
+                    VerticalOptions="Center" />
+            </Frame>
+
+            <!-- Campo de mensagem -->
+            <Frame
+                Grid.Column="2"
                 Margin="8,0"
                 CornerRadius="8"
                 BackgroundColor="White"
@@ -126,7 +150,7 @@
 
             <!-- Botão Enviar -->
             <Frame
-                Grid.Column="2"
+                Grid.Column="3"
                 WidthRequest="40"
                 HeightRequest="40"
                 CornerRadius="20"
