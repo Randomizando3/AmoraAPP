@@ -6,26 +6,19 @@
     xmlns:views="clr-namespace:AmoraApp.Views"
     Shell.NavBarIsVisible="False">
 
-    <!-- ESTILOS DO TABBAR (cores do menu inferior) -->
+    <!-- ESTILOS DO TABBAR -->
     <Shell.Resources>
         <Style TargetType="TabBar">
-            <!-- TabBar bem branca -->
             <Setter Property="Shell.TabBarBackgroundColor" Value="#FFFFFFFF" />
-
-            <!-- Ícones / textos -->
             <Setter Property="Shell.TabBarForegroundColor" Value="#5d259c" />
             <Setter Property="Shell.TabBarTitleColor" Value="#5d259c" />
             <Setter Property="Shell.TabBarUnselectedColor" Value="#999999" />
         </Style>
     </Shell.Resources>
 
-    <!--
-        - Android / iOS: ícone + texto
-        - Windows (WinUI): somente ícone (Title vazio)
-    -->
     <TabBar>
 
-        <!-- Discover (swipe) -->
+        <!-- Discover -->
         <ShellContent
             Route="discover"
             Icon="home.png"
@@ -38,6 +31,13 @@
             Icon="feed.png"
             ContentTemplate="{DataTemplate views:FeedPage}"
             Title="{OnPlatform Android='Feed', iOS='Feed', WinUI=''}" />
+
+        <!-- Likes (quem me curtiu)  ⭐ NOVO -->
+        <ShellContent
+            Route="likes"
+            Icon="likes.png"
+            ContentTemplate="{DataTemplate views:LikesReceivedPage}"
+            Title="{OnPlatform Android='Likes', iOS='Likes', WinUI=''}" />
 
         <!-- Chat -->
         <ShellContent
@@ -54,4 +54,5 @@
             Title="{OnPlatform Android='Profile', iOS='Profile', WinUI=''}" />
 
     </TabBar>
+
 </Shell>
