@@ -3,45 +3,38 @@
     x:Class="AmoraApp.Views.ChatPage"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    BackgroundColor="#F1F2F6"
+    BackgroundColor="#FFF5F9"
     Shell.NavBarIsVisible="False">
 
-    <Grid RowDefinitions="Auto,*,Auto" Padding="12,32,12,12">
+    <!-- GRID PRINCIPAL -->
+    <Grid RowDefinitions="Auto,*,Auto" Padding="0">
 
         <!-- HEADER -->
         <Grid Grid.Row="0"
+              Padding="12,32,12,12"
               ColumnDefinitions="Auto,*,Auto"
-              Padding="4"
-              VerticalOptions="Center">
-            <Grid.GestureRecognizers>
-                <!-- Clique no header abre gerenciamento de grupo (se for grupo e admin) -->
-                <TapGestureRecognizer Tapped="OnHeaderTapped" />
-            </Grid.GestureRecognizers>
+              VerticalOptions="Start">
 
-            <!-- Avatar -->
-            <Frame
-                WidthRequest="40"
-                HeightRequest="40"
-                CornerRadius="20"
-                BackgroundColor="White"
-                HasShadow="True"
-                Padding="0">
-                <Label
-                    Text="😊"
-                    HorizontalOptions="Center"
-                    VerticalOptions="Center" />
-            </Frame>
+            <!-- Voltar -->
+            <ImageButton
+                Source="back.png"
+                WidthRequest="28"
+                HeightRequest="28"
+                BackgroundColor="Transparent"
+                Clicked="OnBackButtonClicked" />
 
             <!-- Nome + status -->
             <StackLayout Grid.Column="1"
-                         Margin="8,0"
-                         VerticalOptions="Center"
-                         Spacing="2">
+                         Orientation="Vertical"
+                         Spacing="0"
+                         Margin="12,0,0,0"
+                         VerticalOptions="Center">
                 <Label
                     x:Name="UserNameLabel"
                     Text="Contato"
+                    FontSize="18"
                     FontAttributes="Bold"
-                    TextColor="#262626" />
+                    TextColor="#222222" />
                 <Label
                     x:Name="StatusLabel"
                     Text="Online"
@@ -49,128 +42,155 @@
                     TextColor="#5d259c" />
             </StackLayout>
 
-            <!-- Botão de chamada em tempo real -->
-            <Frame
+            <!-- Chamada -->
+            <ImageButton
                 Grid.Column="2"
-                WidthRequest="36"
-                HeightRequest="36"
-                CornerRadius="18"
-                Padding="0"
-                HasShadow="True">
-                <Frame.Background>
-                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
-                        <GradientStop Color="#5d259c" Offset="0.0" />
-                        <GradientStop Color="#5d25c0" Offset="1.0" />
-                    </LinearGradientBrush>
-                </Frame.Background>
-                <Frame.GestureRecognizers>
-                    <TapGestureRecognizer Tapped="OnCallTapped" />
-                </Frame.GestureRecognizers>
-                <Label
-                    Text="📞"
-                    TextColor="White"
-                    FontSize="16"
-                    HorizontalOptions="Center"
-                    VerticalOptions="Center" />
-            </Frame>
+                Source="call.png"
+                WidthRequest="28"
+                HeightRequest="28"
+                BackgroundColor="Transparent"
+                HorizontalOptions="End"
+                VerticalOptions="Center"
+                Clicked="OnCallTapped" />
+
         </Grid>
 
         <!-- MENSAGENS -->
         <ScrollView
             x:Name="MessagesScroll"
             Grid.Row="1"
-            Margin="0,12,0,8">
+            Padding="12,0,12,0">
             <VerticalStackLayout
                 x:Name="MessagesStack"
-                Spacing="8" />
+                Spacing="6"
+                Padding="0,0,0,8" />
         </ScrollView>
 
-        <!-- INPUT -->
-        <Grid
-            Grid.Row="2"
-            ColumnDefinitions="Auto,Auto,*,Auto"
-            Padding="4,4,4,0">
+        <!-- INPUT + GRAVAÇÃO -->
+        <Grid Grid.Row="2"
+              Padding="8,4,8,8"
+              RowDefinitions="Auto,Auto"
+              RowSpacing="4">
 
-            <!-- Botão imagem (cam.png) -->
-            <Frame
-                Grid.Column="0"
-                WidthRequest="32"
-                HeightRequest="32"
-                CornerRadius="16"
-                BackgroundColor="White"
-                HasShadow="True"
-                Padding="4">
-                <ImageButton
-                    Source="cam.png"
-                    BackgroundColor="Transparent"
-                    Clicked="OnAttachImageClicked"
-                    WidthRequest="24"
-                    HeightRequest="24"
-                    HorizontalOptions="Center"
+            <!-- BARRA DE GRAVAÇÃO (mostra só enquanto grava) -->
+            <Grid x:Name="RecordingBar"
+                  Grid.Row="0"
+                  IsVisible="False"
+                  ColumnDefinitions="Auto,*,Auto"
+                  Padding="8"
+                  BackgroundColor="#FFEDE7F6"
+                  Margin="0,0,0,4">
+
+                <BoxView
+                    WidthRequest="10"
+                    HeightRequest="10"
+                    Color="#FFEB5757"
+                    CornerRadius="5"
                     VerticalOptions="Center" />
-            </Frame>
 
-            <!-- Botão áudio (mic.png) -->
-            <Frame
-                Grid.Column="1"
-                WidthRequest="32"
-                HeightRequest="32"
-                CornerRadius="16"
-                BackgroundColor="White"
-                HasShadow="True"
-                Padding="4"
-                Margin="4,0,0,0">
-                <ImageButton
-                    Source="mic.png"
-                    BackgroundColor="Transparent"
-                    Clicked="OnAttachAudioClicked"
-                    WidthRequest="24"
-                    HeightRequest="24"
-                    HorizontalOptions="Center"
-                    VerticalOptions="Center" />
-            </Frame>
-
-            <!-- Campo de mensagem -->
-            <Frame
-                Grid.Column="2"
-                Margin="8,0"
-                CornerRadius="8"
-                BackgroundColor="White"
-                HasShadow="True"
-                Padding="8,4">
-                <Entry
-                    x:Name="MessageEntry"
-                    Placeholder="Mensagem..."
-                    Completed="OnEntryCompleted"
-                    BackgroundColor="Transparent"
-                    FontSize="14"
-                    HorizontalOptions="FillAndExpand"
-                    VerticalOptions="Center" />
-            </Frame>
-
-            <!-- Botão Enviar -->
-            <Frame
-                Grid.Column="3"
-                WidthRequest="40"
-                HeightRequest="40"
-                CornerRadius="20"
-                HasShadow="True"
-                Padding="0">
-                <Frame.Background>
-                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
-                        <GradientStop Color="#5d259c" Offset="0.0" />
-                        <GradientStop Color="#5d25c0" Offset="1.0" />
-                    </LinearGradientBrush>
-                </Frame.Background>
-                <Frame.GestureRecognizers>
-                    <TapGestureRecognizer Tapped="OnSendTapped" />
-                </Frame.GestureRecognizers>
                 <Label
-                    Text="➤"
-                    TextColor="White"
+                    Grid.Column="1"
+                    x:Name="RecordingTimeLabel"
+                    Text="Gravando... 00s"
+                    FontSize="12"
+                    TextColor="#333333"
+                    VerticalOptions="Center"
+                    Margin="8,0,0,0" />
+
+                <ImageButton
+                    Grid.Column="2"
+                    Source="close.png"
+                    WidthRequest="22"
+                    HeightRequest="22"
+                    BackgroundColor="Transparent"
+                    HorizontalOptions="End"
+                    VerticalOptions="Center"
+                    Clicked="OnCancelRecordingClicked" />
+            </Grid>
+
+            <!-- BARRA DE INPUT -->
+            <Grid Grid.Row="1"
+                  ColumnDefinitions="Auto,*,Auto,Auto"
+                  ColumnSpacing="8">
+
+                <!-- Botão imagem -->
+                <ImageButton
+                    Grid.Column="0"
+                    Source="image.png"
+                    WidthRequest="26"
+                    HeightRequest="26"
+                    BackgroundColor="Transparent"
+                    VerticalOptions="Center"
+                    Clicked="OnAttachImageClicked" />
+
+                <!-- Entrada de texto -->
+                <Frame
+                    Grid.Column="1"
+                    BackgroundColor="White"
+                    CornerRadius="20"
+                    Padding="12,6"
+                    HasShadow="False"
+                    BorderColor="#E0E0E0">
+                    <Entry
+                        x:Name="MessageEntry"
+                        Placeholder="Mensagem..."
+                        FontSize="14"
+                        TextColor="#222222"
+                        Completed="OnEntryCompleted" />
+                </Frame>
+
+                <!-- Botão gravar áudio -->
+                <ImageButton
+                    Grid.Column="2"
+                    x:Name="RecordAudioButton"
+                    Source="mic.png"
+                    WidthRequest="26"
+                    HeightRequest="26"
+                    BackgroundColor="Transparent"
+                    VerticalOptions="Center"
+                    Clicked="OnRecordAudioClicked" />
+
+                <!-- Botão enviar texto -->
+                <ImageButton
+                    Grid.Column="3"
+                    Source="send.png"
+                    WidthRequest="28"
+                    HeightRequest="28"
+                    BackgroundColor="Transparent"
+                    VerticalOptions="Center">
+                    <ImageButton.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnSendTapped" />
+                    </ImageButton.GestureRecognizers>
+                </ImageButton>
+
+            </Grid>
+        </Grid>
+
+        <!-- OVERLAY DE IMAGEM EM TELA CHEIA -->
+        <Grid x:Name="FullImageOverlay"
+              RowSpan="3"
+              BackgroundColor="#CC000000"
+              IsVisible="False">
+
+            <Grid>
+                <Image
+                    x:Name="FullImageView"
+                    Aspect="AspectFit"
                     HorizontalOptions="Center"
                     VerticalOptions="Center" />
-            </Frame>
+
+                <ImageButton
+                    Source="close.png"
+                    WidthRequest="32"
+                    HeightRequest="32"
+                    BackgroundColor="Transparent"
+                    HorizontalOptions="End"
+                    VerticalOptions="Start"
+                    Margin="16"
+                    Clicked="OnCloseFullImageClicked" />
+            </Grid>
         </Grid>
+
     </Grid>
+
 </ContentPage>

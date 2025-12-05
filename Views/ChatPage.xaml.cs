@@ -2,11 +2,14 @@
 using AmoraApp.Services;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Storage;
+using Plugin.Maui.Audio;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace AmoraApp.Views
@@ -24,20 +27,33 @@ namespace AmoraApp.Views
         private bool _isGroupAdmin;
         private string _groupName = string.Empty;
 
-        // Agora pega o UID diretamente do FirebaseAuthService
         private string CurrentUserId =>
             FirebaseAuthService.Instance.CurrentUserUid ?? string.Empty;
 
+        // ===== ÁUDIO (gravação estilo WhatsApp) =====
+        private readonly IAudioManager? _audioManager;
+        private IAudioRecorder? _audioRecorder;
+        private bool _isRecording;
+        private DateTime _recordingStartUtc;
+        private IDispatcherTimer? _recordingTimer;
+
+        // ===== ÁUDIO (reprodução) =====
+        private IAudioPlayer? _audioPlayer;
+        private Stream? _currentAudioStream;
+        private IDispatcherTimer? _audioTimer;
+        private string? _currentAudioUrl;
+        private Button? _currentAudioButton;
+        private Label? _currentAudioTimeLabel;
+
         // ===================== CONSTRUTORES =====================
 
-        /// <summary>
-        /// Construtor principal: recebe um ChatItem (pode ser 1x1 ou grupo).
-        /// </summary>
         public ChatPage(ChatItem chat)
         {
             _chatItem = chat ?? throw new ArgumentNullException(nameof(chat));
 
             InitializeComponent();
+
+            _audioManager = MauiProgram.ServiceProvider.GetService<IAudioManager>();
 
             _isGroupChat = chat.IsGroup;
             _isGroupAdmin = chat.IsGroupAdmin;
@@ -61,9 +77,6 @@ namespace AmoraApp.Views
             UpdateHeader();
         }
 
-        /// <summary>
-        /// Construtor de conveniência para 1x1, mantido para compatibilidade.
-        /// </summary>
         public ChatPage(string otherUserId, string otherUserName)
             : this(new ChatItem
             {
@@ -75,9 +88,6 @@ namespace AmoraApp.Views
         {
         }
 
-        /// <summary>
-        /// Construtor sem parâmetros – mantém por compatibilidade (Preview/XAML).
-        /// </summary>
         public ChatPage()
             : this(new ChatItem
             {
@@ -124,6 +134,8 @@ namespace AmoraApp.Views
                 return;
             }
 
+            StopRecordingUiOnly();
+
             if (_isGroupChat)
             {
                 if (string.IsNullOrWhiteSpace(_chatId))
@@ -135,11 +147,9 @@ namespace AmoraApp.Views
                 }
 
                 await LoadMessagesAsync();
-                // não tem presença em grupo
                 return;
             }
 
-            // 1x1
             if (string.IsNullOrWhiteSpace(OtherUserId))
             {
                 Console.WriteLine("[ChatPage] OtherUserId inválido no chat 1x1.");
@@ -167,6 +177,28 @@ namespace AmoraApp.Views
             await UpdateOtherUserStatusAsync();
         }
 
+        protected override void OnDisappearing()
+        {
+            base.OnDisappearing();
+
+            // Para áudio tocando
+            _audioTimer?.Stop();
+            _audioTimer = null;
+
+            if (_audioPlayer != null)
+            {
+                if (_audioPlayer.IsPlaying)
+                    _audioPlayer.Stop();
+
+                _audioPlayer.Dispose();
+                _audioPlayer = null;
+            }
+
+            _currentAudioStream?.Dispose();
+            _currentAudioStream = null;
+            _currentAudioUrl = null;
+        }
+
         private async Task LoadMessagesAsync()
         {
             if (string.IsNullOrWhiteSpace(_chatId))
@@ -183,7 +215,6 @@ namespace AmoraApp.Views
 
             ScrollToBottom();
 
-            // marca como lidas
             try
             {
                 await ChatService.Instance.MarkMessagesAsReadAsync(_chatId, CurrentUserId, list);
@@ -191,7 +222,7 @@ namespace AmoraApp.Views
             catch { }
         }
 
-        // ===== PRESENÇA DO OUTRO USUÁRIO (apenas 1x1) =====
+        // ===== PRESENÇA =====
 
         private async Task UpdateOtherUserStatusAsync()
         {
@@ -249,19 +280,70 @@ namespace AmoraApp.Views
             }
         }
 
-        // ===== EVENTOS DO INPUT =====
+        // ===== HEADER / NAVEGAÇÃO =====
+
+        private async void OnBackButtonClicked(object sender, EventArgs e)
+        {
+            try
+            {
+                await Navigation.PopAsync();
+            }
+            catch { }
+        }
+
+        private async void OnCallTapped(object sender, EventArgs e)
+        {
+            try
+            {
+                if (_isGroupChat)
+                {
+                    await DisplayAlert("Aviso",
+                        "Chamada em grupo ainda não foi implementada.",
+                        "OK");
+                    return;
+                }
+
+                if (string.IsNullOrWhiteSpace(CurrentUserId) || string.IsNullOrWhiteSpace(OtherUserId))
+                {
+                    await DisplayAlert("Erro",
+                        "Usuário ou contato inválido para iniciar chamada.",
+                        "OK");
+                    return;
+                }
+
+                if (string.IsNullOrWhiteSpace(_chatId))
+                {
+                    _chatId = await ChatService.Instance.GetOrCreateChatAsync(CurrentUserId, OtherUserId);
+                }
+
+                var roomName = $"amoraapp-{_chatId}";
+                var callUrl = $"https://meet.jit.si/{Uri.EscapeDataString(roomName)}";
+
+                await Launcher.OpenAsync(callUrl);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ChatPage] Erro ao iniciar chamada: {ex}");
+                await DisplayAlert("Erro",
+                    "Não foi possível iniciar a chamada.",
+                    "OK");
+            }
+        }
+
+        // ===== TEXTO =====
 
         private async void OnEntryCompleted(object sender, EventArgs e)
         {
             await SendCurrentMessageAsync();
         }
 
-        private async void OnSendTapped(object sender, TappedEventArgs e)
+        private async void OnSendTapped(object sender, EventArgs e)
         {
             await SendCurrentMessageAsync();
         }
 
-        // Clique no botão de imagem
+        // ===== IMAGEM =====
+
         private async void OnAttachImageClicked(object sender, EventArgs e)
         {
             try
@@ -338,11 +420,52 @@ namespace AmoraApp.Views
             }
         }
 
-        // Clique no botão de áudio (upload de arquivo de áudio)
-        private async void OnAttachAudioClicked(object sender, EventArgs e)
+        private void OnImageTapped(object sender, TappedEventArgs e)
+        {
+            if (sender is Image img && img.Source != null)
+            {
+                FullImageView.Source = img.Source;
+                FullImageOverlay.IsVisible = true;
+            }
+        }
+
+        private void OnCloseFullImageClicked(object sender, EventArgs e)
+        {
+            FullImageOverlay.IsVisible = false;
+            FullImageView.Source = null;
+        }
+
+        // ===== ÁUDIO - GRAVAÇÃO =====
+
+        private async void OnRecordAudioClicked(object sender, EventArgs e)
+        {
+            if (_isRecording)
+            {
+                await StopRecordingAndSendAsync(send: true);
+            }
+            else
+            {
+                await StartRecordingAsync();
+            }
+        }
+
+        private async void OnCancelRecordingClicked(object sender, EventArgs e)
+        {
+            await StopRecordingAndSendAsync(send: false);
+        }
+
+        private async Task StartRecordingAsync()
         {
             try
             {
+                if (_audioManager == null)
+                {
+                    await DisplayAlert("Erro",
+                        "Recurso de áudio não está disponível. Verifique a configuração do Plugin.Maui.Audio.",
+                        "OK");
+                    return;
+                }
+
                 if (string.IsNullOrWhiteSpace(CurrentUserId))
                 {
                     await DisplayAlert("Erro",
@@ -370,36 +493,123 @@ namespace AmoraApp.Views
                     }
 
                     _chatId = await ChatService.Instance.GetOrCreateChatAsync(CurrentUserId, OtherUserId);
-                    Console.WriteLine($"[ChatPage] ChatId criado no envio de áudio: '{_chatId}'");
+                    Console.WriteLine($"[ChatPage] ChatId criado no início da gravação: '{_chatId}'");
                 }
 
-                var customAudioType = new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
+                var status = await Permissions.CheckStatusAsync<Permissions.Microphone>();
+                if (status != PermissionStatus.Granted)
                 {
-                    { DevicePlatform.Android, new[] { "audio/mpeg", "audio/mp3", "audio/aac", "audio/ogg", "audio/x-wav", "audio/wav" } },
-                    { DevicePlatform.iOS,     new[] { "public.audio" } },
-                    { DevicePlatform.WinUI,   new[] { ".mp3", ".wav", ".aac", ".ogg" } },
-                    { DevicePlatform.MacCatalyst, new[] { "public.audio" } }
-                });
+                    status = await Permissions.RequestAsync<Permissions.Microphone>();
+                    if (status != PermissionStatus.Granted)
+                    {
+                        await DisplayAlert("Permissão negada",
+                            "É necessário permitir o acesso ao microfone para gravar áudio.",
+                            "OK");
+                        return;
+                    }
+                }
 
-                var pickResult = await FilePicker.Default.PickAsync(new PickOptions
+                _audioRecorder = _audioManager.CreateRecorder();
+                await _audioRecorder.StartAsync();
+
+                _isRecording = true;
+                _recordingStartUtc = DateTime.UtcNow;
+
+                RecordingBar.IsVisible = true;
+                RecordingTimeLabel.Text = "Gravando... 00s";
+
+                _recordingTimer?.Stop();
+                _recordingTimer = Dispatcher.CreateTimer();
+                _recordingTimer.Interval = TimeSpan.FromSeconds(1);
+                _recordingTimer.Tick += (s, e) =>
                 {
-                    PickerTitle = "Selecione um áudio",
-                    FileTypes = customAudioType
-                });
+                    var elapsed = DateTime.UtcNow - _recordingStartUtc;
+                    if (elapsed < TimeSpan.Zero)
+                        elapsed = TimeSpan.Zero;
 
-                if (pickResult == null)
+                    var totalSeconds = (int)elapsed.TotalSeconds;
+                    if (totalSeconds > 45)
+                        totalSeconds = 45;
+
+                    RecordingTimeLabel.Text = $"Gravando... {totalSeconds:D2}s";
+
+                    if (elapsed.TotalSeconds >= 45)
+                    {
+                        _recordingTimer?.Stop();
+                        _ = StopRecordingAndSendAsync(send: true);
+                    }
+                };
+                _recordingTimer.Start();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ChatPage] Erro ao iniciar gravação: {ex}");
+                await DisplayAlert("Erro",
+                    "Não foi possível iniciar a gravação de áudio.",
+                    "OK");
+                StopRecordingUiOnly();
+            }
+        }
+
+        private void StopRecordingUiOnly()
+        {
+            _isRecording = false;
+            RecordingBar.IsVisible = false;
+
+            if (_recordingTimer != null)
+            {
+                _recordingTimer.Stop();
+                _recordingTimer = null;
+            }
+        }
+
+        private async Task StopRecordingAndSendAsync(bool send)
+        {
+            if (!_isRecording && _audioRecorder == null)
+            {
+                StopRecordingUiOnly();
+                return;
+            }
+
+            IAudioSource? recordedAudio = null;
+
+            try
+            {
+                if (_audioRecorder != null)
+                {
+                    recordedAudio = await _audioRecorder.StopAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ChatPage] Erro ao parar gravação: {ex}");
+            }
+            finally
+            {
+                _audioRecorder = null;
+                StopRecordingUiOnly();
+            }
+
+            if (!send || recordedAudio == null)
+                return;
+
+            try
+            {
+                using var audioStream = recordedAudio.GetAudioStream();
+                if (audioStream == null)
+                {
+                    await DisplayAlert("Erro",
+                        "Não foi possível obter o áudio gravado.",
+                        "OK");
                     return;
+                }
 
-                await using var fileStream = await pickResult.OpenReadAsync();
+                var fileName = $"chatAudio/{_chatId}/{Guid.NewGuid():N}.wav";
 
-                var safeName = pickResult.FileName.Replace(" ", "_");
-                var fileName = $"chatAudio/{_chatId}/{Guid.NewGuid():N}_{safeName}";
-
-                // usando método genérico de upload (ajuste se o nome for diferente)
                 var audioUrl = await FirebaseStorageService.Instance.UploadFileAsync(
-                    fileStream,
+                    audioStream,
                     fileName,
-                    pickResult.ContentType ?? "audio/mpeg");
+                    "audio/wav");
 
                 if (string.IsNullOrWhiteSpace(audioUrl))
                 {
@@ -429,14 +639,131 @@ namespace AmoraApp.Views
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[ChatPage] Erro ao anexar áudio: {ex}");
+                Console.WriteLine($"[ChatPage] Erro ao enviar áudio gravado: {ex}");
                 await DisplayAlert("Erro",
-                    "Não foi possível enviar o áudio.",
+                    "Não foi possível enviar o áudio gravado.",
                     "OK");
             }
         }
 
-        // ===== ENVIO DE MENSAGEM DE TEXTO =====
+        // ===== REPRODUÇÃO DE ÁUDIO (play/pause + tempo) =====
+
+        private string FormatTime(TimeSpan ts)
+        {
+            if (ts.TotalHours >= 1)
+                return $"{(int)ts.TotalHours:D2}:{ts.Minutes:D2}:{ts.Seconds:D2}";
+            return $"{(int)ts.TotalMinutes:D2}:{ts.Seconds:D2}";
+        }
+
+        private void StartAudioTimer()
+        {
+            _audioTimer?.Stop();
+
+            if (_audioPlayer == null || _currentAudioTimeLabel == null)
+                return;
+
+            _audioTimer = Dispatcher.CreateTimer();
+            _audioTimer.Interval = TimeSpan.FromMilliseconds(500);
+            _audioTimer.Tick += (s, e) =>
+            {
+                if (_audioPlayer == null || _currentAudioTimeLabel == null)
+                    return;
+
+                var total = TimeSpan.FromSeconds(_audioPlayer.Duration);
+                var current = TimeSpan.FromSeconds(_audioPlayer.CurrentPosition);
+
+                if (_audioPlayer.IsPlaying)
+                {
+                    // tocando -> mostra atual / total
+                    _currentAudioTimeLabel.Text =
+                        $"{FormatTime(current)} / {FormatTime(total)}";
+                }
+                else
+                {
+                    // parado -> mostra só o total
+                    _currentAudioTimeLabel.Text = FormatTime(total);
+                    _audioTimer?.Stop();
+                    if (_currentAudioButton != null)
+                        _currentAudioButton.Text = "▶";
+                }
+            };
+            _audioTimer.Start();
+        }
+
+        private async Task PlayPauseAudioAsync(string audioUrl, Button button, Label timeLabel)
+        {
+            try
+            {
+                if (_audioManager == null || string.IsNullOrWhiteSpace(audioUrl))
+                    return;
+
+                // Se é o mesmo áudio
+                if (_audioPlayer != null && _currentAudioUrl == audioUrl)
+                {
+                    if (_audioPlayer.IsPlaying)
+                    {
+                        _audioPlayer.Pause();
+                        button.Text = "▶";
+                    }
+                    else
+                    {
+                        _currentAudioButton = button;
+                        _currentAudioTimeLabel = timeLabel;
+
+                        button.Text = "⏸";
+                        StartAudioTimer();
+                        _audioPlayer.Play();
+                    }
+                    return;
+                }
+
+                // Novo áudio -> para anterior
+                _audioTimer?.Stop();
+                _audioTimer = null;
+
+                if (_audioPlayer != null)
+                {
+                    if (_audioPlayer.IsPlaying)
+                        _audioPlayer.Stop();
+                    _audioPlayer.Dispose();
+                    _audioPlayer = null;
+                }
+
+                _currentAudioStream?.Dispose();
+                _currentAudioStream = null;
+
+                _currentAudioUrl = audioUrl;
+                _currentAudioButton = button;
+                _currentAudioTimeLabel = timeLabel;
+
+                using var http = new HttpClient();
+                var bytes = await http.GetByteArrayAsync(audioUrl);
+
+                _currentAudioStream = new MemoryStream(bytes);
+                _audioPlayer = _audioManager.CreatePlayer(_currentAudioStream);
+
+                var total = TimeSpan.FromSeconds(_audioPlayer.Duration);
+                if (total.TotalSeconds <= 0)
+                    total = TimeSpan.Zero;
+
+                // parado: mostra só total
+                timeLabel.Text = FormatTime(total);
+
+                button.Text = "⏸";
+                _audioPlayer.Play();
+
+                StartAudioTimer();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ChatPage] Erro ao reproduzir áudio: {ex}");
+                await DisplayAlert("Erro",
+                    "Não foi possível reproduzir o áudio.",
+                    "OK");
+            }
+        }
+
+        // ===== ENVIO TEXTO =====
 
         private async Task SendCurrentMessageAsync()
         {
@@ -531,7 +858,7 @@ namespace AmoraApp.Views
             }
         }
 
-        // ===== UI DAS BOLHAS =====
+        // ===== BOLHAS =====
 
         private void AddBubble(ChatMessage msg)
         {
@@ -558,17 +885,23 @@ namespace AmoraApp.Views
                     var bytes = Convert.FromBase64String(msg.ImageBase64);
                     var imgSource = ImageSource.FromStream(() => new MemoryStream(bytes));
 
-                    layout.Children.Add(new Image
+                    var imageControl = new Image
                     {
                         Source = imgSource,
                         Aspect = Aspect.AspectFill,
                         HeightRequest = 180,
                         WidthRequest = 220
-                    });
+                    };
+
+                    var tap = new TapGestureRecognizer();
+                    tap.Tapped += OnImageTapped;
+                    imageControl.GestureRecognizers.Add(tap);
+
+                    layout.Children.Add(imageControl);
                 }
                 catch
                 {
-                    // se der erro ao decodificar, ignora a imagem
+                    // ignora erro na imagem
                 }
             }
 
@@ -576,29 +909,37 @@ namespace AmoraApp.Views
             {
                 var audioButton = new Button
                 {
-                    Text = "▶ Áudio",
+                    Text = "▶",
                     FontSize = 12,
                     Padding = new Thickness(8, 4),
                     BackgroundColor = isMine ? Color.FromArgb("#6f3ad4") : Color.FromArgb("#eeeeee"),
                     TextColor = isMine ? Colors.White : Color.FromArgb("#333333"),
-                    CornerRadius = 16
+                    CornerRadius = 16,
+                    HorizontalOptions = LayoutOptions.Start
+                };
+
+                var timeLabel = new Label
+                {
+                    Text = "--:--",
+                    FontSize = 11,
+                    TextColor = isMine ? Colors.White : Color.FromArgb("#555555"),
+                    VerticalOptions = LayoutOptions.Center
                 };
 
                 audioButton.Clicked += async (s, e) =>
                 {
-                    try
-                    {
-                        await Launcher.OpenAsync(new Uri(msg.AudioUrl));
-                    }
-                    catch
-                    {
-                        await DisplayAlert("Erro",
-                            "Não foi possível reproduzir o áudio.",
-                            "OK");
-                    }
+                    await PlayPauseAudioAsync(msg.AudioUrl, audioButton, timeLabel);
                 };
 
-                layout.Children.Add(audioButton);
+                var audioRow = new HorizontalStackLayout
+                {
+                    Spacing = 8,
+                    VerticalOptions = LayoutOptions.Center
+                };
+                audioRow.Children.Add(audioButton);
+                audioRow.Children.Add(timeLabel);
+
+                layout.Children.Add(audioRow);
             }
 
             var bubble = new Frame
@@ -630,7 +971,7 @@ namespace AmoraApp.Views
             });
         }
 
-        // ===== GERENCIAMENTO DE GRUPO (header tap) =====
+        // ===== GRUPO (opcional) =====
 
         private async void OnHeaderTapped(object sender, EventArgs e)
         {
@@ -657,9 +998,6 @@ namespace AmoraApp.Views
 
                 case "Excluir grupo":
                     await DeleteGroupAsync();
-                    break;
-
-                default:
                     break;
             }
         }
@@ -705,7 +1043,6 @@ namespace AmoraApp.Views
                         ? name
                         : $"{name} ({city})";
 
-                    // Evita duplicar label
                     var finalLabel = label;
                     int dup = 2;
                     while (labelToId.ContainsKey(finalLabel))
@@ -730,7 +1067,6 @@ namespace AmoraApp.Views
                 if (!labelToId.TryGetValue(chosen, out var selectedId))
                     return;
 
-                // 🔥 usa AddGroupMembersAsync com requesterId
                 await ChatService.Instance.AddGroupMembersAsync(_chatId, CurrentUserId, new[] { selectedId });
 
                 await DisplayAlert("Pronto",
@@ -755,7 +1091,6 @@ namespace AmoraApp.Views
                 var memberIds = await ChatService.Instance.GetGroupMemberIdsAsync(_chatId)
                     ?? new List<string>();
 
-                // Não permite remover a si mesmo por aqui
                 memberIds = memberIds
                     .Where(id => !string.IsNullOrWhiteSpace(id) && id != CurrentUserId)
                     .ToList();
@@ -804,7 +1139,6 @@ namespace AmoraApp.Views
                 if (!labelToId.TryGetValue(chosen, out var selectedId))
                     return;
 
-                // 🔥 usa RemoveGroupMemberAsync com requesterId
                 await ChatService.Instance.RemoveGroupMemberAsync(_chatId, CurrentUserId, selectedId);
 
                 await DisplayAlert("Pronto",
@@ -832,10 +1166,9 @@ namespace AmoraApp.Views
 
             try
             {
-                if (string.IsNullOrWhiteSpace(_chatId) || string.IsNullOrWhiteSpace(CurrentUserId))
+                if (string.IsNullOrWhiteSpace(_chatId))
                     return;
 
-                // 🔥 agora passa também o requesterId
                 await ChatService.Instance.DeleteGroupAsync(_chatId, CurrentUserId);
 
                 await DisplayAlert("Pronto",
@@ -848,47 +1181,6 @@ namespace AmoraApp.Views
             {
                 await DisplayAlert("Erro",
                     "Não foi possível excluir o grupo.\n" + ex.Message,
-                    "OK");
-            }
-        }
-
-        // ===== CHAMADA EM TEMPO REAL (Jitsi) =====
-
-        private async void OnCallTapped(object sender, EventArgs e)
-        {
-            try
-            {
-                if (_isGroupChat)
-                {
-                    await DisplayAlert("Aviso",
-                        "Chamada em grupo ainda não foi implementada.",
-                        "OK");
-                    return;
-                }
-
-                if (string.IsNullOrWhiteSpace(CurrentUserId) || string.IsNullOrWhiteSpace(OtherUserId))
-                {
-                    await DisplayAlert("Erro",
-                        "Usuário ou contato inválido para iniciar chamada.",
-                        "OK");
-                    return;
-                }
-
-                if (string.IsNullOrWhiteSpace(_chatId))
-                {
-                    _chatId = await ChatService.Instance.GetOrCreateChatAsync(CurrentUserId, OtherUserId);
-                }
-
-                var roomName = $"amoraapp-{_chatId}";
-                var callUrl = $"https://meet.jit.si/{Uri.EscapeDataString(roomName)}";
-
-                await Launcher.OpenAsync(callUrl);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"[ChatPage] Erro ao iniciar chamada: {ex}");
-                await DisplayAlert("Erro",
-                    "Não foi possível iniciar a chamada.",
                     "OK");
             }
         }

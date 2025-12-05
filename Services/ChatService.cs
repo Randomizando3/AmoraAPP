@@ -296,6 +296,35 @@ namespace AmoraApp.Services
             await _httpClient.DeleteAsync(msgPath);
         }
 
+        // ====== HELPERS DE CONVENIÊNCIA USADOS PELA ChatPage ======
+
+        /// <summary>
+        /// Helper simples para adicionar UM membro a partir da UI (usa CurrentUser como requester).
+        /// </summary>
+        public async Task AddMemberToGroupAsync(string chatId, string memberId)
+        {
+            var requester = FirebaseAuthService.Instance.CurrentUserUid ?? string.Empty;
+            await AddGroupMembersAsync(chatId, requester, new[] { memberId });
+        }
+
+        /// <summary>
+        /// Helper simples para remover UM membro a partir da UI (usa CurrentUser como requester).
+        /// </summary>
+        public async Task RemoveMemberFromGroupAsync(string chatId, string memberId)
+        {
+            var requester = FirebaseAuthService.Instance.CurrentUserUid ?? string.Empty;
+            await RemoveGroupMemberAsync(chatId, requester, memberId);
+        }
+
+        /// <summary>
+        /// Helper simples para excluir o grupo (usa CurrentUser como requester).
+        /// </summary>
+        public async Task DeleteGroupAsync(string chatId)
+        {
+            var requester = FirebaseAuthService.Instance.CurrentUserUid ?? string.Empty;
+            await DeleteGroupAsync(chatId, requester);
+        }
+
         // ============================================================
         // MENSAGENS
         // ============================================================

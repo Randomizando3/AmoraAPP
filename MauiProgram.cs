@@ -1,12 +1,12 @@
 ﻿using AmoraApp.Services;
 using AmoraApp.ViewModels;
 using AmoraApp.Views;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls.Hosting;
 using Microsoft.Maui.Hosting;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.LifecycleEvents;
-
+using Plugin.Maui.Audio;
 
 #if WINDOWS
 using Microsoft.UI.Windowing;          // AppWindow, OverlappedPresenter
@@ -32,6 +32,9 @@ namespace AmoraApp
                     fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
                 });
 
+            // Plugin.Maui.Audio
+            builder.Services.AddSingleton(AudioManager.Current);
+
             // ---------------------------
             // CONFIGURAÇÃO DE JANELA FIXA NO WINDOWS
             // ---------------------------
@@ -42,7 +45,6 @@ namespace AmoraApp
                 {
                     w.OnWindowCreated(window =>
                     {
-                        // Tamanho da janela estilo smartphone
                         const int width = 390;
                         const int height = 760;
 
@@ -50,20 +52,14 @@ namespace AmoraApp
                         {
                             var winuiWindow = (Microsoft.UI.Xaml.Window)window;
 
-                            // Handle da janela
                             var hWnd = WindowNative.GetWindowHandle(winuiWindow);
-
-                            // Identificador da janela (fix: Microsoft.UI.Win32Interop)
                             var windowId = Microsoft.UI.Win32Interop.GetWindowIdFromWindow(hWnd);
-
                             var appWindow = AppWindow.GetFromWindowId(windowId);
 
                             if (appWindow != null)
                             {
-                                // Define tamanho
                                 appWindow.Resize(new SizeInt32(width, height));
 
-                                // Impede redimensionamento
                                 if (appWindow.Presenter is OverlappedPresenter presenter)
                                 {
                                     presenter.IsResizable = false;
@@ -110,10 +106,7 @@ namespace AmoraApp
             builder.Services.AddTransient<FiltersPage>();
             builder.Services.AddTransient<PhotoGalleryPage>();
 
-            // Build App
             var app = builder.Build();
-
-            // Guardar ServiceProvider global
             ServiceProvider = app.Services;
 
             return app;
