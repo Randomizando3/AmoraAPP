@@ -121,8 +121,35 @@
                                          Padding="16,0,16,12"
                                          Spacing="8">
 
+                                <!-- LINHA DOS BADGES (BOOST / ONLINE / DISTÂNCIA) -->
                                 <StackLayout Orientation="Horizontal" Spacing="10">
 
+                                    <!-- BADGE BOOST -->
+                                    <Border
+                                        BackgroundColor="#FFF5E6"
+                                        Stroke="#FFC266"
+                                        StrokeThickness="2"
+                                        IsVisible="{Binding CurrentUser.IsBoostActive}">
+                                        <Border.StrokeShape>
+                                            <RoundRectangle CornerRadius="12" />
+                                        </Border.StrokeShape>
+
+                                        <StackLayout Orientation="Horizontal"
+                                                     Padding="10,4"
+                                                     Spacing="4">
+                                            <Image Source="boost.png"
+                                                   WidthRequest="14"
+                                                   HeightRequest="14"
+                                                   VerticalOptions="Center" />
+                                            <Label Text="BOOST"
+                                                   FontAttributes="Bold"
+                                                   FontSize="11"
+                                                   TextColor="#CC7A00"
+                                                   VerticalOptions="Center" />
+                                        </StackLayout>
+                                    </Border>
+
+                                    <!-- ONLINE -->
                                     <Border BackgroundColor="#FFE7F4"
                                             Stroke="#F3C9E2"
                                             StrokeThickness="2">
@@ -150,6 +177,7 @@
                                                FontSize="11" />
                                     </Border>
 
+                                    <!-- DISTÂNCIA -->
                                     <Border BackgroundColor="#F0F0F0"
                                             Stroke="#DDDDDD"
                                             StrokeThickness="2">
@@ -179,6 +207,7 @@
 
                                 </StackLayout>
 
+                                <!-- INTERESSES -->
                                 <FlexLayout Wrap="Wrap"
                                             AlignItems="Center"
                                             BindableLayout.ItemsSource="{Binding CurrentUser.Interests}">

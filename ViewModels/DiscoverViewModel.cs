@@ -19,6 +19,19 @@ namespace AmoraApp.ViewModels
         private readonly FriendService _friendService;
         private readonly PresenceService _presenceService;
 
+        // ===== CONFIG BOOST (ajuste aqui o comportamento geral) =====
+
+        // Durações por plano
+        private static readonly TimeSpan FreeBoostDuration = TimeSpan.FromMinutes(15);   // Free com token
+        private static readonly TimeSpan PlusBoostDuration = TimeSpan.FromHours(3);      // Plus: 3h
+        private static readonly TimeSpan PremiumBoostDuration = TimeSpan.FromHours(3);   // Premium: 3h
+
+        // Limites diários por plano
+        private const int FreeBoostDailyLimit = 1;      // Free: 1 boost/dia
+        private const int PlusBoostDailyLimit = 3;      // Plus: 3 boosts/dia
+        private const int PremiumBoostDailyLimit = 5;   // Premium: 5 boosts/dia
+
+
         // Lista completa de usuários recebida do Firebase
         private List<UserProfile> _allUsers = new();
 
@@ -28,10 +41,15 @@ namespace AmoraApp.ViewModels
         // Planos
         private readonly PlanService _planService = PlanService.Instance;
 
+        // Banco (pra carregar meu perfil e salvar boost)
+        private readonly FirebaseDatabaseService _dbService = FirebaseDatabaseService.Instance;
 
         // Minha localização
         private double? _myLat;
         private double? _myLon;
+
+        // Meu perfil (para plano, boosts, tokens, etc.)
+        private UserProfile? _myProfile;
 
         // ====== Propriedades observáveis ======
 
@@ -235,6 +253,8 @@ namespace AmoraApp.ViewModels
             _authService = authService;
             _friendService = FriendService.Instance;
             _presenceService = PresenceService.Instance;
+            _planService = PlanService.Instance;
+            _dbService = FirebaseDatabaseService.Instance;
         }
 
         /// <summary>
@@ -289,12 +309,16 @@ namespace AmoraApp.ViewModels
             if (string.IsNullOrWhiteSpace(uid))
                 return;
 
+            // Minha localização
             var myLoc = await LocationService.Instance.GetCurrentLocationAsync();
             if (myLoc != null)
             {
                 _myLat = myLoc.Latitude;
                 _myLon = myLoc.Longitude;
             }
+
+            // Meu perfil (para plano, tokens e boost)
+            _myProfile = await _dbService.GetUserProfileAsync(uid);
 
             var list = await _matchService.GetUsersForDiscoverAsync(uid);
 
@@ -323,7 +347,7 @@ namespace AmoraApp.ViewModels
 
             var filtered = _allUsers
                 .Where(PassesFilters)
-                .OrderByDescending(GetPlanPriority);  // PREMIUM, depois PLUS, depois FREE
+                .OrderByDescending(GetPlanPriority);  // PREMIUM, depois PLUS, depois FREE, com boost aplicado
 
             foreach (var u in filtered)
                 Users.Add(u);
@@ -336,7 +360,6 @@ namespace AmoraApp.ViewModels
                 DistanceText = string.Empty;
             }
         }
-
 
         private bool PassesFilters(UserProfile u)
         {
@@ -437,7 +460,7 @@ namespace AmoraApp.ViewModels
         }
 
         // ================ LIKE / DISLIKE / FRIEND ================
-        
+
         [RelayCommand]
         private async Task LikeAsync()
         {
@@ -480,7 +503,6 @@ namespace AmoraApp.ViewModels
 
             GoToNextUser();
         }
-
 
         [RelayCommand]
         private async Task DislikeAsync()
@@ -544,6 +566,149 @@ namespace AmoraApp.ViewModels
 
             CurrentUser = previous;
         }
+
+        [RelayCommand]
+        private async Task BoostAsync()
+        {
+            var me = _authService.CurrentUserUid;
+            if (string.IsNullOrWhiteSpace(me))
+                return;
+
+            // garante que meu perfil está carregado
+            if (_myProfile == null || _myProfile.Id != me)
+            {
+                _myProfile = await _dbService.GetUserProfileAsync(me);
+                if (_myProfile == null)
+                {
+                    await MainThread.InvokeOnMainThreadAsync(async () =>
+                    {
+                        await App.Current.MainPage.DisplayAlert(
+                            "Erro",
+                            "Não foi possível carregar seu perfil para aplicar o boost.",
+                            "OK");
+                    });
+                    return;
+                }
+            }
+
+            var plan = _planService.ParsePlanFromString(_myProfile.Plan);
+            var now = DateTimeOffset.UtcNow;
+
+            // Normaliza o dia (UTC) para meia-noite
+            var todayUtcDate = now.Date; // DateTime UTC, sem hora
+            var todayStart = new DateTimeOffset(todayUtcDate, TimeSpan.Zero).ToUnixTimeSeconds();
+
+            // Se o dia salvo for diferente do dia de hoje -> zera contador
+            if (_myProfile.BoostUsesDayUtc != todayStart)
+            {
+                _myProfile.BoostUsesDayUtc = todayStart;
+                _myProfile.BoostUsesToday = 0;
+            }
+
+            // Define limite diário conforme plano
+            int dailyLimit = plan switch
+            {
+                PlanType.Premium => PremiumBoostDailyLimit,
+                PlanType.Plus => PlusBoostDailyLimit,
+                _ => FreeBoostDailyLimit
+            };
+
+            // Verifica limite diário
+            if (_myProfile.BoostUsesToday >= dailyLimit)
+            {
+                await MainThread.InvokeOnMainThreadAsync(async () =>
+                {
+                    await App.Current.MainPage.DisplayAlert(
+                        "Limite diário atingido",
+                        plan switch
+                        {
+                            PlanType.Premium => "Você já usou todos os boosts Premium disponíveis hoje. Volte amanhã para usar mais.",
+                            PlanType.Plus => "Você já usou todos os boosts Plus disponíveis hoje. Volte amanhã para usar mais.",
+                            _ => "Você já usou todos os boosts disponíveis hoje. Considere assinar o Plus ou Premium para ter mais impulsos diários.",
+                        },
+                        "OK");
+                });
+                return;
+            }
+
+            // Já tem boost ativo?
+            if (_myProfile.IsBoostActive && _myProfile.BoostExpiresUtc > now.ToUnixTimeSeconds())
+            {
+                var remaining = DateTimeOffset.FromUnixTimeSeconds(_myProfile.BoostExpiresUtc) - now;
+                var minutes = Math.Max(1, (int)Math.Ceiling(remaining.TotalMinutes));
+
+                await MainThread.InvokeOnMainThreadAsync(async () =>
+                {
+                    await App.Current.MainPage.DisplayAlert(
+                        "Boost já ativo",
+                        $"Seu perfil já está em destaque por mais {minutes} min.",
+                        "OK");
+                });
+                return;
+            }
+
+            // Plano Free sem tokens não pode usar boost (além do limite diário)
+            if (plan == PlanType.Free && _myProfile.ExtraBoostTokens <= 0)
+            {
+                await MainThread.InvokeOnMainThreadAsync(async () =>
+                {
+                    await App.Current.MainPage.DisplayAlert(
+                        "Boost indisponível",
+                        "No plano gratuito o boost é liberado apenas com pacotes adicionais.\n" +
+                        "Assine o Plus (5x) ou Premium (10x) para ter boosts incluídos e mais usos por dia.",
+                        "OK");
+                });
+                return;
+            }
+
+            // Define multiplicador e duração conforme plano
+            int multiplier;
+            TimeSpan duration;
+
+            switch (plan)
+            {
+                case PlanType.Premium:
+                    multiplier = 10;                  // 10x para Premium
+                    duration = PremiumBoostDuration;  // 3h (config acima)
+                    break;
+
+                case PlanType.Plus:
+                    multiplier = 5;                  // 5x para Plus
+                    duration = PlusBoostDuration;    // 3h (config acima)
+                    break;
+
+                default:
+                    multiplier = 3;                  // Free com pacote avulso
+                    duration = FreeBoostDuration;    // 15min (config acima)
+                    _myProfile.ExtraBoostTokens = Math.Max(0, _myProfile.ExtraBoostTokens - 1);
+                    break;
+            }
+
+            var expiresAt = now.Add(duration);
+
+            _myProfile.IsBoostActive = true;
+            _myProfile.BoostMultiplier = multiplier;
+            _myProfile.BoostExpiresUtc = expiresAt.ToUnixTimeSeconds();
+            _myProfile.BoostUsesToday += 1;
+
+            await _dbService.SaveUserProfileAsync(_myProfile);
+
+            await MainThread.InvokeOnMainThreadAsync(async () =>
+            {
+                var msg = plan switch
+                {
+                    PlanType.Premium => $"Seu perfil foi impulsionado em 10x por {duration.TotalMinutes} minutos. 💜",
+                    PlanType.Plus => $"Seu perfil foi impulsionado em 5x por {duration.TotalMinutes} minutos. 💗",
+                    _ => $"Seu perfil foi impulsionado por {duration.TotalMinutes} minutos. ✨"
+                };
+
+                await App.Current.MainPage.DisplayAlert("Boost ativado", msg, "OK");
+            });
+
+            // Reorganiza a lista considerando boosts
+            ApplyFiltersInternal();
+        }
+
 
         private void GoToNextUser()
         {
@@ -619,22 +784,30 @@ namespace AmoraApp.ViewModels
             }
         }
 
-
-        //Prioridade da Fila de planos
-        private int GetPlanPriority(UserProfile u)
+        // Prioridade da Fila de planos + boost
+        private double GetPlanPriority(UserProfile u)
         {
-            // Se você preencher o Plan dentro do perfil
             var plan = PlanService.Instance.ParsePlanFromString(u.Plan);
 
-            return plan switch
+            var baseScore = plan switch
             {
                 PlanType.Premium => 3,
                 PlanType.Plus => 2,
                 _ => 1
             };
+
+            // BOOST: se tiver boost ativo e não expirado, multiplica a pontuação
+            var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+            var boostMultiplier = 1.0;
+
+            if (u.IsBoostActive && u.BoostExpiresUtc > now)
+            {
+                var mult = u.BoostMultiplier <= 1 ? 2 : u.BoostMultiplier;
+                boostMultiplier = mult;
+            }
+
+            return baseScore * boostMultiplier;
         }
-
-
 
         // ================ HAVERSINE ================
 

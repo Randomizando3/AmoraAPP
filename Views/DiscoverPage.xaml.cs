@@ -153,8 +153,12 @@ namespace AmoraApp.Views
         // BOTÃO BOOST
         private async void OnBoostTapped(object sender, EventArgs e)
         {
-            await DisplayAlert("Boost", "Função de boost / destaque ainda será implementada.", "OK");
+            if (Vm?.BoostCommand != null && Vm.BoostCommand.CanExecute(null))
+                Vm.BoostCommand.Execute(null);
+
+            await Task.CompletedTask;
         }
+
 
         // BOTÃO ADD no rodapé (amizade via Command já está no XAML)
         private async void OnAddTapped(object sender, EventArgs e)

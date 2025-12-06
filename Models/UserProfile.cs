@@ -81,5 +81,42 @@ namespace AmoraApp.Models
         /// </summary>
         public string Plan { get; set; } = "Free";
 
+        // ===== BOOST / DESTAQUE =====
+
+        /// <summary>
+        /// Se true, o perfil está com boost ativo (destaque) no Discover.
+        /// </summary>
+        public bool IsBoostActive { get; set; } = false;
+
+        /// <summary>
+        /// Quando o boost termina (Unix time em segundos UTC).
+        /// 0 = sem boost.
+        /// </summary>
+        public long BoostExpiresUtc { get; set; } = 0;
+
+        /// <summary>
+        /// Fator de prioridade enquanto o boost está ativo.
+        /// Ex.: 5 para Plus, 10 para Premium, etc.
+        /// </summary>
+        public int BoostMultiplier { get; set; } = 1;
+
+        /// <summary>
+        /// Quantidade de boosts avulsos (pacotes adicionais).
+        /// Usado para plano Free poder ativar boost consumindo 1 token.
+        /// </summary>
+        public int ExtraBoostTokens { get; set; } = 0;
+
+        /// <summary>
+        /// Quantas vezes o usuário usou boost no dia registrado em BoostUsesDayUtc.
+        /// </summary>
+        public int BoostUsesToday { get; set; } = 0;
+
+        /// <summary>
+        /// Dia (UTC) em que o contador BoostUsesToday vale.
+        /// Armazenado como Unix time em segundos da data à meia-noite UTC.
+        /// </summary>
+        public long BoostUsesDayUtc { get; set; } = 0;
+
+
     }
 }
