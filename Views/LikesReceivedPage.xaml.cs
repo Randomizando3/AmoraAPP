@@ -88,7 +88,16 @@ namespace AmoraApp.Views
                 foreach (var u in raw)
                 {
                     if (u == null) continue;
+
                     u.PhotoUrl ??= string.Empty;
+
+                    // Monta "Cidade, Idade" se tiver os dois
+                    if (!string.IsNullOrWhiteSpace(u.City) && u.Age > 0 &&
+                        !u.City.Contains($", {u.Age}"))
+                    {
+                        u.City = $"{u.City}, {u.Age}";
+                    }
+
                     Likes.Add(u);
                     hasAny = true;
                 }

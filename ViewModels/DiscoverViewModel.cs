@@ -102,6 +102,9 @@ namespace AmoraApp.ViewModels
         [ObservableProperty]
         private string interestFilter = string.Empty;
 
+        [ObservableProperty]
+        private bool canRewind;
+
         // ====== MULTI-SELEÇÃO DE INTERESSES ======
 
         public ObservableCollection<string> SelectedInterestFilters { get; } = new();
@@ -878,5 +881,14 @@ namespace AmoraApp.ViewModels
         }
 
         private static double ToRadians(double deg) => deg * Math.PI / 180.0;
+
+        private void UpdateCanRewind()
+        {
+            var me = _authService.CurrentUserUid;
+            bool hasHistory = _history.Count > 0;
+            bool isPaid = _myPlan == PlanType.Plus || _myPlan == PlanType.Premium;
+            CanRewind = !string.IsNullOrWhiteSpace(me) && hasHistory && isPaid;
+        }
+
     }
 }

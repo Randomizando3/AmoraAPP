@@ -4,7 +4,7 @@
     x:Name="LikesPageRoot"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    BackgroundColor="#FFF5F9"
+    BackgroundColor="#fdfdfd"
     Shell.NavBarIsVisible="False">
 
     <!-- GRID RAIZ: header, info e lista -->
@@ -12,21 +12,16 @@
 
         <!-- HEADER -->
         <Grid Grid.Row="0"
-              Padding="12,32,12,12"
+              Padding="12,10,12,12"
               ColumnDefinitions="Auto,*"
               VerticalOptions="Start">
 
-            <ImageButton
-                Source="back.png"
-                WidthRequest="28"
-                HeightRequest="28"
-                BackgroundColor="Transparent"
-                Clicked="OnBackButtonClicked" />
+            <!-- Se quiser, dá pra por botão de voltar aqui depois -->
 
             <StackLayout Grid.Column="1"
                          Orientation="Vertical"
                          Spacing="0"
-                         Margin="12,0,0,0"
+                         Margin="0,0,0,0"
                          VerticalOptions="Center">
                 <Label
                     Text="Quem curtiu você"
@@ -134,7 +129,7 @@
                                         </Frame>
                                     </Grid>
 
-                                    <!-- NOME + CIDADE -->
+                                    <!-- NOME + CIDADE (já vem formatada como 'Cidade, Idade') -->
                                     <StackLayout Grid.Row="1" Spacing="2">
                                         <Label
                                             Text="{Binding DisplayName}"
@@ -147,19 +142,24 @@
                                             TextColor="#888888" />
                                     </StackLayout>
 
-                                    <!-- BOTÕES (só ícone) -->
+                                    <!-- BOTÕES (like + add) -->
                                     <Grid Grid.Row="2"
-                                          ColumnDefinitions="*,*"
-                                          ColumnSpacing="6">
-                                        <!-- Match -->
+                                          ColumnDefinitions="Auto,Auto"
+                                          ColumnSpacing="8"
+                                          HorizontalOptions="Center">
+
+                                        <!-- Match / Like -->
                                         <Frame
+                                            HeightRequest="40"
+                                            WidthRequest="40"
                                             BackgroundColor="#5D259C"
-                                            CornerRadius="999"
+                                            CornerRadius="20"
                                             HasShadow="False"
-                                            Padding="8">
+                                            Padding="0">
                                             <Image
-                                                Source="heart_filled.png"
-                                                HeightRequest="18"
+                                                Source="heart.png"
+                                                HeightRequest="22"
+                                                WidthRequest="22"
                                                 HorizontalOptions="Center"
                                                 VerticalOptions="Center" />
                                             <Frame.GestureRecognizers>
@@ -172,14 +172,17 @@
                                         <!-- Add amigo -->
                                         <Frame
                                             Grid.Column="1"
+                                            HeightRequest="40"
+                                            WidthRequest="40"
                                             BackgroundColor="#F4ECFF"
                                             BorderColor="#D9C8FF"
-                                            CornerRadius="999"
+                                            CornerRadius="20"
                                             HasShadow="False"
-                                            Padding="8">
+                                            Padding="0">
                                             <Image
-                                                Source="add_friend.png"
-                                                HeightRequest="18"
+                                                Source="add.png"
+                                                HeightRequest="22"
+                                                WidthRequest="22"
                                                 HorizontalOptions="Center"
                                                 VerticalOptions="Center" />
                                             <Frame.GestureRecognizers>
@@ -207,7 +210,7 @@
         <Grid x:Name="LockOverlay"
               Grid.RowSpan="3"
               BackgroundColor="#D9000000"
-            IsVisible="{Binding IsLocked}"
+              IsVisible="{Binding IsLocked}"
               HorizontalOptions="Fill"
               VerticalOptions="Fill">
 
@@ -236,7 +239,7 @@
                         FontSize="15"
                         BackgroundColor="#5D259C"
                         TextColor="White"
-                        CornerRadius="999"
+                        CornerRadius="8"
                         Clicked="OnUpgradeClicked" />
                     <Label
                         Text="Enquanto isso, você já está recebendo curtidas normalmente 🥰"

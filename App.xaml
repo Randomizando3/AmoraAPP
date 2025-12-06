@@ -3,7 +3,84 @@
     x:Class="AmoraApp.App"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
+
     <Application.Resources>
-        <!-- Recursos globais se quiser -->
+        <ResourceDictionary>
+
+            <!-- ============================
+                 ESTILOS GLOBAIS DO APLICATIVO
+               ============================ -->
+
+            <!-- LABEL padrão -->
+            <Style TargetType="Label">
+                <Setter Property="TextColor" Value="#333333" />
+                <Setter Property="FontSize" Value="14" />
+                <Setter Property="FontFamily" Value="OpenSansRegular" />
+            </Style>
+
+            <!-- BUTTON padrão -->
+            <Style TargetType="Button">
+                <Setter Property="TextColor" Value="White" />
+                <Setter Property="BackgroundColor" Value="#5d259c" />
+                <Setter Property="FontSize" Value="16" />
+                <Setter Property="FontFamily" Value="OpenSansRegular" />
+                <Setter Property="CornerRadius" Value="22" />
+                <Setter Property="HeightRequest" Value="48" />
+            </Style>
+
+            <!-- ENTRY – vale pro app inteiro -->
+            <Style TargetType="Entry">
+                <!-- tira visual Material (linha roxa) e usa o padrão -->
+                <Setter Property="Visual" Value="Default" />
+                <Setter Property="TextColor" Value="#555555" />
+                <Setter Property="PlaceholderColor" Value="#999999" />
+                <Setter Property="BackgroundColor" Value="Transparent" />
+                <Setter Property="FontSize" Value="15" />
+                <Setter Property="HeightRequest" Value="44" />
+                <Setter Property="HorizontalOptions" Value="FillAndExpand" />
+            </Style>
+
+            <!-- EDITOR -->
+            <Style TargetType="Editor">
+                <Setter Property="Visual" Value="Default" />
+                <Setter Property="TextColor" Value="#555555" />
+                <Setter Property="PlaceholderColor" Value="#999999" />
+                <Setter Property="BackgroundColor" Value="Transparent" />
+                <Setter Property="FontSize" Value="15" />
+            </Style>
+
+            <!-- PICKER (ComboBox) -->
+            <Style TargetType="Picker">
+                <Setter Property="Visual" Value="Default" />
+                <Setter Property="TextColor" Value="#555555" />
+                <!-- placeholder / título -->
+                <Setter Property="TitleColor" Value="#999999" />
+                <Setter Property="BackgroundColor" Value="Transparent" />
+                <Setter Property="FontSize" Value="15" />
+                <Setter Property="HeightRequest" Value="44" />
+                <Setter Property="HorizontalOptions" Value="FillAndExpand" />
+            </Style>
+
+            <!-- DATEPICKER -->
+            <Style TargetType="DatePicker">
+                <Setter Property="Visual" Value="Default" />
+                <Setter Property="TextColor" Value="#555555" />
+                <Setter Property="BackgroundColor" Value="Transparent" />
+                <Setter Property="FontSize" Value="15" />
+                <Setter Property="HeightRequest" Value="44" />
+                <Setter Property="HorizontalOptions" Value="FillAndExpand" />
+            </Style>
+
+            <!-- TIMEPICKER -->
+            <Style TargetType="TimePicker">
+                <Setter Property="Visual" Value="Default" />
+                <Setter Property="TextColor" Value="#555555" />
+                <Setter Property="BackgroundColor" Value="Transparent" />
+                <Setter Property="FontSize" Value="15" />
+                <Setter Property="HeightRequest" Value="44" />
+                <Setter Property="HorizontalOptions" Value="FillAndExpand" />
+            </Style>
+
+        </ResourceDictionary>
     </Application.Resources>
 </Application>

@@ -41,20 +41,25 @@
     </Style>
 
     <!-- =============================================== -->
-    <!-- ============= FORMULARIOS MODERNOS ============= -->
+    <!-- ============= FORMULÁRIOS MODERNOS ============= -->
     <!-- =============================================== -->
 
     <!-- ENTRY -->
     <Style TargetType="Entry">
-        <Setter Property="BackgroundColor" Value="Transparent"/>
+        <!-- tira o estilo Material (linha) e força o visual padrão -->
+        <Setter Property="Visual" Value="Default"/>
+        <Setter Property="BackgroundColor" Value="White"/>
         <Setter Property="FontSize" Value="15"/>
         <Setter Property="TextColor" Value="{StaticResource Gray900}"/>
         <Setter Property="PlaceholderColor" Value="{StaticResource Gray400}"/>
         <Setter Property="MinimumHeightRequest" Value="44"/>
+        <Setter Property="HeightRequest" Value="44"/>
+        <Setter Property="HorizontalOptions" Value="FillAndExpand"/>
     </Style>
 
     <!-- EDITOR -->
     <Style TargetType="Editor">
+        <Setter Property="Visual" Value="Default"/>
         <Setter Property="BackgroundColor" Value="Transparent"/>
         <Setter Property="FontSize" Value="15"/>
         <Setter Property="TextColor" Value="{StaticResource Gray900}"/>
@@ -63,27 +68,33 @@
 
     <!-- PICKER -->
     <Style TargetType="Picker">
+        <Setter Property="Visual" Value="Default"/>
         <Setter Property="BackgroundColor" Value="Transparent"/>
         <Setter Property="TextColor" Value="{StaticResource Gray900}"/>
         <Setter Property="TitleColor" Value="{StaticResource Gray400}"/>
         <Setter Property="FontSize" Value="15"/>
         <Setter Property="MinimumHeightRequest" Value="44"/>
+        <Setter Property="HeightRequest" Value="44"/>
     </Style>
 
     <!-- DATEPICKER -->
     <Style TargetType="DatePicker">
+        <Setter Property="Visual" Value="Default"/>
         <Setter Property="BackgroundColor" Value="Transparent"/>
         <Setter Property="TextColor" Value="{StaticResource Gray900}"/>
         <Setter Property="FontSize" Value="15"/>
         <Setter Property="MinimumHeightRequest" Value="44"/>
+        <Setter Property="HeightRequest" Value="44"/>
     </Style>
 
     <!-- TIMEPICKER -->
     <Style TargetType="TimePicker">
+        <Setter Property="Visual" Value="Default"/>
         <Setter Property="BackgroundColor" Value="Transparent"/>
         <Setter Property="TextColor" Value="{StaticResource Gray900}"/>
         <Setter Property="FontSize" Value="15"/>
         <Setter Property="MinimumHeightRequest" Value="44"/>
+        <Setter Property="HeightRequest" Value="44"/>
     </Style>
 
     <!-- =============================================== -->

@@ -26,9 +26,15 @@
                        HorizontalTextAlignment="Center"
                        TextColor="#333" />
 
-                <Entry Text="{Binding DisplayName}"
-                       Placeholder="Digite seu nome"
-                       Margin="0,8,0,0" />
+                <!-- Caixa de texto para nome -->
+                <Frame BackgroundColor="#F3F4F6"
+                       BorderColor="#D1D5DB"
+                       CornerRadius="10"
+                       Padding="10,6"
+                       Margin="0,8,0,0">
+                    <Entry Text="{Binding DisplayName}"
+                           Placeholder="Digite seu nome" />
+                </Frame>
             </VerticalStackLayout>
 
             <!-- Etapa 2: Email + senha -->
@@ -42,14 +48,27 @@
                        HorizontalTextAlignment="Center"
                        TextColor="#333" />
 
-                <Entry Text="{Binding Email}"
-                       Placeholder="email"
-                       Keyboard="Email"
-                       Margin="0,20,0,0" />
+                <!-- Caixa de texto para e-mail -->
+                <Frame BackgroundColor="#F3F4F6"
+                       BorderColor="#D1D5DB"
+                       CornerRadius="10"
+                       Padding="10,6"
+                       Margin="0,20,0,0">
+                    <Entry Text="{Binding Email}"
+                           Placeholder="email"
+                           Keyboard="Email" />
+                </Frame>
 
-                <Entry Text="{Binding Password}"
-                       Placeholder="senha"
-                       IsPassword="True"/>
+                <!-- Caixa de texto para senha -->
+                <Frame BackgroundColor="#F3F4F6"
+                       BorderColor="#D1D5DB"
+                       CornerRadius="10"
+                       Padding="10,6"
+                       Margin="0,8,0,0">
+                    <Entry Text="{Binding Password}"
+                           Placeholder="senha"
+                           IsPassword="True" />
+                </Frame>
             </VerticalStackLayout>
 
             <!-- Etapa 3: Código -->
@@ -63,10 +82,16 @@
                        HorizontalTextAlignment="Center"
                        TextColor="#333" />
 
-                <Entry Text="{Binding VerificationCode}"
-                       Placeholder="000000"
-                       Keyboard="Numeric"
-                       Margin="0,8,0,0" />
+                <!-- Caixa de texto para código -->
+                <Frame BackgroundColor="#F3F4F6"
+                       BorderColor="#D1D5DB"
+                       CornerRadius="10"
+                       Padding="10,6"
+                       Margin="0,8,0,0">
+                    <Entry Text="{Binding VerificationCode}"
+                           Placeholder="000000"
+                           Keyboard="Numeric" />
+                </Frame>
             </VerticalStackLayout>
 
             <!-- =========================
@@ -107,11 +132,6 @@
                                         <DataTrigger TargetType="Label"
                                                      Binding="{Binding PhotoUrl}"
                                                      Value="{x:Null}">
-                                            <Setter Property="IsVisible" Value="True"/>
-                                        </DataTrigger>
-                                        <DataTrigger TargetType="Label"
-                                                     Binding="{Binding PhotoUrl}"
-                                                     Value="">
                                             <Setter Property="IsVisible" Value="True"/>
                                         </DataTrigger>
                                     </Label.Triggers>
@@ -166,11 +186,15 @@
                            FontAttributes="Bold"
                            FontSize="14"
                            TextColor="#555"/>
-                    <Frame BackgroundColor="#F3F4F6"
+                    <Frame BackgroundColor="#FFFFFF"
                            BorderColor="#D1D5DB"
                            CornerRadius="10"
-                           Padding="10">
-                        <Picker SelectedItem="{Binding EducationLevel}">
+                           Padding="10,4">
+                        <Picker
+                            SelectedItem="{Binding EducationLevel}"
+                            Title="Selecione sua escolaridade"
+                            HorizontalOptions="FillAndExpand"
+                            HeightRequest="44">
                             <Picker.Items>
                                 <x:String>Ensino médio completo</x:String>
                                 <x:String>Superior cursando</x:String>
@@ -201,11 +225,15 @@
                            FontAttributes="Bold"
                            FontSize="14"
                            TextColor="#555"/>
-                    <Frame BackgroundColor="#F3F4F6"
+                    <Frame BackgroundColor="#FFFFFF"
                            BorderColor="#D1D5DB"
                            CornerRadius="10"
-                           Padding="10">
-                        <Picker SelectedItem="{Binding Gender}">
+                           Padding="10,4">
+                        <Picker
+                            SelectedItem="{Binding Gender}"
+                            Title="Selecione seu gênero"
+                            HorizontalOptions="FillAndExpand"
+                            HeightRequest="44">
                             <Picker.Items>
                                 <x:String>Masculino</x:String>
                                 <x:String>Feminino</x:String>
@@ -221,11 +249,15 @@
                            FontAttributes="Bold"
                            FontSize="14"
                            TextColor="#555"/>
-                    <Frame BackgroundColor="#F3F4F6"
+                    <Frame BackgroundColor="#FFFFFF"
                            BorderColor="#D1D5DB"
                            CornerRadius="10"
-                           Padding="10">
-                        <Picker SelectedItem="{Binding SexualOrientation}">
+                           Padding="10,4">
+                        <Picker
+                            SelectedItem="{Binding SexualOrientation}"
+                            Title="Selecione sua orientação"
+                            HorizontalOptions="FillAndExpand"
+                            HeightRequest="44">
                             <Picker.Items>
                                 <x:String>Heterossexual</x:String>
                                 <x:String>Homossexual</x:String>
@@ -338,11 +370,14 @@
                            FontAttributes="Bold"
                            FontSize="14"
                            TextColor="#555"/>
-                    <Frame BackgroundColor="#F3F4F6"
+                    <Frame BackgroundColor="#FFFFFF"
                            BorderColor="#D1D5DB"
                            CornerRadius="10"
-                           Padding="10">
-                        <DatePicker Date="{Binding BirthDate}" Format="dd/MM/yyyy" />
+                           Padding="10,4">
+                        <DatePicker
+                            Date="{Binding BirthDate}"
+                            Format="dd/MM/yyyy"
+                            HorizontalOptions="FillAndExpand" />
                     </Frame>
 
                     <Label Text="{Binding AgeDisplay}"

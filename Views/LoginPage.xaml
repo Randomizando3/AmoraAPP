@@ -39,84 +39,82 @@
 
         <!-- FORMULÁRIO -->
         <ScrollView Grid.Row="1">
-            <VerticalStackLayout Spacing="8">
+            <VerticalStackLayout Spacing="14">
 
-                <!-- CARD COM CAMPOS -->
-                <Frame
-                    CornerRadius="18"
-                    Padding="12"
-                    BackgroundColor="White"
-                    HasShadow="True">
+                <!-- E-MAIL -->
+                <Label Text="E-mail"
+                       TextColor="#555"
+                       FontSize="12"
+                       Margin="2,0,0,0" />
 
-                    <VerticalStackLayout Spacing="4">
-
-                        <Label Text="E-mail"
-                               TextColor="#555"
-                               FontSize="12" />
-
-                        <Entry
-                            Placeholder="seu@email.com"
-                            Text="{Binding Email}"
-                            Keyboard="Email"
-                            TextColor="#222"
-                            PlaceholderColor="#BBBBBB"
-                            HeightRequest="40" />
-
-                        <Label Text="Senha"
-                               TextColor="#555"
-                               FontSize="12"
-                               Margin="0,2,0,0" />
-
-                        <Entry
-                            Placeholder="••••••••"
-                            Text="{Binding Password}"
-                            IsPassword="True"
-                            TextColor="#222"
-                            PlaceholderColor="#BBBBBB"
-                            HeightRequest="40" />
-
-                        <!-- BLOCO DE ERRO: só aparece quando HasError = true -->
-                        <Border
-                            Padding="6"
-                            Margin="0,4,0,0"
-                            BackgroundColor="#FFF5F5"
-                            Stroke="#F5C2C0"
-                            StrokeThickness="1"
-                            IsVisible="{Binding HasError}">
-
-                            <HorizontalStackLayout Spacing="6">
-                                <Label
-                                    Text="⚠"
-                                    FontSize="13"
-                                    TextColor="#D92D20"
-                                    VerticalOptions="Center" />
-                                <Label
-                                    Text="{Binding ErrorMessage}"
-                                    FontSize="12"
-                                    TextColor="#D92D20"
-                                    VerticalOptions="Center" />
-                            </HorizontalStackLayout>
-                        </Border>
-
-                        <ActivityIndicator
-                            IsRunning="{Binding IsBusy}"
-                            IsVisible="{Binding IsBusy}"
-                            Color="#5d259c"
-                            Margin="0,2,0,0" />
-                    </VerticalStackLayout>
+                <Frame BackgroundColor="#F3F4F6"
+                       BorderColor="#D1D5DB"
+                       CornerRadius="10"
+                       Padding="10,6">
+                    <Entry
+                        Placeholder="seu@email.com"
+                        Text="{Binding Email}"
+                        Keyboard="Email"
+                        TextColor="#222"
+                        PlaceholderColor="#BBBBBB" />
                 </Frame>
 
-                <!-- BOTÕES ALINHADOS (MESMA LARGURA) -->
-                <VerticalStackLayout Spacing="6">
+                <!-- SENHA -->
+                <Label Text="Senha"
+                       TextColor="#555"
+                       FontSize="12"
+                       Margin="2,4,0,0" />
+
+                <Frame BackgroundColor="#F3F4F6"
+                       BorderColor="#D1D5DB"
+                       CornerRadius="10"
+                       Padding="10,6">
+                    <Entry
+                        Placeholder="••••••••"
+                        Text="{Binding Password}"
+                        IsPassword="True"
+                        TextColor="#222"
+                        PlaceholderColor="#BBBBBB" />
+                </Frame>
+
+                <!-- BLOCO DE ERRO -->
+                <Border
+                    Padding="6"
+                    Margin="0,4,0,0"
+                    BackgroundColor="#FFF5F5"
+                    Stroke="#F5C2C0"
+                    StrokeThickness="1"
+                    IsVisible="{Binding HasError}">
+                    <HorizontalStackLayout Spacing="6">
+                        <Label
+                            Text="⚠"
+                            FontSize="13"
+                            TextColor="#D92D20"
+                            VerticalOptions="Center" />
+                        <Label
+                            Text="{Binding ErrorMessage}"
+                            FontSize="12"
+                            TextColor="#D92D20"
+                            VerticalOptions="Center" />
+                    </HorizontalStackLayout>
+                </Border>
+
+                <ActivityIndicator
+                    IsRunning="{Binding IsBusy}"
+                    IsVisible="{Binding IsBusy}"
+                    Color="#5d259c"
+                    Margin="0,2,0,0" />
+
+                <!-- BOTÕES -->
+                <VerticalStackLayout Spacing="10"
+                                     Margin="0,10,0,0">
 
                     <Button
                         Text="Entrar"
                         Command="{Binding LoginCommand}"
                         CornerRadius="22"
                         HeightRequest="44"
-                        TextColor="White"
-                        Margin="0,0,0,0"
-                        HorizontalOptions="FillAndExpand">
+                        TextColor="White">
                         <Button.Background>
                             <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
                                 <GradientStop Color="#5d259c" Offset="0.0" />
@@ -133,14 +131,12 @@
                         HeightRequest="44"
                         CornerRadius="22"
                         BorderColor="#5d259c"
-                        BorderWidth="1"
-                        Margin="0,0,0,0"
-                        HorizontalOptions="FillAndExpand" />
+                        BorderWidth="1" />
                 </VerticalStackLayout>
 
                 <!-- SOCIAL LOGIN -->
                 <VerticalStackLayout Spacing="2"
-                                     Margin="0,2,0,4">
+                                     Margin="0,10,0,4">
                     <Label
                         Text="Ou continue com"
                         HorizontalOptions="Center"
@@ -163,8 +159,6 @@
                                     Source="google.png"
                                     WidthRequest="24"
                                     HeightRequest="24"
-                                    HorizontalOptions="Center"
-                                    VerticalOptions="Center"
                                     Aspect="AspectFit">
                                     <Image.GestureRecognizers>
                                         <TapGestureRecognizer Command="{Binding LoginWithGoogleCommand}" />
@@ -186,8 +180,6 @@
                                     Source="apple.png"
                                     WidthRequest="24"
                                     HeightRequest="24"
-                                    HorizontalOptions="Center"
-                                    VerticalOptions="Center"
                                     Aspect="AspectFit">
                                     <Image.GestureRecognizers>
                                         <TapGestureRecognizer Command="{Binding LoginWithAppleCommand}" />

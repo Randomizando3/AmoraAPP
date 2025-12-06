@@ -13,6 +13,7 @@
             Aspect="AspectFill"
             Grid.RowSpan="3" />
 
+        <!-- HEADER -->
         <Grid Grid.Row="0"
               Padding="16,24,16,8"
               ColumnDefinitions="*,Auto"
@@ -38,6 +39,7 @@
                 Clicked="OnFilterHeaderClicked" />
         </Grid>
 
+        <!-- CARD CENTRAL -->
         <Grid Grid.Row="1"
               Padding="16,0,16,0">
 
@@ -58,9 +60,11 @@
 
                 <Grid RowDefinitions="3*,Auto,Auto">
 
+                    <!-- TEM PERFIL -->
                     <Grid Grid.RowSpan="3" IsVisible="{Binding HasUser}">
                         <Grid RowDefinitions="3*,Auto,Auto">
 
+                            <!-- FOTO -->
                             <Grid Grid.Row="0">
                                 <Border StrokeThickness="0">
                                     <Border.StrokeShape>
@@ -75,6 +79,7 @@
                                 </Border>
                             </Grid>
 
+                            <!-- INFOS -->
                             <StackLayout Grid.Row="1"
                                          Padding="16,10,16,4"
                                          Spacing="2">
@@ -117,14 +122,15 @@
 
                             </StackLayout>
 
+                            <!-- BADGES + INTERESSES -->
                             <StackLayout Grid.Row="2"
                                          Padding="16,0,16,12"
                                          Spacing="8">
 
-                                <!-- LINHA DOS BADGES (BOOST / ONLINE / DISTÂNCIA) -->
+                                <!-- BADGES -->
                                 <StackLayout Orientation="Horizontal" Spacing="10">
 
-                                    <!-- BADGE BOOST -->
+                                    <!-- BOOST ATIVO -->
                                     <Border
                                         BackgroundColor="#FFF5E6"
                                         Stroke="#FFC266"
@@ -231,6 +237,7 @@
                         </Grid>
                     </Grid>
 
+                    <!-- SEM PERFIL -->
                     <Grid IsVisible="{Binding HasNoUser}">
                         <StackLayout HorizontalOptions="Center"
                                      VerticalOptions="Center"
@@ -261,122 +268,146 @@
 
         </Grid>
 
+        <!-- RODAPÉ – BOTÕES CIRCULARES -->
         <Grid Grid.Row="2"
-              Padding="0,0,0,12"
-              WidthRequest="320"
+              Padding="0,0,0,16"
               HorizontalOptions="Center"
-              VerticalOptions="End"
-              ColumnDefinitions="*,*,*,*,*"
-              ColumnSpacing="12">
+              VerticalOptions="End">
 
-            <Border Grid.Column="0"
-                    HeightRequest="50"
-                    BackgroundColor="#F9F9F9"
-                    Stroke="#E0E0E0"
-                    StrokeThickness="2">
-                <Border.StrokeShape>
-                    <RoundRectangle CornerRadius="25" />
-                </Border.StrokeShape>
+            <HorizontalStackLayout Spacing="8"
+                                   HorizontalOptions="Center">
 
-                <!-- Toda a borda responde ao comando de voltar -->
-                <Border.GestureRecognizers>
-                    <TapGestureRecognizer Command="{Binding RewindCommand}" />
-                </Border.GestureRecognizers>
+                <!-- REWIND (menor) -->
+                <Border HeightRequest="56"
+                        WidthRequest="56"
+                        BackgroundColor="#F3F3F3"
+                        Stroke="#E0E0E0"
+                        StrokeThickness="2">
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="28" />
+                    </Border.StrokeShape>
 
-                <Image Source="back.png"
-                       WidthRequest="22"
-                       HeightRequest="22"
-                       HorizontalOptions="Center"
-                       VerticalOptions="Center" />
-            </Border>
+                    <!-- colorido quando pode voltar -->
+                    <Border.Triggers>
+                        <DataTrigger TargetType="Border"
+                                     Binding="{Binding CanRewind}"
+                                     Value="True">
+                            <Setter Property="BackgroundColor" Value="#FFE7F4" />
+                            <Setter Property="Stroke" Value="#F3C9E2" />
+                        </DataTrigger>
+                    </Border.Triggers>
 
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding RewindCommand}" />
+                    </Border.GestureRecognizers>
 
-            <Border Grid.Column="1"
-                    HeightRequest="56"
-                    BackgroundColor="White"
-                    Stroke="#E0E0E0"
-                    StrokeThickness="2">
-                <Border.StrokeShape>
-                    <RoundRectangle CornerRadius="28" />
-                </Border.StrokeShape>
-                <Image Source="no.png"
-                       WidthRequest="28"
-                       HeightRequest="28"
-                       HorizontalOptions="Center"
-                       VerticalOptions="Center">
-                    <Image.GestureRecognizers>
-                        <TapGestureRecognizer Command="{Binding DislikeCommand}" />
-                    </Image.GestureRecognizers>
-                </Image>
-            </Border>
+                    <Image Source="back.png"
+                           WidthRequest="26"
+                           HeightRequest="26"
+                           Opacity="0.35"
+                           HorizontalOptions="Center"
+                           VerticalOptions="Center">
+                        <Image.Triggers>
+                            <DataTrigger TargetType="Image"
+                                         Binding="{Binding CanRewind}"
+                                         Value="True">
+                                <Setter Property="Opacity" Value="1" />
+                            </DataTrigger>
+                        </Image.Triggers>
+                    </Image>
+                </Border>
 
-            <Border Grid.Column="2"
-                    HeightRequest="50"
-                    BackgroundColor="White"
-                    Stroke="#E0E0E0"
-                    StrokeThickness="2">
-                <Border.StrokeShape>
-                    <RoundRectangle CornerRadius="25" />
-                </Border.StrokeShape>
-                <Image Source="add.png"
-                       WidthRequest="22"
-                       HeightRequest="22"
-                       HorizontalOptions="Center"
-                       VerticalOptions="Center">
-                    <Image.GestureRecognizers>
-                        <TapGestureRecognizer Command="{Binding AddFriendCommand}" />
-                    </Image.GestureRecognizers>
-                </Image>
-            </Border>
-
-            <Border Grid.Column="3"
-                    HeightRequest="56"
-                    BackgroundColor="White"
-                    Stroke="#E0E0E0"
-                    StrokeThickness="2">
-                <Border.StrokeShape>
-                    <RoundRectangle CornerRadius="28" />
-                </Border.StrokeShape>
-                <Image Source="heart.png"
-                       WidthRequest="28"
-                       HeightRequest="28"
-                       HorizontalOptions="Center"
-                       VerticalOptions="Center">
-                    <Image.GestureRecognizers>
-                        <TapGestureRecognizer Command="{Binding LikeCommand}" />
-                    </Image.GestureRecognizers>
-                </Image>
-            </Border>
-
-            <Border Grid.Column="4"
-                    HeightRequest="50"
-                    Stroke="#E0E0E0"
-                    StrokeThickness="2">
-                <Border.StrokeShape>
-                    <RoundRectangle CornerRadius="25" />
-                </Border.StrokeShape>
-
-                <Grid>
-                    <Grid.Background>
-                        <LinearGradientBrush StartPoint="0,0"
-                                             EndPoint="1,1">
-                            <GradientStop Color="#5d259c" Offset="0" />
-                            <GradientStop Color="#FF9966" Offset="1" />
-                        </LinearGradientBrush>
-                    </Grid.Background>
-
-                    <Image Source="boost.png"
-                           WidthRequest="22"
-                           HeightRequest="22"
+                <!-- DISLIKE (maior) -->
+                <Border HeightRequest="68"
+                        WidthRequest="68"
+                        BackgroundColor="White"
+                        Stroke="#E0E0E0"
+                        StrokeThickness="2">
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="34" />
+                    </Border.StrokeShape>
+                    <Image Source="no.png"
+                           WidthRequest="36"
+                           HeightRequest="36"
                            HorizontalOptions="Center"
                            VerticalOptions="Center">
                         <Image.GestureRecognizers>
-                            <TapGestureRecognizer Tapped="OnBoostTapped" />
+                            <TapGestureRecognizer Command="{Binding DislikeCommand}" />
                         </Image.GestureRecognizers>
                     </Image>
-                </Grid>
-            </Border>
+                </Border>
 
+                <!-- ADD FRIEND (menor) -->
+                <Border HeightRequest="56"
+                        WidthRequest="56"
+                        BackgroundColor="White"
+                        Stroke="#E0E0E0"
+                        StrokeThickness="2">
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="28" />
+                    </Border.StrokeShape>
+                    <Image Source="add.png"
+                           WidthRequest="26"
+                           HeightRequest="26"
+                           HorizontalOptions="Center"
+                           VerticalOptions="Center">
+                        <Image.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding AddFriendCommand}" />
+                        </Image.GestureRecognizers>
+                    </Image>
+                </Border>
+
+                <!-- LIKE (maior) -->
+                <Border HeightRequest="68"
+                        WidthRequest="68"
+                        BackgroundColor="White"
+                        Stroke="#E0E0E0"
+                        StrokeThickness="2">
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="34" />
+                    </Border.StrokeShape>
+                    <Image Source="heart.png"
+                           WidthRequest="36"
+                           HeightRequest="36"
+                           HorizontalOptions="Center"
+                           VerticalOptions="Center">
+                        <Image.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding LikeCommand}" />
+                        </Image.GestureRecognizers>
+                    </Image>
+                </Border>
+
+                <!-- BOOST (menor, com gradiente) -->
+                <Border HeightRequest="56"
+                        WidthRequest="56"
+                        Stroke="#E0E0E0"
+                        StrokeThickness="2">
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="28" />
+                    </Border.StrokeShape>
+
+                    <Grid>
+                        <Grid.Background>
+                            <LinearGradientBrush StartPoint="0,0"
+                                                 EndPoint="1,1">
+                                <GradientStop Color="#5d259c" Offset="0" />
+                                <GradientStop Color="#FF9966" Offset="1" />
+                            </LinearGradientBrush>
+                        </Grid.Background>
+
+                        <Image Source="boost.png"
+                               WidthRequest="26"
+                               HeightRequest="26"
+                               HorizontalOptions="Center"
+                               VerticalOptions="Center">
+                            <Image.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnBoostTapped" />
+                            </Image.GestureRecognizers>
+                        </Image>
+                    </Grid>
+                </Border>
+
+            </HorizontalStackLayout>
         </Grid>
 
     </Grid>
