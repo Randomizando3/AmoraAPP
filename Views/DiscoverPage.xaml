@@ -277,16 +277,19 @@
                 <Border.StrokeShape>
                     <RoundRectangle CornerRadius="25" />
                 </Border.StrokeShape>
+
+                <!-- Toda a borda responde ao comando de voltar -->
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding RewindCommand}" />
+                </Border.GestureRecognizers>
+
                 <Image Source="back.png"
                        WidthRequest="22"
                        HeightRequest="22"
                        HorizontalOptions="Center"
-                       VerticalOptions="Center">
-                    <Image.GestureRecognizers>
-                        <TapGestureRecognizer Command="{Binding RewindCommand}" />
-                    </Image.GestureRecognizers>
-                </Image>
+                       VerticalOptions="Center" />
             </Border>
+
 
             <Border Grid.Column="1"
                     HeightRequest="56"

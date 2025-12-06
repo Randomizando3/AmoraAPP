@@ -253,8 +253,8 @@ namespace AmoraApp.ViewModels
             _authService = authService;
             _friendService = FriendService.Instance;
             _presenceService = PresenceService.Instance;
-            _planService = PlanService.Instance;
-            _dbService = FirebaseDatabaseService.Instance;
+            //_planService = PlanService.Instance;
+            //_dbService = FirebaseDatabaseService.Instance;
         }
 
         /// <summary>
@@ -556,16 +556,57 @@ namespace AmoraApp.ViewModels
         }
 
         [RelayCommand]
-        private void Rewind()
+        private async Task RewindAsync()
         {
-            if (_history.Count == 0) return;
+            // Se não há histórico, não tem pra onde voltar
+            if (_history.Count == 0)
+            {
+                await MainThread.InvokeOnMainThreadAsync(async () =>
+                {
+                    await App.Current.MainPage.DisplayAlert(
+                        "Nada para voltar",
+                        "Você ainda não passou nenhum perfil para trás.",
+                        "OK");
+                });
+                return;
+            }
 
+            var me = _authService.CurrentUserUid;
+            if (string.IsNullOrWhiteSpace(me))
+                return;
+
+            // garante que meu perfil está carregado (pra ler o plano)
+            if (_myProfile == null || _myProfile.Id != me)
+            {
+                _myProfile = await _dbService.GetUserProfileAsync(me);
+            }
+
+            var plan = _planService.ParsePlanFromString(_myProfile?.Plan ?? "Free");
+
+            // Rewind é exclusivo para Plus e Premium
+            if (plan == PlanType.Free)
+            {
+                await MainThread.InvokeOnMainThreadAsync(async () =>
+                {
+                    await App.Current.MainPage.DisplayAlert(
+                        "Funcionalidade exclusiva",
+                        "O botão de voltar é exclusivo para os planos Plus e Premium.\n" +
+                        "Assine um plano para poder desfazer o último swipe.",
+                        "OK");
+                });
+                return;
+            }
+
+            // Agora sim: volta o último perfil
             var previous = _history.Pop();
+
+            // O CurrentUser atual volta pro topo da fila
             if (CurrentUser != null)
                 Users.Insert(0, CurrentUser);
 
             CurrentUser = previous;
         }
+
 
         [RelayCommand]
         private async Task BoostAsync()
