@@ -25,6 +25,10 @@ namespace AmoraApp.ViewModels
         // Histórico p/ botão Rewind
         private readonly Stack<UserProfile> _history = new();
 
+        // Planos
+        private readonly PlanService _planService = PlanService.Instance;
+
+
         // Minha localização
         private double? _myLat;
         private double? _myLon;
@@ -317,7 +321,11 @@ namespace AmoraApp.ViewModels
             Users.Clear();
             _history.Clear();
 
-            foreach (var u in _allUsers.Where(PassesFilters))
+            var filtered = _allUsers
+                .Where(PassesFilters)
+                .OrderByDescending(GetPlanPriority);  // PREMIUM, depois PLUS, depois FREE
+
+            foreach (var u in filtered)
                 Users.Add(u);
 
             CurrentUser = Users.FirstOrDefault();
@@ -328,6 +336,7 @@ namespace AmoraApp.ViewModels
                 DistanceText = string.Empty;
             }
         }
+
 
         private bool PassesFilters(UserProfile u)
         {
@@ -428,7 +437,7 @@ namespace AmoraApp.ViewModels
         }
 
         // ================ LIKE / DISLIKE / FRIEND ================
-
+        
         [RelayCommand]
         private async Task LikeAsync()
         {
@@ -437,7 +446,26 @@ namespace AmoraApp.ViewModels
             var me = _authService.CurrentUserUid;
             if (string.IsNullOrWhiteSpace(me)) return;
 
+            // 1) verifica se o plano permite mais likes (free tem limite por dia)
+            var canLike = await _planService.CanUseLikeAsync(me);
+            if (!canLike)
+            {
+                await MainThread.InvokeOnMainThreadAsync(async () =>
+                {
+                    await App.Current.MainPage.DisplayAlert(
+                        "Limite de likes atingido",
+                        "No plano gratuito você tem um número limitado de curtidas por dia. " +
+                        "Assine o Plus ou Premium para ter likes ilimitados.",
+                        "OK");
+                });
+                return;
+            }
+
+            // 2) registra o like e verifica match
             var match = await _matchService.LikeUserAsync(me, CurrentUser.Id);
+
+            // contabiliza o uso para plano grátis
+            await _planService.RegisterLikeAsync(me);
 
             if (match)
             {
@@ -452,6 +480,7 @@ namespace AmoraApp.ViewModels
 
             GoToNextUser();
         }
+
 
         [RelayCommand]
         private async Task DislikeAsync()
@@ -589,6 +618,23 @@ namespace AmoraApp.ViewModels
                 OnlineText = string.Empty;
             }
         }
+
+
+        //Prioridade da Fila de planos
+        private int GetPlanPriority(UserProfile u)
+        {
+            // Se você preencher o Plan dentro do perfil
+            var plan = PlanService.Instance.ParsePlanFromString(u.Plan);
+
+            return plan switch
+            {
+                PlanType.Premium => 3,
+                PlanType.Plus => 2,
+                _ => 1
+            };
+        }
+
+
 
         // ================ HAVERSINE ================
 

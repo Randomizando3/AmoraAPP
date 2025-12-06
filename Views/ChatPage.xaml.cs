@@ -978,6 +978,20 @@ namespace AmoraApp.Views
             if (!_isGroupChat || !_isGroupAdmin)
                 return;
 
+            var me = CurrentUserId;
+            if (string.IsNullOrWhiteSpace(me))
+                return;
+
+            var plan = await PlanService.Instance.GetUserPlanAsync(me);
+            if (!PlanService.Instance.CanCreateGroups(plan))
+            {
+                await DisplayAlert(
+                    "Recurso Plus/Premium",
+                    "Criar e gerenciar grupos está disponível apenas para assinantes Plus e Premium.",
+                    "OK");
+                return;
+            }
+
             var action = await DisplayActionSheet(
                 "Gerenciar grupo",
                 "Cancelar",

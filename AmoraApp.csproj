@@ -101,6 +101,9 @@
 		<MauiImage Update="Resources\Images\send.png">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</MauiImage>
+		<MauiImage Update="Resources\Images\star.png">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</MauiImage>
 		<MauiImage Update="Resources\Images\user.png">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</MauiImage>
@@ -170,6 +173,9 @@
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="Views\StoryViewerPage.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="Views\UpgradePage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="Views\WelcomePage.xaml">

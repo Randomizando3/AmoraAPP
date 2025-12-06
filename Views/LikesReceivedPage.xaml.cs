@@ -1,11 +1,8 @@
 ﻿using AmoraApp.Models;
 using AmoraApp.Services;
-using AmoraApp.ViewModels;
-using AmoraApp.Views;
 using Microsoft.Maui.Controls;
 using System;
 using System.Collections.ObjectModel;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace AmoraApp.Views
@@ -17,6 +14,21 @@ namespace AmoraApp.Views
         private readonly MatchService _matchService;
         private readonly FriendService _friendService;
         private readonly FirebaseAuthService _authService;
+        private readonly PlanService _planService;
+
+        // usado apenas para o overlay (grátis x plus/premium)
+        public static readonly BindableProperty IsLockedProperty =
+            BindableProperty.Create(
+                nameof(IsLocked),
+                typeof(bool),
+                typeof(LikesReceivedPage),
+                true);
+
+        public bool IsLocked
+        {
+            get => (bool)GetValue(IsLockedProperty);
+            set => SetValue(IsLockedProperty, value);
+        }
 
         public LikesReceivedPage()
         {
@@ -25,10 +37,10 @@ namespace AmoraApp.Views
             _matchService = MatchService.Instance;
             _friendService = FriendService.Instance;
             _authService = FirebaseAuthService.Instance;
+            _planService = PlanService.Instance;
 
             BindingContext = this;
 
-            // Commands usados no XAML
             MatchCommand = new Command<UserProfile>(async u => await OnMatchAsync(u));
             AddFriendCommand = new Command<UserProfile>(async u => await OnAddFriendAsync(u));
         }
@@ -39,12 +51,30 @@ namespace AmoraApp.Views
         protected override async void OnAppearing()
         {
             base.OnAppearing();
+
+            var me = _authService.CurrentUserUid;
+            if (string.IsNullOrWhiteSpace(me))
+            {
+                EmptyLabel.Text = "Faça login para ver quem curtiu você.";
+                EmptyLabel.IsVisible = true;
+                return;
+            }
+
+            // Plano atual (visual + bloqueio)
+            var plan = await _planService.GetUserPlanAsync(me);
+            var planName = _planService.GetPlanDisplayName(plan);
+            PlanInfoLabel.Text = $"Plano atual: {planName}";
+
+            IsLocked = !_planService.CanSeeLikesReceived(plan);
+            LockOverlay.IsVisible = IsLocked;
+
             await LoadLikesAsync();
         }
 
         private async Task LoadLikesAsync()
         {
             Likes.Clear();
+            EmptyLabel.IsVisible = false;
 
             var me = _authService.CurrentUserUid;
             if (string.IsNullOrWhiteSpace(me))
@@ -52,24 +82,42 @@ namespace AmoraApp.Views
 
             try
             {
-                // usuários que me deram like
                 var raw = await _matchService.GetUsersWhoLikedMeAsync(me);
+                bool hasAny = false;
+
                 foreach (var u in raw)
                 {
                     if (u == null) continue;
                     u.PhotoUrl ??= string.Empty;
                     Likes.Add(u);
+                    hasAny = true;
+                }
+
+                if (!hasAny)
+                {
+                    EmptyLabel.Text = "Ainda ninguém curtiu você... continue dando likes! ❤️";
+                    EmptyLabel.IsVisible = true;
                 }
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine("[LikesReceivedPage] Erro ao carregar likes: " + ex);
+                EmptyLabel.Text = "Não foi possível carregar as curtidas.";
+                EmptyLabel.IsVisible = true;
             }
         }
+
+        // ========= AÇÕES CARD =========
 
         private async Task OnMatchAsync(UserProfile? user)
         {
             if (user == null) return;
+
+            if (IsLocked)
+            {
+                await Shell.Current.GoToAsync("//upgrade");
+                return;
+            }
 
             var me = _authService.CurrentUserUid;
             if (string.IsNullOrWhiteSpace(me)) return;
@@ -84,7 +132,6 @@ namespace AmoraApp.Views
                         "OK");
                 }
 
-                // Opcional: remove da lista depois
                 Likes.Remove(user);
             }
             catch (Exception ex)
@@ -98,6 +145,12 @@ namespace AmoraApp.Views
         private async Task OnAddFriendAsync(UserProfile? user)
         {
             if (user == null) return;
+
+            if (IsLocked)
+            {
+                await Shell.Current.GoToAsync("//upgrade");
+                return;
+            }
 
             var me = _authService.CurrentUserUid;
             if (string.IsNullOrWhiteSpace(me)) return;
@@ -146,61 +199,36 @@ namespace AmoraApp.Views
             }
         }
 
+        private async void OnCardTapped(object sender, EventArgs e)
+        {
+            if (IsLocked)
+            {
+                await Shell.Current.GoToAsync("//upgrade");
+                return;
+            }
+
+            await Shell.Current.GoToAsync("//discover");
+        }
+
+        // ========= NAVEGAÇÃO / UPGRADE =========
+
         private async void OnBackButtonClicked(object sender, EventArgs e)
         {
             try
             {
                 await Navigation.PopAsync();
             }
-            catch
-            {
-            }
+            catch { }
         }
 
-        /// <summary>
-        /// Tap no card inteiro → abre o Discover focado nesse usuário.
-        /// </summary>
-        private async void OnCardTapped(object sender, EventArgs e)
+        private async void OnUpgradeClicked(object sender, EventArgs e)
         {
-            try
-            {
-                if (sender is not Frame frame)
-                    return;
+            await Shell.Current.GoToAsync("//upgrade");
+        }
 
-                if (frame.BindingContext is not UserProfile user || user == null)
-                    return;
-
-                // Cria um DiscoverViewModel novo
-                var vm = new DiscoverViewModel();
-                await vm.InitializeAsync();
-
-                // tenta achar o user carregado pelo Discover
-                var existing = vm.Users.FirstOrDefault(u => u.Id == user.Id);
-
-                if (existing != null)
-                {
-                    // coloca esse usuário na frente da pilha
-                    vm.Users.Remove(existing);
-                    vm.Users.Insert(0, existing);
-                    vm.CurrentUser = existing;
-                }
-                else
-                {
-                    // se não estiver na lista (algum filtro), injeta na frente
-                    vm.Users.Insert(0, user);
-                    vm.CurrentUser = user;
-                }
-
-                var page = new DiscoverPage(vm);
-                await Navigation.PushAsync(page);
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine("[LikesReceivedPage] Erro ao abrir Discover: " + ex);
-                await DisplayAlert("Erro",
-                    "Não foi possível abrir o perfil no Discover.",
-                    "OK");
-            }
+        private async void OnUpgradeOverlayTapped(object sender, EventArgs e)
+        {
+            await Shell.Current.GoToAsync("//upgrade");
         }
     }
 }

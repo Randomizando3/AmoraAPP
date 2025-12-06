@@ -105,6 +105,8 @@ namespace AmoraApp
             builder.Services.AddTransient<ProfilePage>();
             builder.Services.AddTransient<FiltersPage>();
             builder.Services.AddTransient<PhotoGalleryPage>();
+            builder.Services.AddTransient<UpgradePage>();
+
 
             var app = builder.Build();
             ServiceProvider = app.Services;

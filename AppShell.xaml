@@ -6,19 +6,26 @@
     xmlns:views="clr-namespace:AmoraApp.Views"
     Shell.NavBarIsVisible="False">
 
-    <!-- ESTILOS DO TABBAR -->
+    <!-- ESTILOS DO TABBAR (cores do menu inferior) -->
     <Shell.Resources>
         <Style TargetType="TabBar">
+            <!-- TabBar bem branca -->
             <Setter Property="Shell.TabBarBackgroundColor" Value="#FFFFFFFF" />
+
+            <!-- Ícones / textos -->
             <Setter Property="Shell.TabBarForegroundColor" Value="#5d259c" />
             <Setter Property="Shell.TabBarTitleColor" Value="#5d259c" />
             <Setter Property="Shell.TabBarUnselectedColor" Value="#999999" />
         </Style>
     </Shell.Resources>
 
+    <!--
+        - Android / iOS: ícone + texto
+        - Windows (WinUI): somente ícone (Title vazio)
+    -->
     <TabBar>
 
-        <!-- Discover -->
+        <!-- Discover (swipe) -->
         <ShellContent
             Route="discover"
             Icon="home.png"
@@ -32,7 +39,7 @@
             ContentTemplate="{DataTemplate views:FeedPage}"
             Title="{OnPlatform Android='Feed', iOS='Feed', WinUI=''}" />
 
-        <!-- Likes (quem me curtiu)  ⭐ NOVO -->
+        <!-- Likes recebidos -->
         <ShellContent
             Route="likes"
             Icon="likes.png"
@@ -51,8 +58,14 @@
             Route="profile"
             Icon="user.png"
             ContentTemplate="{DataTemplate views:ProfilePage}"
-            Title="{OnPlatform Android='Profile', iOS='Profile', WinUI=''}" />
+            Title="{OnPlatform Android='Perfil', iOS='Perfil', WinUI=''}" />
+
+        <!-- Upgrade / Planos -->
+        <ShellContent
+            Route="upgrade"
+            Icon="star.png"
+            ContentTemplate="{DataTemplate views:UpgradePage}"
+            Title="{OnPlatform Android='Upgrade', iOS='Upgrade', WinUI=''}" />
 
     </TabBar>
-
 </Shell>

@@ -73,5 +73,13 @@ namespace AmoraApp.Models
 
         // ===== Email =====
         public bool EmailVerified { get; set; } = false;
+
+
+        /// <summary>
+        /// Plano atual do usuário: "Free", "Plus" ou "Premium".
+        /// Default = Free.
+        /// </summary>
+        public string Plan { get; set; } = "Free";
+
     }
 }

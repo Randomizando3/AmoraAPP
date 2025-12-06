@@ -1,20 +1,21 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage
     x:Class="AmoraApp.Views.LikesReceivedPage"
+    x:Name="LikesPageRoot"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     BackgroundColor="#FFF5F9"
     Shell.NavBarIsVisible="False">
 
-    <Grid RowDefinitions="Auto,*">
+    <!-- GRID RAIZ: header, info e lista -->
+    <Grid RowDefinitions="Auto,Auto,*">
 
-        <!-- TOPO / HEADER -->
+        <!-- HEADER -->
         <Grid Grid.Row="0"
               Padding="12,32,12,12"
-              ColumnDefinitions="Auto,*,Auto"
+              ColumnDefinitions="Auto,*"
               VerticalOptions="Start">
 
-            <!-- Voltar -->
             <ImageButton
                 Source="back.png"
                 WidthRequest="28"
@@ -22,7 +23,6 @@
                 BackgroundColor="Transparent"
                 Clicked="OnBackButtonClicked" />
 
-            <!-- Título -->
             <StackLayout Grid.Column="1"
                          Orientation="Vertical"
                          Spacing="0"
@@ -34,162 +34,223 @@
                     FontAttributes="Bold"
                     TextColor="#222222" />
                 <Label
-                    Text="Veja quem te deu like"
+                    x:Name="PlanInfoLabel"
+                    Text="Plano atual: Grátis"
                     FontSize="12"
-                    TextColor="#777777" />
+                    TextColor="#888888" />
             </StackLayout>
-
         </Grid>
 
-        <!-- LISTA DE LIKES (2 por linha) -->
-        <ScrollView Grid.Row="1"
-                    Padding="12,0,12,12">
+        <!-- INFO / MENSAGEM -->
+        <StackLayout Grid.Row="1"
+                     Spacing="4"
+                     Padding="12,0,12,8">
+            <Label
+                Text="Veja quem te deu like."
+                FontSize="13"
+                TextColor="#777777" />
+
+            <Label
+                x:Name="EmptyLabel"
+                Text=""
+                IsVisible="False"
+                FontSize="13"
+                TextColor="#777777" />
+        </StackLayout>
+
+        <!-- LISTA EM 2 COLUNAS -->
+        <Grid Grid.Row="2" Margin="8,0,8,8">
             <CollectionView
-                x:Name="LikesCollectionView"
+                x:Name="LikesCollection"
                 ItemsSource="{Binding Likes}"
-                SelectionMode="None">
-
-                <CollectionView.ItemsLayout>
-                    <GridItemsLayout Orientation="Vertical" Span="2" />
-                </CollectionView.ItemsLayout>
-
-                <CollectionView.EmptyView>
-                    <StackLayout Padding="24"
-                                 VerticalOptions="CenterAndExpand"
-                                 HorizontalOptions="Center">
-                        <Label Text="Ainda ninguém curtiu você 😅"
-                               FontSize="16"
-                               TextColor="#444444"
-                               HorizontalTextAlignment="Center" />
-                        <Label Text="Continue dando likes para aumentar suas chances!"
-                               FontSize="13"
-                               TextColor="#777777"
-                               HorizontalTextAlignment="Center"
-                               Margin="0,6,0,0" />
-                    </StackLayout>
-                </CollectionView.EmptyView>
+                SelectionMode="None"
+                ItemsLayout="VerticalGrid, 2">
 
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
-                        <!-- Card compacto de cada pessoa que curtiu -->
-                        <Frame
-                            Margin="4,0,4,12"
-                            Padding="0"
-                            CornerRadius="16"
-                            HasShadow="False"
-                            BorderColor="#E0E0E0"
-                            BackgroundColor="White">
+                        <!-- CARD -->
+                        <Grid Padding="4">
+                            <Frame
+                                BackgroundColor="White"
+                                CornerRadius="18"
+                                HasShadow="False"
+                                BorderColor="#F0E6FF"
+                                Padding="0">
 
-                            <Frame.GestureRecognizers>
-                                <!-- Tap no card abre Discover -->
-                                <TapGestureRecognizer Tapped="OnCardTapped" />
-                            </Frame.GestureRecognizers>
+                                <Grid RowDefinitions="Auto,Auto,Auto"
+                                      RowSpacing="6"
+                                      Padding="8">
 
-                            <Grid RowDefinitions="Auto,Auto,Auto">
+                                    <!-- FOTO / PLACEHOLDER -->
+                                    <Grid Grid.Row="0" HeightRequest="120">
+                                        <Frame CornerRadius="14"
+                                               HasShadow="False"
+                                               Padding="0"
+                                               BackgroundColor="#FFF5EFFD">
+                                            <Grid>
+                                                <!-- Foto -->
+                                                <Image
+                                                    Source="{Binding PhotoUrl}"
+                                                    Aspect="AspectFill"
+                                                    IsVisible="True">
+                                                    <Image.Triggers>
+                                                        <DataTrigger TargetType="Image"
+                                                                     Binding="{Binding PhotoUrl}"
+                                                                     Value="">
+                                                            <Setter Property="IsVisible" Value="False" />
+                                                        </DataTrigger>
+                                                        <DataTrigger TargetType="Image"
+                                                                     Binding="{Binding PhotoUrl}"
+                                                                     Value="{x:Null}">
+                                                            <Setter Property="IsVisible" Value="False" />
+                                                        </DataTrigger>
+                                                    </Image.Triggers>
+                                                </Image>
 
-                                <!-- FOTO -->
-                                <Grid Grid.Row="0"
-                                      HeightRequest="140">
-                                    <Image
-                                        Source="{Binding PhotoUrl}"
-                                        Aspect="AspectFill" />
-                                </Grid>
+                                                <!-- Placeholder quando não tem foto -->
+                                                <Grid IsVisible="False">
+                                                    <Grid.Triggers>
+                                                        <DataTrigger TargetType="Grid"
+                                                                     Binding="{Binding PhotoUrl}"
+                                                                     Value="">
+                                                            <Setter Property="IsVisible" Value="True" />
+                                                        </DataTrigger>
+                                                        <DataTrigger TargetType="Grid"
+                                                                     Binding="{Binding PhotoUrl}"
+                                                                     Value="{x:Null}">
+                                                            <Setter Property="IsVisible" Value="True" />
+                                                        </DataTrigger>
+                                                    </Grid.Triggers>
 
-                                <!-- Nome + idade + cidade -->
-                                <StackLayout Grid.Row="1"
-                                             Padding="8,4,8,0"
-                                             Spacing="2">
-                                    <StackLayout Orientation="Horizontal" Spacing="2">
-                                        <Label Text="{Binding DisplayName}"
-                                               FontSize="14"
-                                               FontAttributes="Bold"
-                                               TextColor="#222222" />
+                                                    <Grid BackgroundColor="#FFE7DCF9">
+                                                        <Image
+                                                            Source="user_placeholder.png"
+                                                            HeightRequest="46"
+                                                            HorizontalOptions="Center"
+                                                            VerticalOptions="Center" />
+                                                    </Grid>
+                                                </Grid>
+                                            </Grid>
+                                        </Frame>
+                                    </Grid>
 
-                                        <Label Text=", "
-                                               FontSize="14"
-                                               FontAttributes="Bold"
-                                               TextColor="#222222" />
-
-                                        <Label Text="{Binding Age}"
-                                               FontSize="14"
-                                               FontAttributes="Bold"
-                                               TextColor="#222222" />
+                                    <!-- NOME + CIDADE -->
+                                    <StackLayout Grid.Row="1" Spacing="2">
+                                        <Label
+                                            Text="{Binding DisplayName}"
+                                            FontSize="14"
+                                            FontAttributes="Bold"
+                                            TextColor="#222222" />
+                                        <Label
+                                            Text="{Binding City}"
+                                            FontSize="12"
+                                            TextColor="#888888" />
                                     </StackLayout>
 
-                                    <Label Text="{Binding City}"
-                                           FontSize="11"
-                                           TextColor="#777777" />
-
-                                    <Label Text="{Binding Bio}"
-                                           FontSize="11"
-                                           TextColor="#555555"
-                                           LineBreakMode="TailTruncation" />
-                                </StackLayout>
-
-                                <!-- Botões (ícones) -->
-                                <StackLayout Grid.Row="2"
-                                             Orientation="Horizontal"
-                                             HorizontalOptions="Center"
-                                             Spacing="8"
-                                             Margin="8,4,8,8">
-
-                                    <!-- Match (like de volta) -->
-                                    <Frame
-                                        WidthRequest="38"
-                                        HeightRequest="38"
-                                        CornerRadius="19"
-                                        HasShadow="False"
-                                        Padding="0"
-                                        BackgroundColor="#5d259c">
-                                        <Grid>
-                                            <Grid.GestureRecognizers>
+                                    <!-- BOTÕES (só ícone) -->
+                                    <Grid Grid.Row="2"
+                                          ColumnDefinitions="*,*"
+                                          ColumnSpacing="6">
+                                        <!-- Match -->
+                                        <Frame
+                                            BackgroundColor="#5D259C"
+                                            CornerRadius="999"
+                                            HasShadow="False"
+                                            Padding="8">
+                                            <Image
+                                                Source="heart_filled.png"
+                                                HeightRequest="18"
+                                                HorizontalOptions="Center"
+                                                VerticalOptions="Center" />
+                                            <Frame.GestureRecognizers>
                                                 <TapGestureRecognizer
-                                                    Command="{Binding BindingContext.MatchCommand, Source={x:Reference LikesCollectionView}}"
-                                                    CommandParameter="{Binding .}" />
-                                            </Grid.GestureRecognizers>
+                                                    Command="{Binding Source={x:Reference LikesPageRoot}, Path=MatchCommand}"
+                                                    CommandParameter="{Binding}" />
+                                            </Frame.GestureRecognizers>
+                                        </Frame>
 
-                                            <Image Source="heart.png"
-                                                   WidthRequest="20"
-                                                   HeightRequest="20"
-                                                   HorizontalOptions="Center"
-                                                   VerticalOptions="Center" />
-                                        </Grid>
-                                    </Frame>
-
-                                    <!-- Adicionar amigo -->
-                                    <Frame
-                                        WidthRequest="38"
-                                        HeightRequest="38"
-                                        CornerRadius="19"
-                                        HasShadow="False"
-                                        Padding="0"
-                                        BackgroundColor="#FFEDE7F6"
-                                        BorderColor="#E0C7FA">
-                                        <Grid>
-                                            <Grid.GestureRecognizers>
+                                        <!-- Add amigo -->
+                                        <Frame
+                                            Grid.Column="1"
+                                            BackgroundColor="#F4ECFF"
+                                            BorderColor="#D9C8FF"
+                                            CornerRadius="999"
+                                            HasShadow="False"
+                                            Padding="8">
+                                            <Image
+                                                Source="add_friend.png"
+                                                HeightRequest="18"
+                                                HorizontalOptions="Center"
+                                                VerticalOptions="Center" />
+                                            <Frame.GestureRecognizers>
                                                 <TapGestureRecognizer
-                                                    Command="{Binding BindingContext.AddFriendCommand, Source={x:Reference LikesCollectionView}}"
-                                                    CommandParameter="{Binding .}" />
-                                            </Grid.GestureRecognizers>
+                                                    Command="{Binding Source={x:Reference LikesPageRoot}, Path=AddFriendCommand}"
+                                                    CommandParameter="{Binding}" />
+                                            </Frame.GestureRecognizers>
+                                        </Frame>
+                                    </Grid>
 
-                                            <Image Source="add.png"
-                                                   WidthRequest="20"
-                                                   HeightRequest="20"
-                                                   HorizontalOptions="Center"
-                                                   VerticalOptions="Center" />
-                                        </Grid>
-                                    </Frame>
+                                </Grid>
+                            </Frame>
 
-                                </StackLayout>
-
-                            </Grid>
-                        </Frame>
+                            <!-- Tap no card abre Discover (se plano permitir) -->
+                            <Grid.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnCardTapped" />
+                            </Grid.GestureRecognizers>
+                        </Grid>
                     </DataTemplate>
                 </CollectionView.ItemTemplate>
-
             </CollectionView>
-        </ScrollView>
+        </Grid>
+
+        <!-- OVERLAY COBRINDO TUDO (header + lista) -->
+        <Grid x:Name="LockOverlay"
+              Grid.RowSpan="3"
+              BackgroundColor="#D9000000"
+            IsVisible="{Binding IsLocked}"
+              HorizontalOptions="Fill"
+              VerticalOptions="Fill">
+
+            <Frame
+                BackgroundColor="#222836"
+                CornerRadius="18"
+                HasShadow="False"
+                Padding="18"
+                HorizontalOptions="Center"
+                VerticalOptions="Center">
+                <StackLayout Spacing="8">
+                    <Label
+                        Text="Veja quem curtiu você"
+                        FontSize="18"
+                        FontAttributes="Bold"
+                        HorizontalOptions="Center"
+                        TextColor="White" />
+                    <Label
+                        Text="Você está no plano Grátis. Assine o Plus ou Premium para ver quem te curtiu."
+                        FontSize="13"
+                        HorizontalOptions="Center"
+                        HorizontalTextAlignment="Center"
+                        TextColor="#F3F3F3" />
+                    <Button
+                        Text="Ver planos"
+                        FontSize="15"
+                        BackgroundColor="#5D259C"
+                        TextColor="White"
+                        CornerRadius="999"
+                        Clicked="OnUpgradeClicked" />
+                    <Label
+                        Text="Enquanto isso, você já está recebendo curtidas normalmente 🥰"
+                        FontSize="11"
+                        HorizontalOptions="Center"
+                        HorizontalTextAlignment="Center"
+                        TextColor="#DDDDDD" />
+                </StackLayout>
+            </Frame>
+
+            <Grid.GestureRecognizers>
+                <TapGestureRecognizer Tapped="OnUpgradeOverlayTapped" />
+            </Grid.GestureRecognizers>
+        </Grid>
 
     </Grid>
-
 </ContentPage>
