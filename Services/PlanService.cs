@@ -1,4 +1,4 @@
-using AmoraApp.Config;
+Ôªøusing AmoraApp.Config;
 using System;
 using System.Net.Http;
 using System.Text;
@@ -14,6 +14,26 @@ namespace AmoraApp.Services
         Premium
     }
 
+    public enum PlanPeriod
+    {
+        Monthly,
+        Yearly
+    }
+
+    /// <summary>
+    /// Registro completo que fica em /plans/{uid}.
+    /// </summary>
+    public class UserPlanRecord
+    {
+        public string PlanType { get; set; } = "Free";   // "Free", "Plus", "Premium"
+        public string Period { get; set; } = "monthly";  // "monthly", "yearly"
+        public long StartedAtUtc { get; set; } = 0;      // Unix seconds
+        public long ExpiresAtUtc { get; set; } = 0;      // Unix seconds
+
+        public int BoostsAvailable { get; set; } = 0;
+        public long LastBoostGrantUtc { get; set; } = 0;
+    }
+
     public class PlanService
     {
         public static PlanService Instance { get; } = new PlanService();
@@ -26,10 +46,10 @@ namespace AmoraApp.Services
             PropertyNameCaseInsensitive = true
         };
 
-        // Aqui vocÍ pode ajustar ‡ vontade
-        private const int FreeDailyLikeLimit = 50;      // likes/dia no plano gr·tis
-        private const int PlusIncludedBoosts = 5;       // boosts incluÌdos no Plus (por mÍs, se quiser)
-        private const int PremiumIncludedBoosts = 10;   // boosts incluÌdos no Premium
+        // Aqui voc√™ pode ajustar √† vontade
+        private const int FreeDailyLikeLimit = 50;      // likes/dia no plano gr√°tis
+        private const int PlusIncludedBoosts = 5;       // boosts inclu√≠dos ao ativar Plus
+        private const int PremiumIncludedBoosts = 10;   // boosts inclu√≠dos ao ativar Premium
 
         private PlanService() { }
 
@@ -45,7 +65,7 @@ namespace AmoraApp.Services
             {
                 PlanType.Plus => "Plus",
                 PlanType.Premium => "Premium",
-                _ => "Gr·tis"
+                _ => "Gr√°tis"
             };
 
         /// <summary>
@@ -64,12 +84,68 @@ namespace AmoraApp.Services
             };
         }
 
+        private string PeriodToString(PlanPeriod period) =>
+            period == PlanPeriod.Yearly ? "yearly" : "monthly";
+
+        private PlanPeriod ParsePeriodFromString(string? period)
+        {
+            if (string.IsNullOrWhiteSpace(period))
+                return PlanPeriod.Monthly;
+
+            return period.ToLowerInvariant() switch
+            {
+                "yearly" => PlanPeriod.Yearly,
+                _ => PlanPeriod.Monthly
+            };
+        }
+
         // =========================================================
-        // PLANO ATUAL DO USU¡RIO
+        // ACESSO AO REGISTRO COMPLETO /plans/{uid}
+        // =========================================================
+
+        private async Task<UserPlanRecord?> GetPlanRecordAsync(string uid)
+        {
+            if (string.IsNullOrWhiteSpace(uid))
+                return null;
+
+            try
+            {
+                var url = $"{_baseUrl}/plans/{uid}.json";
+                var res = await _http.GetAsync(url);
+                if (!res.IsSuccessStatusCode)
+                    return null;
+
+                var json = await res.Content.ReadAsStringAsync();
+                if (string.IsNullOrWhiteSpace(json) || json == "null")
+                    return null;
+
+                return JsonSerializer.Deserialize<UserPlanRecord>(json, _opts);
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        private async Task SavePlanRecordAsync(string uid, UserPlanRecord record)
+        {
+            if (string.IsNullOrWhiteSpace(uid) || record == null)
+                return;
+
+            var url = $"{_baseUrl}/plans/{uid}.json";
+            var json = JsonSerializer.Serialize(record, _opts);
+            await _http.PutAsync(
+                url,
+                new StringContent(json, Encoding.UTF8, "application/json"));
+        }
+
+        // =========================================================
+        // PLANO ATUAL DO USU√ÅRIO
         // =========================================================
 
         /// <summary>
-        /// LÍ o plano atual do usu·rio em /plans/{uid}/planType.
+        /// L√™ o plano atual do usu√°rio considerando expira√ß√£o.
+        /// Se expirou ou n√£o tiver registro v√°lido, retorna Free.
         /// </summary>
         public async Task<PlanType> GetUserPlanAsync(string uid)
         {
@@ -78,23 +154,23 @@ namespace AmoraApp.Services
 
             try
             {
-                var url = $"{_baseUrl}/plans/{uid}/planType.json";
-                var res = await _http.GetAsync(url);
-                if (!res.IsSuccessStatusCode)
+                var record = await GetPlanRecordAsync(uid);
+                if (record == null)
                     return PlanType.Free;
 
-                var json = await res.Content.ReadAsStringAsync();
-                if (string.IsNullOrWhiteSpace(json) || json == "null")
+                // Se n√£o tiver expira√ß√£o definida, trata como plano inv√°lido ‚Üí Free
+                if (record.ExpiresAtUtc <= 0)
                     return PlanType.Free;
 
-                var str = JsonSerializer.Deserialize<string>(json, _opts) ?? "Free";
-
-                return str.ToLowerInvariant() switch
+                var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+                if (now >= record.ExpiresAtUtc)
                 {
-                    "plus" => PlanType.Plus,
-                    "premium" => PlanType.Premium,
-                    _ => PlanType.Free
-                };
+                    // Plano expirado ‚Üí volta para Free
+                    await DowngradeToFreeAsync(uid);
+                    return PlanType.Free;
+                }
+
+                return ParsePlanFromString(record.PlanType);
             }
             catch
             {
@@ -103,26 +179,77 @@ namespace AmoraApp.Services
         }
 
         /// <summary>
-        /// Define o plano do usu·rio em /plans/{uid}/planType.
-        /// (⁄til quando vocÍ integrar pagamento ou quiser simular upgrade.)
+        /// Para compatibilidade: em vez de s√≥ setar planType, j√° ativa o plano como mensal.
         /// </summary>
         public async Task SetUserPlanAsync(string uid, PlanType plan)
         {
             if (string.IsNullOrWhiteSpace(uid))
                 return;
 
-            var planStr = plan switch
+            await ActivatePlanAsync(uid, plan, PlanPeriod.Monthly);
+        }
+
+        /// <summary>
+        /// For√ßa downgrade para Free (usado quando expira).
+        /// </summary>
+        public async Task DowngradeToFreeAsync(string uid)
+        {
+            if (string.IsNullOrWhiteSpace(uid))
+                return;
+
+            var record = new UserPlanRecord
+            {
+                PlanType = "Free",
+                Period = "monthly",
+                StartedAtUtc = 0,
+                ExpiresAtUtc = 0,
+                BoostsAvailable = 0,
+                LastBoostGrantUtc = 0
+            };
+
+            await SavePlanRecordAsync(uid, record);
+        }
+
+        /// <summary>
+        /// Ativa um plano (Plus/Premium) com per√≠odo mensal ou anual.
+        /// Calcula startedAt / expiresAt e credita boosts inclu√≠dos.
+        /// </summary>
+        public async Task ActivatePlanAsync(string uid, PlanType plan, PlanPeriod period)
+        {
+            if (string.IsNullOrWhiteSpace(uid))
+                return;
+
+            var now = DateTimeOffset.UtcNow;
+            var started = now.ToUnixTimeSeconds();
+
+            DateTimeOffset expiresDate;
+            if (period == PlanPeriod.Monthly)
+                expiresDate = now.AddDays(30); // 30 dias fict√≠cios
+            else
+                expiresDate = now.AddYears(1); // 1 ano fict√≠cio
+
+            var expires = expiresDate.ToUnixTimeSeconds();
+
+            var includedBoosts = GetIncludedBoosts(plan);
+
+            var record = await GetPlanRecordAsync(uid) ?? new UserPlanRecord();
+
+            record.PlanType = plan switch
             {
                 PlanType.Plus => "Plus",
                 PlanType.Premium => "Premium",
                 _ => "Free"
             };
 
-            var url = $"{_baseUrl}/plans/{uid}/planType.json";
-            var json = JsonSerializer.Serialize(planStr, _opts);
-            await _http.PutAsync(
-                url,
-                new StringContent(json, Encoding.UTF8, "application/json"));
+            record.Period = PeriodToString(period);
+            record.StartedAtUtc = started;
+            record.ExpiresAtUtc = expires;
+
+            // soma boosts inclu√≠dos no saldo (se j√° tinha compras avulsas, mant√©m)
+            record.BoostsAvailable += includedBoosts;
+            record.LastBoostGrantUtc = started;
+
+            await SavePlanRecordAsync(uid, record);
         }
 
         // =========================================================
@@ -156,14 +283,14 @@ namespace AmoraApp.Services
             plan == PlanType.Free;
 
         // =========================================================
-        // LIKES DI¡RIOS (PLANO GR¡TIS)
+        // LIKES DI√ÅRIOS (PLANO GR√ÅTIS)
         // =========================================================
 
         private string TodayKeyUtc() =>
             DateTime.UtcNow.ToString("yyyyMMdd");
 
         /// <summary>
-        /// Verifica se usu·rio ainda pode dar like hoje.
+        /// Verifica se usu√°rio ainda pode dar like hoje.
         /// </summary>
         public async Task<bool> CanUseLikeAsync(string uid)
         {
@@ -184,7 +311,7 @@ namespace AmoraApp.Services
         }
 
         /// <summary>
-        /// Registra que o usu·rio usou 1 like hoje (somente plano gr·tis).
+        /// Registra que o usu√°rio usou 1 like hoje (somente plano gr√°tis).
         /// </summary>
         public async Task RegisterLikeAsync(string uid)
         {
@@ -209,11 +336,11 @@ namespace AmoraApp.Services
         }
 
         // =========================================================
-        // BOOSTS (SALDOS AVULSOS + INCLUÕDOS)
+        // BOOSTS (SALDOS AVULSOS + INCLU√çDOS)
         // =========================================================
 
         /// <summary>
-        /// LÍ quantos boosts o usu·rio tem disponÌveis em /plans/{uid}/boostsAvailable.
+        /// L√™ quantos boosts o usu√°rio tem dispon√≠veis em /plans/{uid}/boostsAvailable.
         /// </summary>
         public async Task<int> GetUserBoostsAsync(string uid)
         {
@@ -240,7 +367,7 @@ namespace AmoraApp.Services
         }
 
         /// <summary>
-        /// Soma boosts ao saldo do usu·rio (usado para planos ou compras avulsas).
+        /// Soma boosts ao saldo do usu√°rio (usado para planos ou compras avulsas).
         /// </summary>
         public async Task AddUserBoostsAsync(string uid, int quantity)
         {

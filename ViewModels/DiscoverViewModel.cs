@@ -31,24 +31,24 @@ namespace AmoraApp.ViewModels
         private const int PlusBoostDailyLimit = 3;      // Plus: 3 boosts/dia
         private const int PremiumBoostDailyLimit = 5;   // Premium: 5 boosts/dia
 
-
         // Lista completa de usuários recebida do Firebase
         private List<UserProfile> _allUsers = new();
 
         // Histórico p/ botão Rewind
         private readonly Stack<UserProfile> _history = new();
 
-        // Planos
+        // Planos / banco
         private readonly PlanService _planService = PlanService.Instance;
-
-        // Banco (pra carregar meu perfil e salvar boost)
         private readonly FirebaseDatabaseService _dbService = FirebaseDatabaseService.Instance;
+
+        // Plano atual em cache
+        private PlanType _myPlan = PlanType.Free;
 
         // Minha localização
         private double? _myLat;
         private double? _myLon;
 
-        // Meu perfil (para plano, boosts, tokens, etc.)
+        // Meu perfil (para boost, tokens, contadores…)
         private UserProfile? _myProfile;
 
         // ====== Propriedades observáveis ======
@@ -253,8 +253,6 @@ namespace AmoraApp.ViewModels
             _authService = authService;
             _friendService = FriendService.Instance;
             _presenceService = PresenceService.Instance;
-            //_planService = PlanService.Instance;
-            //_dbService = FirebaseDatabaseService.Instance;
         }
 
         /// <summary>
@@ -317,8 +315,11 @@ namespace AmoraApp.ViewModels
                 _myLon = myLoc.Longitude;
             }
 
-            // Meu perfil (para plano, tokens e boost)
+            // Meu perfil (para boost, tokens e contadores)
             _myProfile = await _dbService.GetUserProfileAsync(uid);
+
+            // Plano atual (sempre pelo PlanService, e não pelo campo Plan do perfil)
+            _myPlan = await _planService.GetUserPlanAsync(uid);
 
             var list = await _matchService.GetUsersForDiscoverAsync(uid);
 
@@ -575,16 +576,17 @@ namespace AmoraApp.ViewModels
             if (string.IsNullOrWhiteSpace(me))
                 return;
 
-            // garante que meu perfil está carregado (pra ler o plano)
+            // garante que meu perfil está carregado (pra salvar contadores se precisar)
             if (_myProfile == null || _myProfile.Id != me)
             {
                 _myProfile = await _dbService.GetUserProfileAsync(me);
             }
 
-            var plan = _planService.ParsePlanFromString(_myProfile?.Plan ?? "Free");
+            // *** plano sempre via PlanService, não pelo campo Plan do perfil ***
+            _myPlan = await _planService.GetUserPlanAsync(me);
 
             // Rewind é exclusivo para Plus e Premium
-            if (plan == PlanType.Free)
+            if (_myPlan == PlanType.Free)
             {
                 await MainThread.InvokeOnMainThreadAsync(async () =>
                 {
@@ -606,7 +608,6 @@ namespace AmoraApp.ViewModels
 
             CurrentUser = previous;
         }
-
 
         [RelayCommand]
         private async Task BoostAsync()
@@ -632,7 +633,10 @@ namespace AmoraApp.ViewModels
                 }
             }
 
-            var plan = _planService.ParsePlanFromString(_myProfile.Plan);
+            // *** plano sempre via PlanService ***
+            _myPlan = await _planService.GetUserPlanAsync(me);
+            var plan = _myPlan;
+
             var now = DateTimeOffset.UtcNow;
 
             // Normaliza o dia (UTC) para meia-noite
@@ -710,17 +714,17 @@ namespace AmoraApp.ViewModels
             {
                 case PlanType.Premium:
                     multiplier = 10;                  // 10x para Premium
-                    duration = PremiumBoostDuration;  // 3h (config acima)
+                    duration = PremiumBoostDuration;  // 3h
                     break;
 
                 case PlanType.Plus:
-                    multiplier = 5;                  // 5x para Plus
-                    duration = PlusBoostDuration;    // 3h (config acima)
+                    multiplier = 5;                   // 5x para Plus
+                    duration = PlusBoostDuration;     // 3h
                     break;
 
                 default:
-                    multiplier = 3;                  // Free com pacote avulso
-                    duration = FreeBoostDuration;    // 15min (config acima)
+                    multiplier = 3;                   // Free com pacote avulso
+                    duration = FreeBoostDuration;     // 15min
                     _myProfile.ExtraBoostTokens = Math.Max(0, _myProfile.ExtraBoostTokens - 1);
                     break;
             }
@@ -749,7 +753,6 @@ namespace AmoraApp.ViewModels
             // Reorganiza a lista considerando boosts
             ApplyFiltersInternal();
         }
-
 
         private void GoToNextUser()
         {
@@ -828,6 +831,9 @@ namespace AmoraApp.ViewModels
         // Prioridade da Fila de planos + boost
         private double GetPlanPriority(UserProfile u)
         {
+            // Aqui ainda usamos o campo Plan do perfil dos OUTROS usuários.
+            // Quando você integrar o fluxo de upgrade pra eles também, é só
+            // sincronizar esse campo na hora da compra.
             var plan = PlanService.Instance.ParsePlanFromString(u.Plan);
 
             var baseScore = plan switch

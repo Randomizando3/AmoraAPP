@@ -28,7 +28,7 @@
                        FontAttributes="Bold"
                        TextColor="#222222" />
                 <Label x:Name="CurrentPlanLabel"
-                       Text="Plano atual: Grátis"
+                       Text="Seu plano atual é: Grátis"
                        FontSize="13"
                        TextColor="#7C7C7C" />
             </StackLayout>
@@ -54,6 +54,38 @@
                            FontSize="16"
                            FontAttributes="Bold"
                            TextColor="#222222" />
+
+                    <!-- Toggle Mensal / Anual -->
+                    <HorizontalStackLayout Spacing="8" Margin="0,4,0,4">
+                        <Frame x:Name="MonthlyChip"
+                               Padding="10,4"
+                               CornerRadius="16"
+                               HasShadow="False"
+                               BackgroundColor="#5d259c">
+                            <Label x:Name="MonthlyChipLabel"
+                                   Text="Mensal"
+                                   FontSize="12"
+                                   TextColor="White" />
+                            <Frame.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnMonthlyTapped" />
+                            </Frame.GestureRecognizers>
+                        </Frame>
+
+                        <Frame x:Name="YearlyChip"
+                               Padding="10,4"
+                               CornerRadius="16"
+                               HasShadow="False"
+                               BackgroundColor="Transparent"
+                               BorderColor="#5d259c">
+                            <Label x:Name="YearlyChipLabel"
+                                   Text="Anual"
+                                   FontSize="12"
+                                   TextColor="#5d259c" />
+                            <Frame.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnYearlyTapped" />
+                            </Frame.GestureRecognizers>
+                        </Frame>
+                    </HorizontalStackLayout>
 
                     <!-- Plano Grátis -->
                     <Frame BackgroundColor="White"
@@ -114,7 +146,8 @@
                                        FontSize="16"
                                        FontAttributes="Bold"
                                        TextColor="#222222" />
-                                <Label Grid.Column="1"
+                                <Label x:Name="PlusPriceLabel"
+                                       Grid.Column="1"
                                        Text="R$ 29,90/mês"
                                        FontSize="13"
                                        TextColor="#888888" />
@@ -128,7 +161,7 @@
                                 <Label Text="• Likes ilimitados"
                                        FontSize="12"
                                        TextColor="#555555" />
-                                <Label Text="• 5 boosts por mês incluídos"
+                                <Label Text="• 5 boosts por período incluídos"
                                        FontSize="12"
                                        TextColor="#555555" />
                                 <Label Text="• Ver quem curtiu você"
@@ -168,7 +201,8 @@
                                        FontSize="17"
                                        FontAttributes="Bold"
                                        TextColor="White" />
-                                <Label Grid.Column="1"
+                                <Label x:Name="PremiumPriceLabel"
+                                       Grid.Column="1"
                                        Text="R$ 49,90/mês"
                                        FontSize="13"
                                        TextColor="#FBE7FF" />
@@ -182,7 +216,7 @@
                                 <Label Text="• Likes ilimitados"
                                        FontSize="12"
                                        TextColor="White" />
-                                <Label Text="• 10 boosts por mês incluídos"
+                                <Label Text="• 10 boosts por período incluídos"
                                        FontSize="12"
                                        TextColor="White" />
                                 <Label Text="• Ver quem curtiu você"
