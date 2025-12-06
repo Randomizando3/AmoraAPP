@@ -579,7 +579,7 @@
                     <VerticalStackLayout Spacing="4">
                         <Label
                             Style="{StaticResource SectionTitleStyle}"
-                            Text="Vídeos (até 20, máx. 15s)" />
+                            Text="Vídeos (Premium – até 20, máx. 15s)" />
 
                         <CollectionView
                             ItemsSource="{Binding ExtraVideoSlots}"

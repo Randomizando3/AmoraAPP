@@ -199,13 +199,10 @@ namespace AmoraApp.Views
                 }
                 else if (action == "Ver")
                 {
-                    try
+                    if (!string.IsNullOrWhiteSpace(slot.ImageUrl))
                     {
-                        await Launcher.Default.OpenAsync(slot.ImageUrl);
-                    }
-                    catch (Exception ex)
-                    {
-                        await DisplayAlert("Erro", $"Não foi possível abrir a foto.\n{ex.Message}", "OK");
+                        // Abre overlay dentro do app
+                        await Navigation.PushModalAsync(new PhotoPreviewPage(slot.ImageUrl));
                     }
                 }
                 else if (action == "Substituir pela galeria")
@@ -249,10 +246,25 @@ namespace AmoraApp.Views
                 _vm.CurrentUserId = uid;
             }
 
+            // Descobre o plano atual do usuário
+            var planService = PlanService.Instance;
+            var planType = planService.ParsePlanFromString(_vm.Plan ?? "Free");
+
             var hasVideo = !string.IsNullOrWhiteSpace(slot.VideoUrl);
 
             if (!hasVideo)
             {
+                // Só Premium pode adicionar vídeos
+                if (planType != PlanType.Premium)
+                {
+                    await DisplayAlert(
+                        "Recurso Premium",
+                        "Adicionar vídeos ao perfil é exclusivo do plano Premium.\n" +
+                        "Assine o plano Premium para liberar vídeos no seu perfil.",
+                        "OK");
+                    return;
+                }
+
                 var currentVideos = _vm.ExtraVideoSlots.Count(s => !string.IsNullOrWhiteSpace(s.VideoUrl));
                 if (currentVideos >= 20)
                 {
@@ -305,6 +317,17 @@ namespace AmoraApp.Views
                 }
                 else if (action == "Substituir (galeria)")
                 {
+                    // Substituir também é operação Premium
+                    if (planType != PlanType.Premium)
+                    {
+                        await DisplayAlert(
+                            "Recurso Premium",
+                            "Substituir vídeos do perfil é exclusivo do plano Premium.\n" +
+                            "Assine o plano Premium para alterar seus vídeos.",
+                            "OK");
+                        return;
+                    }
+
                     var url = await PickVideoFromGalleryAndUploadAsync(
                         $"users/{_vm.CurrentUserId}/videos/video_{slot.Index}_{Guid.NewGuid():N}.mp4");
 
@@ -382,7 +405,8 @@ namespace AmoraApp.Views
             {
                 var result = await FilePicker.PickAsync(new PickOptions
                 {
-                    PickerTitle = "Escolha um vídeo (até 15s)",
+                    PickerTitle = "Escolha um vídeo (até 15s)"
+                    ,
                     FileTypes = FilePickerFileType.Videos
                 });
 

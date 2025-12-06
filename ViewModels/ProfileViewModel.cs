@@ -1,12 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Threading.Tasks;
-using AmoraApp.Models;
+﻿using AmoraApp.Models;
 using AmoraApp.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Numerics;
+using System.Threading.Tasks;
 
 namespace AmoraApp.ViewModels
 {
@@ -91,6 +92,9 @@ namespace AmoraApp.ViewModels
         [ObservableProperty] private string religion;
 
         [ObservableProperty] private string photoUrl;
+
+        // Plano atual ("Free", "Plus", "Premium")
+        [ObservableProperty] private string plan = "Free";
 
         // Data de nascimento
         [ObservableProperty] private DateTime? birthDate;
@@ -478,6 +482,9 @@ namespace AmoraApp.ViewModels
                 Religion = profile.Religion;
                 PhotoUrl = profile.PhotoUrl;
 
+                // Plano
+                Plan = string.IsNullOrWhiteSpace(profile.Plan) ? "Free" : profile.Plan;
+
                 Latitude = profile.Latitude;
                 Longitude = profile.Longitude;
                 CurrentLocationText = string.IsNullOrWhiteSpace(profile.CurrentLocationText)
@@ -563,35 +570,43 @@ namespace AmoraApp.ViewModels
                 var photos = BuildPhotosFromSlots();
                 var videos = BuildVideosFromSlots();
 
-                var profile = new UserProfile
+                // Carrega o perfil existente para preservar plano, boosts etc.
+                var existing = await _dbService.GetUserProfileAsync(uid) ?? new UserProfile
                 {
-                    Id = uid,
-                    DisplayName = DisplayName ?? "",
-                    Email = Email ?? "",
-                    Bio = Bio ?? "",
-                    JobTitle = JobTitle ?? "",
-                    EducationLevel = EducationLevel ?? "",
-                    EducationInstitution = EducationInstitution ?? "",
-                    City = City ?? "",
-                    PhoneNumber = PhoneNumber ?? "",
-                    Gender = Gender ?? "",
-                    SexualOrientation = SexualOrientation ?? "",
-                    Religion = Religion ?? "",
-                    PhotoUrl = PhotoUrl ?? "",
-                    Age = ageYears,
-                    BirthDateUtc = birthUtc,
-                    Photos = photos,
-                    Videos = videos,
-                    // ainda preenche Gallery pra compatibilidade
-                    Gallery = photos,
-                    Interests = GetSelectedInterests(),
-                    LookingFor = GetSelectedRelationshipGoals(),
-                    Latitude = Latitude,
-                    Longitude = Longitude,
-                    CurrentLocationText = CurrentLocationText ?? ""
+                    Id = uid
                 };
 
-                await _dbService.SaveUserProfileAsync(profile);
+                existing.DisplayName = DisplayName ?? "";
+                existing.Email = Email ?? "";
+                existing.Bio = Bio ?? "";
+                existing.JobTitle = JobTitle ?? "";
+                existing.EducationLevel = EducationLevel ?? "";
+                existing.EducationInstitution = EducationInstitution ?? "";
+                existing.City = City ?? "";
+                existing.PhoneNumber = PhoneNumber ?? "";
+                existing.Gender = Gender ?? "";
+                existing.SexualOrientation = SexualOrientation ?? "";
+                existing.Religion = Religion ?? "";
+                existing.PhotoUrl = PhotoUrl ?? "";
+
+                existing.Age = ageYears;
+                existing.BirthDateUtc = birthUtc;
+
+                existing.Photos = photos;
+                existing.Videos = videos;
+                existing.Gallery = photos; // compat
+
+                existing.Interests = GetSelectedInterests();
+                existing.LookingFor = GetSelectedRelationshipGoals();
+
+                existing.Latitude = Latitude;
+                existing.Longitude = Longitude;
+                existing.CurrentLocationText = CurrentLocationText ?? "";
+
+                // Mantém o plano atual (se o ViewModel tiver algo setado, atualiza)
+                existing.Plan = string.IsNullOrWhiteSpace(Plan) ? existing.Plan : Plan;
+
+                await _dbService.SaveUserProfileAsync(existing);
             }
             catch (Exception ex)
             {
