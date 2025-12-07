@@ -37,508 +37,551 @@
         </Style>
     </ContentPage.Resources>
 
-    <RefreshView
-    Command="{Binding LoadFeedCommand}"
-    IsRefreshing="{Binding IsRefreshing}"
-    Margin="0,8,0,0">
+    <!-- GRID RAIZ: RefreshView + Overlay de imagem em tela cheia -->
+    <Grid>
 
+        <!-- FEED COM REFRESH -->
+        <RefreshView
+            Command="{Binding LoadFeedCommand}"
+            IsRefreshing="{Binding IsRefreshing}"
+            Margin="0,8,0,0">
 
-        <CollectionView
-            ItemsSource="{Binding Posts}"
-            Margin="0,0,0,20"
-            BackgroundColor="Transparent">
+            <CollectionView
+                ItemsSource="{Binding Posts}"
+                Margin="0,0,0,20"
+                BackgroundColor="Transparent">
 
-            <!-- espaçamento vertical entre os itens -->
-            <CollectionView.ItemsLayout>
-                <LinearItemsLayout Orientation="Vertical" ItemSpacing="5" />
-            </CollectionView.ItemsLayout>
+                <!-- espaçamento vertical entre os itens -->
+                <CollectionView.ItemsLayout>
+                    <LinearItemsLayout Orientation="Vertical" ItemSpacing="5" />
+                </CollectionView.ItemsLayout>
 
-            <!-- HEADER COMPLETO (titulo + stories + novo post) -->
-            <CollectionView.Header>
-                <StackLayout Spacing="14"
-                             Padding="0,0,0,12">
+                <!-- HEADER COMPLETO (titulo + stories + novo post) -->
+                <CollectionView.Header>
+                    <StackLayout Spacing="14"
+                                 Padding="0,0,0,12">
 
-                    <!-- HEADER (Feed + ícones de solicitações / amigos) -->
-                    <Grid ColumnDefinitions="*,Auto"
-                          Padding="0,0,0,4"
-                          VerticalOptions="Center">
-
-                        <Label
-                            Grid.Column="0"
-                            Text="Feed"
-                            FontSize="22"
-                            FontAttributes="Bold"
-                            TextColor="#262626"
-                            HorizontalOptions="Start"
-                            VerticalOptions="Center" />
-
-                        <!-- Lado direito: botão Amigos + ícone de solicitações -->
-                        <HorizontalStackLayout
-                            Grid.Column="1"
-                            Spacing="8"
-                            HorizontalOptions="End"
-                            VerticalOptions="Center">
-
-                            <!-- Botão Amigos -->
-                            <Button
-                                Text="Amigos"
-                                FontSize="12"
-                                Padding="10,4"
-                                BackgroundColor="White"
-                                TextColor="#5d259c"
-                                CornerRadius="8"
-                                HeightRequest="32"
-                                Clicked="OnFriendsClicked" />
-
-                            <!-- Ícone de solicitações com badge -->
-                            <Grid
-                                HorizontalOptions="Center"
-                                VerticalOptions="Center">
-
-                                <!-- Frame clicável inteiro -->
-                                <Frame
-                                    WidthRequest="32"
-                                    HeightRequest="32"
-                                    CornerRadius="16"
-                                    BackgroundColor="White"
-                                    HasShadow="True"
-                                    Padding="0">
-                                    <Frame.GestureRecognizers>
-                                        <TapGestureRecognizer Tapped="OnRequestsTapped" />
-                                    </Frame.GestureRecognizers>
-
-                                    <Label
-                                        Text="👥"
-                                        FontSize="16"
-                                        HorizontalOptions="Center"
-                                        VerticalOptions="Center" />
-                                </Frame>
-
-                                <!-- Badge com número de solicitações -->
-                                <Frame
-                                    WidthRequest="18"
-                                    HeightRequest="18"
-                                    CornerRadius="9"
-                                    BackgroundColor="#e53935"
-                                    Padding="0"
-                                    HorizontalOptions="End"
-                                    VerticalOptions="Start"
-                                    Margin="-4,-4,0,0">
-                                    <Frame.Triggers>
-                                        <DataTrigger
-                                            TargetType="Frame"
-                                            Binding="{Binding PendingRequestsCount}"
-                                            Value="0">
-                                            <Setter Property="IsVisible" Value="False" />
-                                        </DataTrigger>
-                                    </Frame.Triggers>
-                                    <Label
-                                        Text="{Binding PendingRequestsCount}"
-                                        FontSize="10"
-                                        TextColor="White"
-                                        HorizontalOptions="Center"
-                                        VerticalOptions="Center" />
-                                </Frame>
-                            </Grid>
-                        </HorizontalStackLayout>
-                    </Grid>
-
-                    <!-- STORIES -->
-                    <CollectionView
-                        ItemsSource="{Binding Stories}"
-                        ItemsLayout="HorizontalList"
-                        HorizontalScrollBarVisibility="Never"
-                        Margin="0,10,0,6"
-                        BackgroundColor="Transparent">
-                        <CollectionView.ItemTemplate>
-                            <DataTemplate>
-                                <StackLayout Spacing="4"
-                                             HorizontalOptions="Center">
-
-                                    <Grid HorizontalOptions="Center"
-                                          VerticalOptions="Center">
-
-                                        <!-- Anel do story (circular) -->
-                                        <Frame
-                                            WidthRequest="60"
-                                            HeightRequest="60"
-                                            CornerRadius="30"
-                                            Padding="2"
-                                            HasShadow="False"
-                                            BackgroundColor="#DDDDDD"
-                                            HorizontalOptions="Center"
-                                            VerticalOptions="Center">
-                                            <Frame.Triggers>
-                                                <!-- Roxo quando tem story -->
-                                                <DataTrigger
-                                                    TargetType="Frame"
-                                                    Binding="{Binding HasStory}"
-                                                    Value="True">
-                                                    <Setter Property="BackgroundColor" Value="#5d259c" />
-                                                </DataTrigger>
-                                            </Frame.Triggers>
-
-                                            <Frame
-                                                CornerRadius="28"
-                                                Padding="0"
-                                                HasShadow="False"
-                                                BackgroundColor="White">
-                                                <Image
-                                                    Source="{Binding DisplayImageUrl}"
-                                                    Aspect="AspectFill"
-                                                    WidthRequest="56"
-                                                    HeightRequest="56"
-                                                    HorizontalOptions="Center"
-                                                    VerticalOptions="Center">
-                                                    <Image.Clip>
-                                                        <EllipseGeometry Center="28,28" RadiusX="28" RadiusY="28" />
-                                                    </Image.Clip>
-                                                    <Image.Triggers>
-                                                        <!-- Foto mais apagada se não tiver story -->
-                                                        <DataTrigger
-                                                            TargetType="Image"
-                                                            Binding="{Binding HasStory}"
-                                                            Value="False">
-                                                            <Setter Property="Opacity" Value="0.5" />
-                                                        </DataTrigger>
-                                                    </Image.Triggers>
-                                                </Image>
-                                            </Frame>
-                                        </Frame>
-
-                                        <!-- Ícone de coração (match) -->
-                                        <Label
-                                            Text="❤"
-                                            FontSize="12"
-                                            TextColor="#5d259c"
-                                            HorizontalOptions="End"
-                                            VerticalOptions="Start"
-                                            Margin="0,4,4,0">
-                                            <Label.Triggers>
-                                                <DataTrigger
-                                                    TargetType="Label"
-                                                    Binding="{Binding IsMatch}"
-                                                    Value="False">
-                                                    <Setter Property="IsVisible" Value="False" />
-                                                </DataTrigger>
-                                            </Label.Triggers>
-                                        </Label>
-
-                                        <!-- Botão '+' quando IsMe = true -->
-                                        <Grid
-                                            IsVisible="{Binding IsMe}"
-                                            HorizontalOptions="End"
-                                            VerticalOptions="End"
-                                            Margin="0,0,4,4">
-                                            <Frame
-                                                WidthRequest="22"
-                                                HeightRequest="22"
-                                                CornerRadius="11"
-                                                BackgroundColor="#5d259c"
-                                                Padding="0"
-                                                HorizontalOptions="Center"
-                                                VerticalOptions="Center">
-                                                <Label
-                                                    Text="+"
-                                                    FontSize="14"
-                                                    TextColor="White"
-                                                    HorizontalOptions="Center"
-                                                    VerticalOptions="Center">
-                                                    <Label.GestureRecognizers>
-                                                        <TapGestureRecognizer
-                                                            Tapped="OnAddStoryTapped"
-                                                            CommandParameter="{Binding .}" />
-                                                    </Label.GestureRecognizers>
-                                                </Label>
-                                            </Frame>
-                                        </Grid>
-                                    </Grid>
-
-                                    <Label
-                                        Text="{Binding UserName}"
-                                        FontSize="11"
-                                        HorizontalTextAlignment="Center"
-                                        LineBreakMode="TailTruncation"
-                                        WidthRequest="70" />
-
-                                    <!-- Tap geral na bolha → ver stories -->
-                                    <StackLayout.GestureRecognizers>
-                                        <TapGestureRecognizer
-                                            Tapped="OnStoryTapped"
-                                            CommandParameter="{Binding .}" />
-                                    </StackLayout.GestureRecognizers>
-                                </StackLayout>
-                            </DataTemplate>
-                        </CollectionView.ItemTemplate>
-                    </CollectionView>
-
-                    <!-- NOVO POST -->
-                    <Frame
-                        CornerRadius="8"
-                        BackgroundColor="White"
-                        HasShadow="True"
-                        Padding="8">
-
-                        <!-- Esquerda: texto + preview; Direita: botões empilhados -->
+                        <!-- HEADER (Feed + ícones de solicitações / amigos) -->
                         <Grid ColumnDefinitions="*,Auto"
-                              ColumnSpacing="6"
+                              Padding="0,0,0,4"
                               VerticalOptions="Center">
 
-                            <!-- Texto + preview -->
-                            <StackLayout Grid.Column="0" Spacing="8">
+                            <Label
+                                Grid.Column="0"
+                                Text="Feed"
+                                FontSize="22"
+                                FontAttributes="Bold"
+                                TextColor="#262626"
+                                HorizontalOptions="Start"
+                                VerticalOptions="Center" />
 
-                                <!-- Editor direto, sem Frame cinza em volta -->
-                                <Editor
-                                    Placeholder="Compartilhe algo com seus amigos..."
-                                    Text="{Binding NewPostText}"
-                                    BackgroundColor="#F5F6FA"
-                                    AutoSize="TextChanges"
-                                    MinimumHeightRequest="68"
-                                    HorizontalOptions="FillAndExpand"
-                                    VerticalOptions="Start"
-                                    Margin="4,4,4,0" />
-
-                                <!-- Preview da imagem do novo post (altura fixa) -->
-                                <Image
-                                    Style="{StaticResource NewPostPreviewImageStyle}"
-                                    Source="{Binding NewPostImageUrl}"
-                                    Aspect="AspectFill"
-                                    HeightRequest="160"
-                                    VerticalOptions="Start">
-                                    <Image.Clip>
-                                        <RoundRectangleGeometry CornerRadius="8"
-                                                                Rect="0,0,9999,9999" />
-                                    </Image.Clip>
-                                </Image>
-                            </StackLayout>
-
-                            <!-- Botões (um em cima do outro) -->
-                            <StackLayout
+                            <!-- Lado direito: botão Amigos + ícone de solicitações -->
+                            <HorizontalStackLayout
                                 Grid.Column="1"
                                 Spacing="8"
-                                VerticalOptions="Center"
-                                HorizontalOptions="Center">
-
-                                <!-- Botão imagem (ícone cam.png) -->
-                                <Frame
-                                    WidthRequest="32"
-                                    HeightRequest="32"
-                                    CornerRadius="8"
-                                    Padding="4"
-                                    HasShadow="False"
-                                    BackgroundColor="Transparent">
-                                    <ImageButton
-                                        Source="cam.png"
-                                        Clicked="OnAddImageClicked"
-                                        BackgroundColor="Transparent"
-                                        WidthRequest="24"
-                                        HeightRequest="24"
-                                        HorizontalOptions="Center"
-                                        VerticalOptions="Center" />
-                                </Frame>
-
-                                <!-- Botão Post (ícone send) -->
-                                <Frame
-                                    WidthRequest="32"
-                                    HeightRequest="32"
-                                    CornerRadius="8"
-                                    Padding="4"
-                                    HasShadow="False"
-                                    BackgroundColor="Transparent">
-                                    <ImageButton
-                                        Source="send.png"
-                                        BackgroundColor="Transparent"
-                                        WidthRequest="24"
-                                        HeightRequest="24"
-                                        HorizontalOptions="Center"
-                                        VerticalOptions="Center"
-                                        Command="{Binding PublishPostCommand}" />
-                                </Frame>
-                            </StackLayout>
-                        </Grid>
-                    </Frame>
-
-                </StackLayout>
-            </CollectionView.Header>
-
-            <!-- POSTS -->
-            <CollectionView.ItemTemplate>
-                <DataTemplate>
-                    <Frame
-                        Padding="0"
-                        Margin="0,0,0,0"
-                        CornerRadius="8"
-                        HasShadow="True"
-                        BackgroundColor="White">
-                        <!-- +1 linha para preview de comentários -->
-                        <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto">
-
-                            <!-- Header do post -->
-                            <Grid
-                                Grid.Row="0"
-                                ColumnDefinitions="Auto,*"
-                                Padding="12,12,12,8"
+                                HorizontalOptions="End"
                                 VerticalOptions="Center">
 
-                                <!-- Avatar do autor (circular) -->
-                                <Frame
-                                    WidthRequest="40"
-                                    HeightRequest="40"
-                                    CornerRadius="20"
-                                    HasShadow="False"
-                                    BackgroundColor="#E5E5F7"
-                                    Padding="0"
-                                    HorizontalOptions="Start"
-                                    VerticalOptions="Center">
-                                    <Image
-                                        Source="{Binding UserPhotoUrl}"
-                                        Aspect="AspectFill"
-                                        WidthRequest="40"
-                                        HeightRequest="40"
-                                        HorizontalOptions="Center"
-                                        VerticalOptions="Center">
-                                        <Image.Clip>
-                                            <EllipseGeometry Center="20,20" RadiusX="20" RadiusY="20" />
-                                        </Image.Clip>
-                                    </Image>
-                                </Frame>
+                                <!-- Botão Amigos -->
+                                <Button
+                                    Text="Amigos"
+                                    FontSize="12"
+                                    Padding="10,4"
+                                    BackgroundColor="White"
+                                    TextColor="#5d259c"
+                                    CornerRadius="8"
+                                    HeightRequest="32"
+                                    Clicked="OnFriendsClicked" />
 
-                                <StackLayout
-                                    Grid.Column="1"
-                                    Spacing="2"
-                                    Margin="8,0,0,0"
-                                    VerticalOptions="Center">
-                                    <Label
-                                        Text="{Binding UserName}"
-                                        FontAttributes="Bold"
-                                        TextColor="#262626" />
-                                    <Label
-                                        Text="{Binding CreatedAt, StringFormat='{0:dd MMM yyyy HH:mm}'}"
-                                        FontSize="11"
-                                        TextColor="#999999" />
-                                </StackLayout>
-                            </Grid>
-
-                            <!-- Imagem (se tiver) -->
-                            <Image
-                                Grid.Row="1"
-                                Style="{StaticResource PostImageStyle}"
-                                Source="{Binding ImageUrl}"
-                                Aspect="AspectFill"
-                                HeightRequest="220" />
-
-                            <!-- Texto -->
-                            <Label
-                                Grid.Row="2"
-                                Text="{Binding Text}"
-                                Margin="16,8,16,8"
-                                FontSize="14"
-                                TextColor="#333333" />
-
-                            <!-- Preview de 1 ou 2 comentários -->
-                            <StackLayout
-                                Grid.Row="3"
-                                Margin="16,0,16,4"
-                                Spacing="4"
-                                controls:BindableLayout.ItemsSource="{Binding RecentComments}">
-                                <controls:BindableLayout.ItemTemplate>
-                                    <DataTemplate>
-                                        <Grid RowDefinitions="Auto,Auto">
-                                            <Label
-                                                Grid.Row="0"
-                                                Text="{Binding UserName}"
-                                                FontAttributes="Bold"
-                                                FontSize="12"
-                                                TextColor="#555555" />
-                                            <Label
-                                                Grid.Row="1"
-                                                Text="{Binding ShortText}"
-                                                FontSize="12"
-                                                TextColor="#666666" />
-                                        </Grid>
-                                    </DataTemplate>
-                                </controls:BindableLayout.ItemTemplate>
-                            </StackLayout>
-
-                            <!-- Ações -->
-                            <Grid
-                                Grid.Row="4"
-                                ColumnDefinitions="Auto,*,Auto"
-                                Padding="16,8,16,12"
-                                VerticalOptions="Center">
-
-                                <!-- Like: coração em círculo + contagem -->
-                                <HorizontalStackLayout
-                                    Grid.Column="0"
-                                    Spacing="6"
+                                <!-- Ícone de solicitações com badge -->
+                                <Grid
+                                    HorizontalOptions="Center"
                                     VerticalOptions="Center">
 
+                                    <!-- Frame clicável inteiro -->
                                     <Frame
                                         WidthRequest="32"
                                         HeightRequest="32"
                                         CornerRadius="16"
-                                        Padding="0"
-                                        HasShadow="False"
-                                        BackgroundColor="#F5F6FA"
-                                        VerticalOptions="Center"
-                                        HorizontalOptions="Center">
+                                        BackgroundColor="White"
+                                        HasShadow="True"
+                                        Padding="0">
                                         <Frame.GestureRecognizers>
-                                            <TapGestureRecognizer
-                                                Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.LikePostCommand}"
-                                                CommandParameter="{Binding .}" />
+                                            <TapGestureRecognizer Tapped="OnRequestsTapped" />
                                         </Frame.GestureRecognizers>
 
+                                        <Label
+                                            Text="👥"
+                                            FontSize="16"
+                                            HorizontalOptions="Center"
+                                            VerticalOptions="Center" />
+                                    </Frame>
+
+                                    <!-- Badge com número de solicitações -->
+                                    <Frame
+                                        WidthRequest="18"
+                                        HeightRequest="18"
+                                        CornerRadius="9"
+                                        BackgroundColor="#e53935"
+                                        Padding="0"
+                                        HorizontalOptions="End"
+                                        VerticalOptions="Start"
+                                        Margin="-4,-4,0,0">
+                                        <Frame.Triggers>
+                                            <DataTrigger
+                                                TargetType="Frame"
+                                                Binding="{Binding PendingRequestsCount}"
+                                                Value="0">
+                                                <Setter Property="IsVisible" Value="False" />
+                                            </DataTrigger>
+                                        </Frame.Triggers>
+                                        <Label
+                                            Text="{Binding PendingRequestsCount}"
+                                            FontSize="10"
+                                            TextColor="White"
+                                            HorizontalOptions="Center"
+                                            VerticalOptions="Center" />
+                                    </Frame>
+                                </Grid>
+                            </HorizontalStackLayout>
+                        </Grid>
+
+                        <!-- STORIES -->
+                        <CollectionView
+                            ItemsSource="{Binding Stories}"
+                            ItemsLayout="HorizontalList"
+                            HorizontalScrollBarVisibility="Never"
+                            Margin="0,10,0,6"
+                            BackgroundColor="Transparent">
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate>
+                                    <StackLayout Spacing="4"
+                                                 HorizontalOptions="Center">
+
+                                        <Grid HorizontalOptions="Center"
+                                              VerticalOptions="Center">
+
+                                            <!-- Anel do story (circular) -->
+                                            <Frame
+                                                WidthRequest="60"
+                                                HeightRequest="60"
+                                                CornerRadius="30"
+                                                Padding="2"
+                                                HasShadow="False"
+                                                BackgroundColor="#DDDDDD"
+                                                HorizontalOptions="Center"
+                                                VerticalOptions="Center">
+                                                <Frame.Triggers>
+                                                    <!-- Roxo quando tem story -->
+                                                    <DataTrigger
+                                                        TargetType="Frame"
+                                                        Binding="{Binding HasStory}"
+                                                        Value="True">
+                                                        <Setter Property="BackgroundColor" Value="#5d259c" />
+                                                    </DataTrigger>
+                                                </Frame.Triggers>
+
+                                                <Frame
+                                                    CornerRadius="28"
+                                                    Padding="0"
+                                                    HasShadow="False"
+                                                    BackgroundColor="White">
+                                                    <Image
+                                                        Source="{Binding DisplayImageUrl}"
+                                                        Aspect="AspectFill"
+                                                        WidthRequest="56"
+                                                        HeightRequest="56"
+                                                        HorizontalOptions="Center"
+                                                        VerticalOptions="Center">
+                                                        <Image.Clip>
+                                                            <EllipseGeometry Center="28,28" RadiusX="28" RadiusY="28" />
+                                                        </Image.Clip>
+                                                        <Image.Triggers>
+                                                            <!-- Foto mais apagada se não tiver story -->
+                                                            <DataTrigger
+                                                                TargetType="Image"
+                                                                Binding="{Binding HasStory}"
+                                                                Value="False">
+                                                                <Setter Property="Opacity" Value="0.5" />
+                                                            </DataTrigger>
+                                                        </Image.Triggers>
+                                                    </Image>
+                                                </Frame>
+                                            </Frame>
+
+                                            <!-- Ícone de coração (match) -->
+                                            <Label
+                                                Text="❤"
+                                                FontSize="12"
+                                                TextColor="#5d259c"
+                                                HorizontalOptions="End"
+                                                VerticalOptions="Start"
+                                                Margin="0,4,4,0">
+                                                <Label.Triggers>
+                                                    <DataTrigger
+                                                        TargetType="Label"
+                                                        Binding="{Binding IsMatch}"
+                                                        Value="False">
+                                                        <Setter Property="IsVisible" Value="False" />
+                                                    </DataTrigger>
+                                                </Label.Triggers>
+                                            </Label>
+
+                                            <!-- Botão '+' quando IsMe = true -->
+                                            <Grid
+                                                IsVisible="{Binding IsMe}"
+                                                HorizontalOptions="End"
+                                                VerticalOptions="End"
+                                                Margin="0,0,4,4">
+                                                <Frame
+                                                    WidthRequest="22"
+                                                    HeightRequest="22"
+                                                    CornerRadius="11"
+                                                    BackgroundColor="#5d259c"
+                                                    Padding="0"
+                                                    HorizontalOptions="Center"
+                                                    VerticalOptions="Center">
+                                                    <Label
+                                                        Text="+"
+                                                        FontSize="14"
+                                                        TextColor="White"
+                                                        HorizontalOptions="Center"
+                                                        VerticalOptions="Center">
+                                                        <Label.GestureRecognizers>
+                                                            <TapGestureRecognizer
+                                                                Tapped="OnAddStoryTapped"
+                                                                CommandParameter="{Binding .}" />
+                                                        </Label.GestureRecognizers>
+                                                    </Label>
+                                                </Frame>
+                                            </Grid>
+                                        </Grid>
+
+                                        <Label
+                                            Text="{Binding UserName}"
+                                            FontSize="11"
+                                            HorizontalTextAlignment="Center"
+                                            LineBreakMode="TailTruncation"
+                                            WidthRequest="70" />
+
+                                        <!-- Tap geral na bolha → ver stories -->
+                                        <StackLayout.GestureRecognizers>
+                                            <TapGestureRecognizer
+                                                Tapped="OnStoryTapped"
+                                                CommandParameter="{Binding .}" />
+                                        </StackLayout.GestureRecognizers>
+                                    </StackLayout>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+
+                        <!-- NOVO POST -->
+                        <Frame
+                            CornerRadius="8"
+                            BackgroundColor="White"
+                            HasShadow="True"
+                            Padding="8">
+
+                            <!-- Esquerda: texto + preview; Direita: botões empilhados -->
+                            <Grid ColumnDefinitions="*,Auto"
+                                  ColumnSpacing="6"
+                                  VerticalOptions="Center">
+
+                                <!-- Texto + preview -->
+                                <StackLayout Grid.Column="0" Spacing="8">
+
+                                    <!-- Editor direto, sem Frame cinza em volta -->
+                                    <Editor
+                                        Placeholder="Compartilhe algo com seus amigos..."
+                                        Text="{Binding NewPostText}"
+                                        BackgroundColor="#F5F6FA"
+                                        AutoSize="TextChanges"
+                                        MinimumHeightRequest="68"
+                                        HorizontalOptions="FillAndExpand"
+                                        VerticalOptions="Start"
+                                        Margin="4,4,4,0" />
+
+                                    <!-- Preview da imagem do novo post (altura fixa) -->
+                                    <Image
+                                        Style="{StaticResource NewPostPreviewImageStyle}"
+                                        Source="{Binding NewPostImageUrl}"
+                                        Aspect="AspectFill"
+                                        HeightRequest="160"
+                                        VerticalOptions="Start">
+                                        <Image.Clip>
+                                            <RoundRectangleGeometry CornerRadius="8"
+                                                                    Rect="0,0,9999,9999" />
+                                        </Image.Clip>
+                                    </Image>
+                                </StackLayout>
+
+                                <!-- Botões (um em cima do outro) -->
+                                <StackLayout
+                                    Grid.Column="1"
+                                    Spacing="8"
+                                    VerticalOptions="Center"
+                                    HorizontalOptions="Center">
+
+                                    <!-- Botão imagem (ícone cam.png) -->
+                                    <Frame
+                                        WidthRequest="32"
+                                        HeightRequest="32"
+                                        CornerRadius="8"
+                                        Padding="4"
+                                        HasShadow="False"
+                                        BackgroundColor="Transparent">
+                                        <ImageButton
+                                            Source="cam.png"
+                                            Clicked="OnAddImageClicked"
+                                            BackgroundColor="Transparent"
+                                            WidthRequest="24"
+                                            HeightRequest="24"
+                                            HorizontalOptions="Center"
+                                            VerticalOptions="Center" />
+                                    </Frame>
+
+                                    <!-- Botão Post (ícone send) -->
+                                    <Frame
+                                        WidthRequest="32"
+                                        HeightRequest="32"
+                                        CornerRadius="8"
+                                        Padding="4"
+                                        HasShadow="False"
+                                        BackgroundColor="Transparent">
+                                        <ImageButton
+                                            Source="send.png"
+                                            BackgroundColor="Transparent"
+                                            WidthRequest="24"
+                                            HeightRequest="24"
+                                            HorizontalOptions="Center"
+                                            VerticalOptions="Center"
+                                            Command="{Binding PublishPostCommand}" />
+                                    </Frame>
+                                </StackLayout>
+                            </Grid>
+                        </Frame>
+
+                    </StackLayout>
+                </CollectionView.Header>
+
+                <!-- POSTS -->
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Frame
+                            Padding="0"
+                            Margin="0,0,0,0"
+                            CornerRadius="8"
+                            HasShadow="True"
+                            BackgroundColor="White">
+                            <!-- +1 linha para preview de comentários -->
+                            <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto">
+
+                                <!-- Header do post -->
+                                <Grid
+                                    Grid.Row="0"
+                                    ColumnDefinitions="Auto,*"
+                                    Padding="12,12,12,8"
+                                    VerticalOptions="Center">
+
+                                    <!-- Avatar do autor (circular) -->
+                                    <Frame
+                                        WidthRequest="40"
+                                        HeightRequest="40"
+                                        CornerRadius="20"
+                                        HasShadow="False"
+                                        BackgroundColor="#E5E5F7"
+                                        Padding="0"
+                                        HorizontalOptions="Start"
+                                        VerticalOptions="Center">
                                         <Image
-                                            Source="like.png"
-                                            WidthRequest="18"
-                                            HeightRequest="18"
+                                            Source="{Binding UserPhotoUrl}"
+                                            Aspect="AspectFill"
+                                            WidthRequest="40"
+                                            HeightRequest="40"
                                             HorizontalOptions="Center"
                                             VerticalOptions="Center">
-                                            <Image.Triggers>
-                                                <!-- Menos destaque se não dei like -->
-                                                <DataTrigger
-                                                    TargetType="Image"
-                                                    Binding="{Binding LikedByMe}"
-                                                    Value="False">
-                                                    <Setter Property="Opacity" Value="0.35" />
-                                                </DataTrigger>
-                                                <!-- Cheio se dei like -->
-                                                <DataTrigger
-                                                    TargetType="Image"
-                                                    Binding="{Binding LikedByMe}"
-                                                    Value="True">
-                                                    <Setter Property="Opacity" Value="1" />
-                                                </DataTrigger>
-                                            </Image.Triggers>
+                                            <Image.Clip>
+                                                <EllipseGeometry Center="20,20" RadiusX="20" RadiusY="20" />
+                                            </Image.Clip>
                                         </Image>
                                     </Frame>
 
-                                    <Label
-                                        Text="{Binding Likes}"
+                                    <StackLayout
+                                        Grid.Column="1"
+                                        Spacing="2"
+                                        Margin="8,0,0,0"
+                                        VerticalOptions="Center">
+                                        <Label
+                                            Text="{Binding UserName}"
+                                            FontAttributes="Bold"
+                                            TextColor="#262626" />
+                                        <Label
+                                            Text="{Binding CreatedAt, StringFormat='{0:dd MMM yyyy HH:mm}'}"
+                                            FontSize="11"
+                                            TextColor="#999999" />
+                                    </StackLayout>
+                                </Grid>
+
+                                <!-- Imagem (se tiver) -->
+                                <Image
+                                    Grid.Row="1"
+                                    Style="{StaticResource PostImageStyle}"
+                                    Source="{Binding ImageUrl}"
+                                    Aspect="AspectFill"
+                                    HeightRequest="220">
+                                    <Image.GestureRecognizers>
+                                        <TapGestureRecognizer
+                                            Tapped="OnPostImageTapped"
+                                            CommandParameter="{Binding .}" />
+                                    </Image.GestureRecognizers>
+                                </Image>
+
+                                <!-- Texto -->
+                                <Label
+                                    Grid.Row="2"
+                                    Text="{Binding Text}"
+                                    Margin="16,8,16,8"
+                                    FontSize="14"
+                                    TextColor="#333333" />
+
+                                <!-- Preview de 1 ou 2 comentários -->
+                                <StackLayout
+                                    Grid.Row="3"
+                                    Margin="16,0,16,4"
+                                    Spacing="4"
+                                    controls:BindableLayout.ItemsSource="{Binding RecentComments}">
+                                    <controls:BindableLayout.ItemTemplate>
+                                        <DataTemplate>
+                                            <Grid RowDefinitions="Auto,Auto">
+                                                <Label
+                                                    Grid.Row="0"
+                                                    Text="{Binding UserName}"
+                                                    FontAttributes="Bold"
+                                                    FontSize="12"
+                                                    TextColor="#555555" />
+                                                <Label
+                                                    Grid.Row="1"
+                                                    Text="{Binding ShortText}"
+                                                    FontSize="12"
+                                                    TextColor="#666666" />
+                                            </Grid>
+                                        </DataTemplate>
+                                    </controls:BindableLayout.ItemTemplate>
+                                </StackLayout>
+
+                                <!-- Ações -->
+                                <Grid
+                                    Grid.Row="4"
+                                    ColumnDefinitions="Auto,*,Auto"
+                                    Padding="16,8,16,12"
+                                    VerticalOptions="Center">
+
+                                    <!-- Like: coração em círculo + contagem -->
+                                    <HorizontalStackLayout
+                                        Grid.Column="0"
+                                        Spacing="6"
+                                        VerticalOptions="Center">
+
+                                        <Frame
+                                            WidthRequest="32"
+                                            HeightRequest="32"
+                                            CornerRadius="16"
+                                            Padding="0"
+                                            HasShadow="False"
+                                            BackgroundColor="#F5F6FA"
+                                            VerticalOptions="Center"
+                                            HorizontalOptions="Center">
+                                            <Frame.GestureRecognizers>
+                                                <TapGestureRecognizer
+                                                    Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.LikePostCommand}"
+                                                    CommandParameter="{Binding .}" />
+                                            </Frame.GestureRecognizers>
+
+                                            <Image
+                                                Source="like.png"
+                                                WidthRequest="18"
+                                                HeightRequest="18"
+                                                HorizontalOptions="Center"
+                                                VerticalOptions="Center">
+                                                <Image.Triggers>
+                                                    <!-- Menos destaque se não dei like -->
+                                                    <DataTrigger
+                                                        TargetType="Image"
+                                                        Binding="{Binding LikedByMe}"
+                                                        Value="False">
+                                                        <Setter Property="Opacity" Value="0.35" />
+                                                    </DataTrigger>
+                                                    <!-- Cheio se dei like -->
+                                                    <DataTrigger
+                                                        TargetType="Image"
+                                                        Binding="{Binding LikedByMe}"
+                                                        Value="True">
+                                                        <Setter Property="Opacity" Value="1" />
+                                                    </DataTrigger>
+                                                </Image.Triggers>
+                                            </Image>
+                                        </Frame>
+
+                                        <Label
+                                            Text="{Binding Likes}"
+                                            FontSize="12"
+                                            TextColor="#777777"
+                                            VerticalOptions="Center" />
+                                    </HorizontalStackLayout>
+
+                                    <!-- Espaço no meio -->
+                                    <Grid Grid.Column="1" />
+
+                                    <!-- Comentários -->
+                                    <Button
+                                        Grid.Column="2"
+                                        Text="Comentários"
+                                        HorizontalOptions="End"
+                                        BackgroundColor="Transparent"
+                                        TextColor="#777"
                                         FontSize="12"
-                                        TextColor="#777777"
+                                        Clicked="OnCommentClicked"
+                                        CommandParameter="{Binding .}"
                                         VerticalOptions="Center" />
-                                </HorizontalStackLayout>
-
-                                <!-- Espaço no meio -->
-                                <Grid Grid.Column="1" />
-
-                                <!-- Comentários -->
-                                <Button
-                                    Grid.Column="2"
-                                    Text="Comentários"
-                                    HorizontalOptions="End"
-                                    BackgroundColor="Transparent"
-                                    TextColor="#777"
-                                    FontSize="12"
-                                    Clicked="OnCommentClicked"
-                                    CommandParameter="{Binding .}"
-                                    VerticalOptions="Center" />
+                                </Grid>
                             </Grid>
-                        </Grid>
-                    </Frame>
-                </DataTemplate>
-            </CollectionView.ItemTemplate>
-        </CollectionView>
-    </RefreshView>
+                        </Frame>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </RefreshView>
+
+        <!-- OVERLAY DE IMAGEM EM TELA CHEIA -->
+        <Grid x:Name="ImageOverlay"
+              BackgroundColor="#CC000000"
+              IsVisible="False"
+              Margin="-16,-20,-16,-8">
+            <Grid.GestureRecognizers>
+                <!-- Tocar no fundo também fecha -->
+                <TapGestureRecognizer Tapped="OnCloseFullImageClicked" />
+            </Grid.GestureRecognizers>
+
+            <Grid>
+                <Image
+                    x:Name="FullImageView"
+                    Aspect="AspectFit"
+                    HorizontalOptions="Center"
+                    VerticalOptions="Center" />
+
+                <!-- Botão X branco -->
+                <Button
+                    Text="X"
+                    TextColor="White"
+                    FontAttributes="Bold"
+                    BackgroundColor="Transparent"
+                    WidthRequest="40"
+                    HeightRequest="40"
+                    HorizontalOptions="End"
+                    VerticalOptions="Start"
+                    Margin="16"
+                    Clicked="OnCloseFullImageClicked" />
+            </Grid>
+        </Grid>
+
+    </Grid>
 </ContentPage>

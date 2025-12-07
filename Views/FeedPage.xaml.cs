@@ -5,6 +5,7 @@ using AmoraApp.Services;
 using AmoraApp.ViewModels;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Storage;
+using Microsoft.Maui.Media;
 
 namespace AmoraApp.Views
 {
@@ -63,7 +64,7 @@ namespace AmoraApp.Views
             await Navigation.PushModalAsync(new StoryViewerPage(bubbles.ToList(), index));
         }
 
-        // "+" no story do próprio usuário → cria novo story
+        // "+" no story do próprio usuário → cria novo story (Galeria ou Câmera)
         private async void OnAddStoryTapped(object sender, TappedEventArgs e)
         {
             try
@@ -72,16 +73,20 @@ namespace AmoraApp.Views
                 if (string.IsNullOrEmpty(uid))
                     return;
 
-                var result = await FilePicker.PickAsync(new PickOptions
-                {
-                    FileTypes = FilePickerFileType.Images,
-                    PickerTitle = "Selecione uma imagem para seu story"
-                });
+                var action = await DisplayActionSheet(
+                    "Adicionar story",
+                    "Cancelar",
+                    null,
+                    "Galeria",
+                    "Câmera");
 
-                if (result == null)
+                if (string.IsNullOrEmpty(action) || action == "Cancelar")
                     return;
 
-                await using var stream = await result.OpenReadAsync();
+                // Stream da imagem que será enviada
+                using var stream = await GetImageStreamForStoryAsync(action);
+                if (stream == null)
+                    return;
 
                 var fileName = $"stories/{uid}/{Guid.NewGuid():N}.jpg";
                 var url = await FirebaseStorageService.Instance.UploadImageAsync(stream, fileName);
@@ -100,7 +105,41 @@ namespace AmoraApp.Views
             }
         }
 
-        // Botão da câmera no "novo post"
+        // Helper para pegar a imagem do story (Galeria ou Câmera)
+        private async System.Threading.Tasks.Task<System.IO.Stream?> GetImageStreamForStoryAsync(string action)
+        {
+            if (action == "Galeria")
+            {
+                var result = await FilePicker.PickAsync(new PickOptions
+                {
+                    FileTypes = FilePickerFileType.Images,
+                    PickerTitle = "Selecione uma imagem para seu story"
+                });
+
+                if (result == null)
+                    return null;
+
+                return await result.OpenReadAsync();
+            }
+            else if (action == "Câmera")
+            {
+                if (!MediaPicker.Default.IsCaptureSupported)
+                {
+                    await DisplayAlert("Câmera não disponível", "Este dispositivo não suporta captura de fotos.", "OK");
+                    return null;
+                }
+
+                var photo = await MediaPicker.Default.CapturePhotoAsync();
+                if (photo == null)
+                    return null;
+
+                return await photo.OpenReadAsync();
+            }
+
+            return null;
+        }
+
+        // Botão da câmera no "novo post" (só galeria por enquanto)
         private async void OnAddImageClicked(object sender, EventArgs e)
         {
             try
@@ -142,6 +181,26 @@ namespace AmoraApp.Views
                 return;
 
             await Navigation.PushModalAsync(new CommentsPage(post));
+        }
+
+        // ===== IMAGEM DO POST EM TELA CHEIA (overlay) =====
+
+        private void OnPostImageTapped(object sender, TappedEventArgs e)
+        {
+            if (e.Parameter is not Post post)
+                return;
+
+            if (string.IsNullOrWhiteSpace(post.ImageUrl))
+                return;
+
+            FullImageView.Source = post.ImageUrl;
+            ImageOverlay.IsVisible = true;
+        }
+
+        private void OnCloseFullImageClicked(object sender, EventArgs e)
+        {
+            ImageOverlay.IsVisible = false;
+            FullImageView.Source = null;
         }
     }
 }
