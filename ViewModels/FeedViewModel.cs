@@ -21,8 +21,13 @@ namespace AmoraApp.ViewModels
         public ObservableCollection<Post> Posts { get; } = new();
         public ObservableCollection<StoryBubble> Stories { get; } = new();
 
+        // Usado para ActivityIndicator, botões, etc.
         [ObservableProperty]
         private bool isBusy;
+
+        // Usado EXCLUSIVAMENTE pelo RefreshView
+        [ObservableProperty]
+        private bool isRefreshing;
 
         [ObservableProperty]
         private string errorMessage = string.Empty;
@@ -63,8 +68,12 @@ namespace AmoraApp.ViewModels
         [RelayCommand]
         private async Task LoadFeedAsync()
         {
-            if (IsBusy) return;
-            IsBusy = true;
+            // se já está atualizando, não dispara de novo
+            if (IsRefreshing)
+                return;
+
+            IsRefreshing = true;   // controla o RefreshView
+            IsBusy = true;         // controla ActivityIndicator, botões, etc.
             ErrorMessage = string.Empty;
 
             try
@@ -130,7 +139,10 @@ namespace AmoraApp.ViewModels
             }
             finally
             {
+                // sempre desliga o spinner e o "busy",
+                // mesmo se der erro ou exception.
                 IsBusy = false;
+                IsRefreshing = false;
             }
         }
 

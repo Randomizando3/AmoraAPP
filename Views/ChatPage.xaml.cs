@@ -75,6 +75,7 @@ namespace AmoraApp.Views
             }
 
             UpdateHeader();
+            UpdateRecordButtonVisual();
         }
 
         public ChatPage(string otherUserId, string otherUserName)
@@ -99,8 +100,43 @@ namespace AmoraApp.Views
         {
         }
 
+        // Atualiza visual do botão de gravar áudio (🎙️ / ⏹️)
+        private void UpdateRecordButtonVisual()
+        {
+            if (RecordAudioButton == null)
+                return;
+
+            if (_isRecording)
+            {
+                // quadrado vermelho enquanto grava
+                RecordAudioButton.Text = "⏹️";
+                RecordAudioButton.BackgroundColor = Color.FromArgb("#EB5757");
+                RecordAudioButton.TextColor = Colors.White;
+            }
+            else
+            {
+                // microfone padrão
+                RecordAudioButton.Text = "🎙️";
+                RecordAudioButton.BackgroundColor = Colors.White;
+                RecordAudioButton.TextColor = Color.FromArgb("#333333");
+            }
+        }
+
         private void UpdateHeader()
         {
+            // Foto do usuário / grupo
+            try
+            {
+                if (_chatItem != null && !string.IsNullOrWhiteSpace(_chatItem.PhotoUrl))
+                    UserPhotoImage.Source = _chatItem.PhotoUrl;
+                else
+                    UserPhotoImage.Source = "user_placeholder.png";
+            }
+            catch
+            {
+                UserPhotoImage.Source = "user_placeholder.png";
+            }
+
             if (_isGroupChat)
             {
                 var name = !string.IsNullOrWhiteSpace(_groupName)
@@ -114,13 +150,13 @@ namespace AmoraApp.Views
                 else
                     StatusLabel.Text = "Grupo";
 
-                StatusLabel.TextColor = Colors.Gray;
+                StatusLabel.TextColor = Color.FromArgb("#F3E5F5"); // rosinha claro sobre o roxo
             }
             else
             {
                 UserNameLabel.Text = OtherUserName;
                 StatusLabel.Text = "Online";
-                StatusLabel.TextColor = Color.FromArgb("#5d259c");
+                StatusLabel.TextColor = Colors.White;
             }
         }
 
@@ -246,14 +282,14 @@ namespace AmoraApp.Views
                 if (isOnline)
                 {
                     StatusLabel.Text = "Online";
-                    StatusLabel.TextColor = Color.FromArgb("#5d259c");
+                    StatusLabel.TextColor = Colors.White;
                 }
                 else
                 {
                     if (lastSeenUtc <= 0)
                     {
                         StatusLabel.Text = "Offline";
-                        StatusLabel.TextColor = Colors.Gray;
+                        StatusLabel.TextColor = Color.FromArgb("#F3E5F5");
                         return;
                     }
 
@@ -271,7 +307,7 @@ namespace AmoraApp.Views
                         text = $"Visto em {lastSeen:dd/MM HH:mm}";
 
                     StatusLabel.Text = text;
-                    StatusLabel.TextColor = Colors.Gray;
+                    StatusLabel.TextColor = Color.FromArgb("#F3E5F5");
                 }
             }
             catch (Exception ex)
@@ -518,6 +554,8 @@ namespace AmoraApp.Views
                 RecordingBar.IsVisible = true;
                 RecordingTimeLabel.Text = "Gravando... 00s";
 
+                UpdateRecordButtonVisual();
+
                 _recordingTimer?.Stop();
                 _recordingTimer = Dispatcher.CreateTimer();
                 _recordingTimer.Interval = TimeSpan.FromSeconds(1);
@@ -555,6 +593,8 @@ namespace AmoraApp.Views
         {
             _isRecording = false;
             RecordingBar.IsVisible = false;
+
+            UpdateRecordButtonVisual();
 
             if (_recordingTimer != null)
             {
@@ -945,8 +985,10 @@ namespace AmoraApp.Views
             var bubble = new Frame
             {
                 BackgroundColor = isMine ? Color.FromArgb("#5d259c") : Colors.White,
+                BorderColor = isMine ? Colors.Transparent : Color.FromArgb("#D0D0D0"), // contorno cinza msg recebida
                 CornerRadius = 16,
                 Padding = new Thickness(10),
+                Margin = new Thickness(0, 2),
                 HorizontalOptions = isMine ? LayoutOptions.End : LayoutOptions.Start,
                 MaximumWidthRequest = 260,
                 HasShadow = false,

@@ -3,27 +3,46 @@
     x:Class="AmoraApp.Views.ChatPage"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    BackgroundColor="#FFF5F9"
+    BackgroundColor="#F1F2F6"
     Shell.NavBarIsVisible="False">
 
     <!-- GRID PRINCIPAL -->
     <Grid RowDefinitions="Auto,*,Auto" Padding="0">
 
-        <!-- HEADER -->
+        <!-- HEADER COM DEGRADÊ ROXO -->
         <Grid Grid.Row="0"
-              Padding="12,32,12,12"
+              Padding="12,12,12,12"
               ColumnDefinitions="Auto,*,Auto"
               VerticalOptions="Start">
+            <Grid.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                    <!-- roxo mais escuro -> roxo mais claro -->
+                    <GradientStop Color="#6A1B9A" Offset="0.0" />
+                    <GradientStop Color="#8E24AA" Offset="0.5" />
+                    <GradientStop Color="#AB47BC" Offset="1.0" />
+                </LinearGradientBrush>
+            </Grid.Background>
 
-            <!-- Voltar -->
-            <ImageButton
-                Source="back.png"
-                WidthRequest="28"
-                HeightRequest="28"
-                BackgroundColor="Transparent"
-                Clicked="OnBackButtonClicked" />
+            <!-- FOTO DO USUÁRIO -->
+            <Frame
+                Grid.Column="0"
+                WidthRequest="40"
+                HeightRequest="40"
+                CornerRadius="20"
+                Padding="0"
+                HasShadow="False"
+                BackgroundColor="#F3E5F5">
+                <Image
+                    x:Name="UserPhotoImage"
+                    Source="user_placeholder.png"
+                    Aspect="AspectFill">
+                    <Image.Clip>
+                        <EllipseGeometry Center="20,20" RadiusX="20" RadiusY="20" />
+                    </Image.Clip>
+                </Image>
+            </Frame>
 
-            <!-- Nome + status -->
+            <!-- Nome + status (brancos) -->
             <StackLayout Grid.Column="1"
                          Orientation="Vertical"
                          Spacing="0"
@@ -34,32 +53,32 @@
                     Text="Contato"
                     FontSize="18"
                     FontAttributes="Bold"
-                    TextColor="#222222" />
+                    TextColor="White" />
                 <Label
                     x:Name="StatusLabel"
                     Text="Online"
                     FontSize="12"
-                    TextColor="#5d259c" />
+                    TextColor="#FCE4EC" />
             </StackLayout>
 
-            <!-- Chamada -->
+            <!-- Voltar (no canto direito) -->
             <ImageButton
                 Grid.Column="2"
-                Source="call.png"
+                Source="back2.png"
                 WidthRequest="28"
                 HeightRequest="28"
                 BackgroundColor="Transparent"
                 HorizontalOptions="End"
                 VerticalOptions="Center"
-                Clicked="OnCallTapped" />
-
+                Clicked="OnBackButtonClicked" />
         </Grid>
 
-        <!-- MENSAGENS -->
+        <!-- ÁREA DE MENSAGENS -->
         <ScrollView
             x:Name="MessagesScroll"
             Grid.Row="1"
-            Padding="12,0,12,0">
+            BackgroundColor="White"
+            Padding="12,8,12,8">
             <VerticalStackLayout
                 x:Name="MessagesStack"
                 Spacing="6"
@@ -68,26 +87,24 @@
 
         <!-- INPUT + GRAVAÇÃO -->
         <Grid Grid.Row="2"
-              Padding="8,4,8,8"
+              Padding="12,6,12,12"
               RowDefinitions="Auto,Auto"
               RowSpacing="4">
 
-            <!-- BARRA DE GRAVAÇÃO (mostra só enquanto grava) -->
+            <!-- BARRA DE GRAVAÇÃO (fica logo acima do input) -->
             <Grid x:Name="RecordingBar"
                   Grid.Row="0"
                   IsVisible="False"
                   ColumnDefinitions="Auto,*,Auto"
-                  Padding="8"
+                  Padding="6"
                   BackgroundColor="#FFEDE7F6"
                   Margin="0,0,0,4">
-
                 <BoxView
                     WidthRequest="10"
                     HeightRequest="10"
                     Color="#FFEB5757"
                     CornerRadius="5"
                     VerticalOptions="Center" />
-
                 <Label
                     Grid.Column="1"
                     x:Name="RecordingTimeLabel"
@@ -96,7 +113,6 @@
                     TextColor="#333333"
                     VerticalOptions="Center"
                     Margin="8,0,0,0" />
-
                 <ImageButton
                     Grid.Column="2"
                     Source="close.png"
@@ -110,59 +126,103 @@
 
             <!-- BARRA DE INPUT -->
             <Grid Grid.Row="1"
-                  ColumnDefinitions="Auto,*,Auto,Auto"
-                  ColumnSpacing="8">
+                  ColumnDefinitions="*,Auto"
+                  ColumnSpacing="8"
+                  VerticalOptions="End"
+                  HeightRequest="92">
 
-                <!-- Botão imagem -->
-                <ImageButton
-                    Grid.Column="0"
-                    Source="image.png"
-                    WidthRequest="26"
-                    HeightRequest="26"
-                    BackgroundColor="Transparent"
-                    VerticalOptions="Center"
-                    Clicked="OnAttachImageClicked" />
-
-                <!-- Entrada de texto -->
+                <!-- Caixa de texto (altura parecida com as 2 linhas de botões) -->
                 <Frame
-                    Grid.Column="1"
+                    Grid.Column="0"
                     BackgroundColor="White"
-                    CornerRadius="20"
-                    Padding="12,6"
+                    CornerRadius="10"
+                    Padding="8,4"
                     HasShadow="False"
-                    BorderColor="#E0E0E0">
-                    <Entry
+                    BorderColor="#E0E0E0"
+                    VerticalOptions="Center">
+                    <Editor
                         x:Name="MessageEntry"
                         Placeholder="Mensagem..."
                         FontSize="14"
                         TextColor="#222222"
+                        AutoSize="Disabled"
+                        HeightRequest="80"
+                        MinimumHeightRequest="40"
                         Completed="OnEntryCompleted" />
                 </Frame>
 
-                <!-- Botão gravar áudio -->
-                <ImageButton
-                    Grid.Column="2"
-                    x:Name="RecordAudioButton"
-                    Source="mic.png"
-                    WidthRequest="26"
-                    HeightRequest="26"
-                    BackgroundColor="Transparent"
-                    VerticalOptions="Center"
-                    Clicked="OnRecordAudioClicked" />
+                <!-- Coluna direita: ENVIAR em cima, CÂMERA+MIC embaixo -->
+                <Grid Grid.Column="1"
+                      RowDefinitions="Auto,Auto"
+                      RowSpacing="4"
+                      VerticalOptions="End">
 
-                <!-- Botão enviar texto -->
-                <ImageButton
-                    Grid.Column="3"
-                    Source="send.png"
-                    WidthRequest="28"
-                    HeightRequest="28"
-                    BackgroundColor="Transparent"
-                    VerticalOptions="Center">
-                    <ImageButton.GestureRecognizers>
-                        <TapGestureRecognizer Tapped="OnSendTapped" />
-                    </ImageButton.GestureRecognizers>
-                </ImageButton>
+                    <!-- Botão Enviar (roxo, maior, em cima) -->
+                    <Frame
+                        Grid.Row="0"
+                        BackgroundColor="#5d259c"
+                        CornerRadius="12"
+                        Padding="0"
+                        HasShadow="False"
+                        HeightRequest="44"
+                        VerticalOptions="End"
+                        HorizontalOptions="Fill">
+                        <Grid HorizontalOptions="Center"
+                              VerticalOptions="Center">
+                            <ImageButton
+                                Source="send2.png"
+                                BackgroundColor="Transparent"
+                                WidthRequest="28"
+                                HeightRequest="28"
+                                Padding="0"
+                                HorizontalOptions="Center"
+                                VerticalOptions="Center">
+                                <ImageButton.GestureRecognizers>
+                                    <TapGestureRecognizer Tapped="OnSendTapped" />
+                                </ImageButton.GestureRecognizers>
+                            </ImageButton>
+                        </Grid>
+                    </Frame>
 
+                    <!-- Caixa branca com câmera + áudio (embaixo) -->
+                    <Frame
+                        Grid.Row="1"
+                        BackgroundColor="White"
+                        CornerRadius="12"
+                        Padding="6"
+                        HasShadow="False"
+                        BorderColor="#E0E0E0"
+                        HeightRequest="44"
+                        VerticalOptions="End"
+                        HorizontalOptions="Fill">
+                        <HorizontalStackLayout Spacing="8"
+                                               VerticalOptions="Center"
+                                               HorizontalOptions="Center">
+
+                            <!-- Botão imagem -->
+                            <ImageButton
+                                Source="cam.png"
+                                WidthRequest="26"
+                                HeightRequest="26"
+                                BackgroundColor="Transparent"
+                                VerticalOptions="Center"
+                                Clicked="OnAttachImageClicked" />
+
+                            <!-- Botão áudio (emoji troca no code-behind) -->
+                            <Button
+                                x:Name="RecordAudioButton"
+                                Text="🎙️"
+                                FontSize="18"
+                                Padding="4,2"
+                                BackgroundColor="White"
+                                TextColor="#333333"
+                                CornerRadius="8"
+                                VerticalOptions="Center"
+                                Clicked="OnRecordAudioClicked" />
+                        </HorizontalStackLayout>
+                    </Frame>
+
+                </Grid>
             </Grid>
         </Grid>
 
@@ -171,14 +231,12 @@
               RowSpan="3"
               BackgroundColor="#CC000000"
               IsVisible="False">
-
             <Grid>
                 <Image
                     x:Name="FullImageView"
                     Aspect="AspectFit"
                     HorizontalOptions="Center"
                     VerticalOptions="Center" />
-
                 <ImageButton
                     Source="close.png"
                     WidthRequest="32"
@@ -192,5 +250,4 @@
         </Grid>
 
     </Grid>
-
 </ContentPage>

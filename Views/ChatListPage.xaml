@@ -3,7 +3,7 @@
     x:Class="AmoraApp.Views.ChatListPage"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    BackgroundColor="#FFF5F9"
+    BackgroundColor="#F1F2F6"
     Shell.NavBarIsVisible="False">
 
     <ContentPage.Resources>
@@ -23,7 +23,8 @@
 
     </ContentPage.Resources>
 
-    <Grid RowDefinitions="Auto,Auto,*" Padding="16,32,16,12">
+    <Grid RowDefinitions="Auto,Auto,*"
+          Padding="16,32,16,12">
 
         <!-- HEADER + FILTROS -->
         <Grid Grid.Row="0" RowDefinitions="Auto,Auto">
@@ -39,12 +40,12 @@
             </Grid>
 
             <!-- Filtros -->
-            <Grid Grid.Row="1" Margin="0,12,0,0">
+            <Grid Grid.Row="1" Margin="0,10,0,0">
                 <Frame
-                    CornerRadius="20"
+                    CornerRadius="12"
                     BackgroundColor="White"
                     HasShadow="True"
-                    Padding="4">
+                    Padding="2">
                     <Grid ColumnDefinitions="*,*,*,*">
 
                         <!-- Todos -->
@@ -54,6 +55,9 @@
                             Command="{Binding ChangeFilterCommand}"
                             CommandParameter="All"
                             FontSize="13"
+                            HeightRequest="34"
+                            CornerRadius="10"
+                            Padding="0,4"
                             BackgroundColor="Transparent"
                             BorderWidth="0"
                             TextColor="#777">
@@ -75,6 +79,9 @@
                             Command="{Binding ChangeFilterCommand}"
                             CommandParameter="Matches"
                             FontSize="13"
+                            HeightRequest="34"
+                            CornerRadius="10"
+                            Padding="0,4"
                             BackgroundColor="Transparent"
                             BorderWidth="0"
                             TextColor="#777">
@@ -96,6 +103,9 @@
                             Command="{Binding ChangeFilterCommand}"
                             CommandParameter="Friends"
                             FontSize="13"
+                            HeightRequest="34"
+                            CornerRadius="10"
+                            Padding="0,4"
                             BackgroundColor="Transparent"
                             BorderWidth="0"
                             TextColor="#777">
@@ -117,6 +127,9 @@
                             Command="{Binding ChangeFilterCommand}"
                             CommandParameter="Favorites"
                             FontSize="13"
+                            HeightRequest="34"
+                            CornerRadius="10"
+                            Padding="0,4"
                             BackgroundColor="Transparent"
                             BorderWidth="0"
                             TextColor="#777">
@@ -137,7 +150,9 @@
         </Grid>
 
         <!-- MATCHES + AMIGOS HORIZONTAIS -->
-        <StackLayout Grid.Row="1" Spacing="12" Margin="0,12,0,0">
+        <StackLayout Grid.Row="1"
+                     Spacing="12"
+                     Margin="0,12,0,0">
 
             <!-- Matches -->
             <StackLayout Spacing="6">
@@ -154,7 +169,8 @@
                     HorizontalScrollBarVisibility="Never">
                     <CollectionView.ItemTemplate>
                         <DataTemplate>
-                            <StackLayout Spacing="4" HorizontalOptions="Center">
+                            <StackLayout Spacing="4"
+                                         HorizontalOptions="Center">
                                 <Grid>
 
                                     <!-- Avatar circular menor -->
@@ -250,7 +266,8 @@
                     HorizontalScrollBarVisibility="Never">
                     <CollectionView.ItemTemplate>
                         <DataTemplate>
-                            <StackLayout Spacing="4" HorizontalOptions="Center">
+                            <StackLayout Spacing="4"
+                                         HorizontalOptions="Center">
                                 <Grid>
 
                                     <!-- Avatar circular menor -->

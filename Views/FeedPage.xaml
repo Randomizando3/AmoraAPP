@@ -6,7 +6,8 @@
     xmlns:controls="clr-namespace:Microsoft.Maui.Controls;assembly=Microsoft.Maui.Controls"
     BackgroundColor="#F1F2F6"
     Title="Feed"
-    Shell.NavBarIsVisible="False">
+    Shell.NavBarIsVisible="False"
+    Padding="16,20,16,8">
 
     <ContentPage.Resources>
         <!-- Imagem do post só aparece se tiver URL -->
@@ -37,13 +38,14 @@
     </ContentPage.Resources>
 
     <RefreshView
-        Command="{Binding LoadFeedCommand}"
-        IsRefreshing="{Binding IsBusy}"
-        Margin="0,8,0,0">
+    Command="{Binding LoadFeedCommand}"
+    IsRefreshing="{Binding IsRefreshing}"
+    Margin="0,8,0,0">
+
 
         <CollectionView
             ItemsSource="{Binding Posts}"
-            Margin="16,0,16,20"
+            Margin="0,0,0,20"
             BackgroundColor="Transparent">
 
             <!-- espaçamento vertical entre os itens -->
