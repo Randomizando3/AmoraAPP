@@ -68,12 +68,11 @@ namespace AmoraApp.ViewModels
         [RelayCommand]
         private async Task LoadFeedAsync()
         {
-            // se já está atualizando, não dispara de novo
-            if (IsRefreshing)
+            // trava de reentrada é o IsBusy, não o IsRefreshing
+            if (IsBusy)
                 return;
 
-            IsRefreshing = true;   // controla o RefreshView
-            IsBusy = true;         // controla ActivityIndicator, botões, etc.
+            IsBusy = true;          // ActivityIndicator / botões
             ErrorMessage = string.Empty;
 
             try
@@ -139,8 +138,7 @@ namespace AmoraApp.ViewModels
             }
             finally
             {
-                // sempre desliga o spinner e o "busy",
-                // mesmo se der erro ou exception.
+                // SEMPRE: ao terminar (com erro ou não), desliga busy e refresh
                 IsBusy = false;
                 IsRefreshing = false;
             }
@@ -207,31 +205,41 @@ namespace AmoraApp.ViewModels
         [RelayCommand]
         private async Task PublishPostAsync()
         {
-            if (IsBusy) return;
+            ErrorMessage = string.Empty;
 
             var text = NewPostText?.Trim() ?? string.Empty;
 
+            // Se não tem texto nem imagem, não faz nada
             if (string.IsNullOrWhiteSpace(text) && string.IsNullOrWhiteSpace(NewPostImageUrl))
-                return; // não posta nada vazio
+                return;
+
+            if (IsBusy)
+                return;
 
             IsBusy = true;
-            ErrorMessage = string.Empty;
 
             try
             {
-                var user = _authService.GetCurrentUser();
-                if (user == null)
+                // usa primeiro o UID salvo, depois tenta pegar o user
+                var meId = _authService.CurrentUserUid;
+                if (string.IsNullOrEmpty(meId))
+                {
+                    var userTmp = _authService.GetCurrentUser();
+                    meId = userTmp?.Uid;
+                }
+
+                if (string.IsNullOrEmpty(meId))
                 {
                     ErrorMessage = "Usuário não logado.";
                     return;
                 }
 
-                var profile = await _dbService.GetUserProfileAsync(user.Uid);
+                var profile = await _dbService.GetUserProfileAsync(meId);
 
                 var post = new Post
                 {
-                    UserId = user.Uid,
-                    UserName = profile?.DisplayName ?? user.Info.DisplayName ?? user.Info.Email,
+                    UserId = meId,
+                    UserName = profile?.DisplayName ?? "Usuário",
                     UserPhotoUrl = profile?.PhotoUrl ?? string.Empty,
                     Text = text,
                     ImageUrl = NewPostImageUrl ?? string.Empty,
@@ -239,14 +247,15 @@ namespace AmoraApp.ViewModels
                     Likes = 0
                 };
 
+                // grava no Firebase
                 await _dbService.CreatePostAsync(post);
+
+                // adiciona imediatamente no feed local (no topo)
+                Posts.Insert(0, post);
 
                 // limpa campos
                 NewPostText = string.Empty;
                 NewPostImageUrl = string.Empty;
-
-                // recarrega feed (pra já aparecer com avatar, likes, comentários, etc.)
-                await LoadFeedAsync();
             }
             catch (Exception ex)
             {

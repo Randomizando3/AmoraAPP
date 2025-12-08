@@ -22,6 +22,8 @@ namespace AmoraApp.Services
                 AuthDomain = FirebaseSettings.AuthDomain,
                 Providers = new FirebaseAuthProvider[]
                 {
+                    // Habilita Google + Email/senha
+                    new GoogleProvider().AddScopes("email"),
                     new EmailProvider()
                 }
             };

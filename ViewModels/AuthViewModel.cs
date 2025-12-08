@@ -12,6 +12,7 @@ using Microsoft.Maui.Controls;
 using Microsoft.Maui.Storage;
 using Microsoft.Maui.Media;
 using Firebase.Auth;
+using Firebase.Auth.Providers;
 
 namespace AmoraApp.ViewModels
 {
@@ -45,6 +46,9 @@ namespace AmoraApp.ViewModels
         // Foto de perfil (pré-cadastro)
         [ObservableProperty] private string photoUrl;
         private byte[] _photoBytes;
+
+        // Flag interno para saber se o cadastro veio de login social (Google)
+        private bool _isSocialSignUp = false;
 
         // Campos de perfil mínimos
         [ObservableProperty] private string bio;
@@ -128,7 +132,7 @@ namespace AmoraApp.ViewModels
         }
 
         // =========================================================
-        // LOGIN
+        // LOGIN EMAIL/SENHA
         // =========================================================
         [RelayCommand]
         private async Task LoginAsync()
@@ -361,7 +365,7 @@ namespace AmoraApp.ViewModels
         }
 
         // =========================================================
-        // REGISTRO FINAL
+        // REGISTRO FINAL (EMAIL/SENHA ou SOCIAL)
         // =========================================================
         private async Task RegisterAsync()
         {
@@ -411,22 +415,54 @@ namespace AmoraApp.ViewModels
                     .Select(i => i.Name)
                     .ToList();
 
-                var email = Email.Trim();
+                string uid;
+                string email = Email?.Trim() ?? string.Empty;
 
-                var cred = await _authService.RegisterWithEmailPasswordAsync(
-                    email,
-                    Password,
-                    DisplayName.Trim());
+                if (_isSocialSignUp)
+                {
+                    // Usuário já autenticado via Google
+                    var currentUser = _authService.GetCurrentUser();
+                    if (currentUser == null)
+                    {
+                        ErrorMessage = "Não foi possível continuar com o cadastro via Google. Tente novamente.";
+                        return;
+                    }
 
-                var uid = cred.User.Uid;
+                    uid = currentUser.Uid;
 
-                // UID salvo para auto-login
-                Preferences.Set("auth_uid", uid);
+                    if (string.IsNullOrWhiteSpace(email))
+                        email = currentUser.Info.Email ?? string.Empty;
+
+                    if (string.IsNullOrWhiteSpace(DisplayName))
+                        DisplayName = currentUser.Info.DisplayName ?? string.Empty;
+
+                    Preferences.Set("auth_uid", uid);
+                }
+                else
+                {
+                    // Fluxo tradicional: criar usuário com email/senha
+                    if (string.IsNullOrWhiteSpace(Email) || string.IsNullOrWhiteSpace(Password))
+                    {
+                        ErrorMessage = "Informe um e-mail e uma senha.";
+                        return;
+                    }
+
+                    email = Email.Trim();
+
+                    var cred = await _authService.RegisterWithEmailPasswordAsync(
+                        email,
+                        Password,
+                        DisplayName.Trim());
+
+                    uid = cred.User.Uid;
+
+                    Preferences.Set("auth_uid", uid);
+                }
 
                 var profile = new UserProfile
                 {
                     Id = uid,
-                    DisplayName = DisplayName.Trim(),
+                    DisplayName = DisplayName?.Trim() ?? string.Empty,
                     Email = email,
                     Bio = Bio?.Trim() ?? string.Empty,
                     City = City?.Trim() ?? string.Empty,
@@ -437,18 +473,25 @@ namespace AmoraApp.ViewModels
                     PhoneNumber = PhoneNumber?.Trim() ?? string.Empty,
                     LookingFor = selectedGoals,
                     Interests = selectedInterests,
-                    EmailVerified = true
+                    EmailVerified = true // já validado (código) ou Google
                 };
 
                 var birthUtc = new DateTimeOffset(BirthDate.Date).ToUnixTimeMilliseconds();
                 profile.BirthDateUtc = birthUtc;
 
+                // Foto: se o usuário escolheu uma foto manual, sobe pro Storage.
+                // Caso contrário, se veio do Google, usa PhotoUrl direto.
                 if (_photoBytes != null && _photoBytes.Length > 0)
                 {
                     using var ms = new MemoryStream(_photoBytes);
                     var path = $"users/{uid}/profile_{Guid.NewGuid():N}.jpg";
                     var url = await FirebaseStorageService.Instance.UploadImageAsync(ms, path);
                     profile.PhotoUrl = url;
+                }
+                else if (!string.IsNullOrWhiteSpace(PhotoUrl) &&
+                         PhotoUrl.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+                {
+                    profile.PhotoUrl = PhotoUrl;
                 }
 
                 await _dbService.SaveUserProfileAsync(profile);
@@ -485,17 +528,95 @@ namespace AmoraApp.ViewModels
         }
 
         // =========================================================
-        // SOCIAL LOGINS (placeholder)
+        // LOGIN COM GOOGLE (via WebView / SignInWithRedirectAsync)
         // =========================================================
-        [RelayCommand]
-        private async Task LoginWithGoogleAsync()
+        /// <summary>
+        /// Login com Google usando fluxo de redirect. O callback abre um WebView,
+        /// espera o redirect para /__/auth/handler e devolve a URL final.
+        /// </summary>
+        public async Task LoginWithGoogleAsync(Func<Uri, Task<Uri>> openBrowserAndWaitForRedirectAsync)
         {
-            await Application.Current.MainPage.DisplayAlert(
-                "Login com Google",
-                "Login com Google será configurado usando OAuth/Firebase. Por enquanto, use seu e-mail e senha.",
-                "OK");
+            if (IsBusy) return;
+            IsBusy = true;
+            ErrorMessage = string.Empty;
+
+            try
+            {
+                var client = _authService.Client;
+
+                // Delegate agora recebe string (startUrl) e retorna string (finalUrl)
+                var userCredential = await client.SignInWithRedirectAsync(
+                    FirebaseProviderType.Google,
+                    async startUrl =>
+                    {
+                        // Converte a string que o Firebase manda para Uri
+                        var startUri = new Uri(startUrl);
+
+                        // Usa o callback do LoginPage (que trabalha com Uri)
+                        var finalUri = await openBrowserAndWaitForRedirectAsync(startUri);
+
+                        // Devolve como string, que é o que o delegate espera
+                        return finalUri.ToString();
+                    });
+
+                if (userCredential == null || userCredential.User == null)
+                {
+                    ErrorMessage = "Não foi possível autenticar com o Google.";
+                    return;
+                }
+
+                var user = userCredential.User;
+                var uid = user.Uid;
+                var email = user.Info.Email ?? string.Empty;
+                var name = user.Info.DisplayName ?? string.Empty;
+                var photo = user.Info.PhotoUrl;
+
+                Preferences.Set("auth_uid", uid);
+
+                // Verifica se já existe perfil no banco
+                var existingProfile = await _dbService.GetUserProfileAsync(uid);
+                if (existingProfile != null)
+                {
+                    await PresenceService.Instance.SetOnlineAsync(uid);
+                    Application.Current.MainPage = new AppShell();
+                    return;
+                }
+
+                // Novo usuário via Google → ir para fluxo de criação de perfil
+                _isSocialSignUp = true;
+
+                DisplayName = name;
+                Email = email;
+                if (!string.IsNullOrEmpty(photo))
+                    PhotoUrl = photo;
+
+                // Pular etapas de nome / email+senha / código
+                IsStepName = false;
+                IsStepEmail = false;
+                IsStepCode = false;
+                IsStepProfile = true;
+                PrimaryButtonText = "Concluir cadastro";
+
+                // Abre a tela de cadastro com este mesmo ViewModel
+                if (Application.Current.MainPage is NavigationPage nav)
+                {
+                    await nav.PushAsync(new Views.RegisterPage(this));
+                }
+            }
+            catch (Exception ex)
+            {
+                ErrorMessage = "Erro ao entrar com Google: " + ex.Message;
+            }
+            finally
+            {
+                IsBusy = false;
+            }
         }
 
+
+        // =========================================================
+        // SOCIAL LOGIN APPLE (mantém placeholder)
+        // =========================================================
         [RelayCommand]
         private async Task LoginWithAppleAsync()
         {

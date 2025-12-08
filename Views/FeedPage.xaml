@@ -361,6 +361,14 @@
                             </Grid>
                         </Frame>
 
+                        <!-- MENSAGEM DE ERRO DO FEED / POST -->
+                        <Label
+                            Text="{Binding ErrorMessage}"
+                            FontSize="12"
+                            TextColor="Red"
+                            HorizontalTextAlignment="Center"
+                            Margin="4,4,4,0" />
+
                     </StackLayout>
                 </CollectionView.Header>
 
