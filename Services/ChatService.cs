@@ -1,4 +1,5 @@
 using AmoraApp.Config;
+using AmoraApp.Helpers;
 using AmoraApp.Models;
 using System;
 using System.Collections.Generic;
@@ -50,6 +51,9 @@ namespace AmoraApp.Services
 
             public string LastMessageText { get; set; } = string.Empty;
             public long LastMessageAt { get; set; } // unix ms
+
+            // >>> NOVO: foto do chat (grupo ou 1x1, mas usamos pra grupos)
+            public string PhotoUrl { get; set; } = string.Empty;
         }
 
         private class FirebasePushResult
@@ -122,7 +126,8 @@ namespace AmoraApp.Services
                     {
                         [a] = true,
                         [b] = true
-                    }
+                    },
+                    PhotoUrl = string.Empty
                 };
 
                 var body = JsonSerializer.Serialize(header, _jsonOptions);
@@ -147,7 +152,6 @@ namespace AmoraApp.Services
             var members = new HashSet<string>(memberIds ?? Array.Empty<string>());
 
             members.Add(creatorId); // garante criador
-
             members.RemoveWhere(string.IsNullOrWhiteSpace);
 
             if (members.Count < 2)
@@ -174,7 +178,8 @@ namespace AmoraApp.Services
                 Members = members.ToDictionary(m => m, m => true),
                 IsMatch = false,
                 LastMessageText = string.Empty,
-                LastMessageAt = 0
+                LastMessageAt = 0,
+                PhotoUrl = string.Empty // será preenchido depois (foto manual ou auto)
             };
 
             var body = JsonSerializer.Serialize(header, _jsonOptions);
@@ -188,9 +193,6 @@ namespace AmoraApp.Services
         // GRUPOS - MEMBROS
         // ============================================================
 
-        /// <summary>
-        /// Retorna os IDs dos membros de um chat de grupo.
-        /// </summary>
         public async Task<IList<string>> GetGroupMemberIdsAsync(string chatId)
         {
             if (string.IsNullOrWhiteSpace(chatId))
@@ -212,27 +214,19 @@ namespace AmoraApp.Services
             return list;
         }
 
-        /// <summary>
-        /// Usuário sai de um grupo (remove-se de Members e "esconde" o chat).
-        /// </summary>
         public async Task LeaveGroupAsync(string chatId, string userId)
         {
             if (string.IsNullOrWhiteSpace(chatId) || string.IsNullOrWhiteSpace(userId))
                 return;
 
-            // Remove dos membros
             var memberPath = $"{BaseUrl}/chats/{chatId}/members/{userId}.json";
             await _httpClient.DeleteAsync(memberPath);
 
-            // Esconde o chat para o usuário
             var hiddenPath = $"{BaseUrl}/chatHidden/{userId}/{chatId}.json";
             var content = new StringContent("true", Encoding.UTF8, "application/json");
             await _httpClient.PutAsync(hiddenPath, content);
         }
 
-        /// <summary>
-        /// Adiciona novos membros a um grupo.
-        /// </summary>
         public async Task AddGroupMembersAsync(string chatId, string requesterId, IEnumerable<string> newMemberIds)
         {
             if (string.IsNullOrWhiteSpace(chatId) || newMemberIds == null)
@@ -241,8 +235,6 @@ namespace AmoraApp.Services
             var header = await GetChatHeaderAsync(chatId);
             if (header == null || !header.IsGroup)
                 return;
-
-            // Opcional: aqui você poderia validar se requesterId é admin
 
             foreach (var id in newMemberIds)
             {
@@ -255,9 +247,6 @@ namespace AmoraApp.Services
             }
         }
 
-        /// <summary>
-        /// Remove um membro específico de um grupo.
-        /// </summary>
         public async Task RemoveGroupMemberAsync(string chatId, string requesterId, string memberId)
         {
             if (string.IsNullOrWhiteSpace(chatId) || string.IsNullOrWhiteSpace(memberId))
@@ -267,15 +256,10 @@ namespace AmoraApp.Services
             if (header == null || !header.IsGroup)
                 return;
 
-            // Opcional: validar admin
-
             var path = $"{BaseUrl}/chats/{chatId}/members/{memberId}.json";
             await _httpClient.DeleteAsync(path);
         }
 
-        /// <summary>
-        /// Exclui um grupo (apaga header e mensagens).
-        /// </summary>
         public async Task DeleteGroupAsync(string chatId, string requesterId)
         {
             if (string.IsNullOrWhiteSpace(chatId))
@@ -285,40 +269,26 @@ namespace AmoraApp.Services
             if (header == null || !header.IsGroup)
                 return;
 
-            // Opcional: validar admin
-
-            // Remove header
             var chatPath = $"{BaseUrl}/chats/{chatId}.json";
             await _httpClient.DeleteAsync(chatPath);
 
-            // Remove mensagens
             var msgPath = $"{BaseUrl}/chatMessages/{chatId}.json";
             await _httpClient.DeleteAsync(msgPath);
         }
 
-        // ====== HELPERS DE CONVENIÊNCIA USADOS PELA ChatPage ======
-
-        /// <summary>
-        /// Helper simples para adicionar UM membro a partir da UI (usa CurrentUser como requester).
-        /// </summary>
+        // Helpers simples usados em UI
         public async Task AddMemberToGroupAsync(string chatId, string memberId)
         {
             var requester = FirebaseAuthService.Instance.CurrentUserUid ?? string.Empty;
             await AddGroupMembersAsync(chatId, requester, new[] { memberId });
         }
 
-        /// <summary>
-        /// Helper simples para remover UM membro a partir da UI (usa CurrentUser como requester).
-        /// </summary>
         public async Task RemoveMemberFromGroupAsync(string chatId, string memberId)
         {
             var requester = FirebaseAuthService.Instance.CurrentUserUid ?? string.Empty;
             await RemoveGroupMemberAsync(chatId, requester, memberId);
         }
 
-        /// <summary>
-        /// Helper simples para excluir o grupo (usa CurrentUser como requester).
-        /// </summary>
         public async Task DeleteGroupAsync(string chatId)
         {
             var requester = FirebaseAuthService.Instance.CurrentUserUid ?? string.Empty;
@@ -367,7 +337,6 @@ namespace AmoraApp.Services
             if (string.IsNullOrWhiteSpace(chatId))
                 throw new ArgumentException("chatId é obrigatório.");
 
-            // texto OU imagem OU áudio
             if (message == null
                 || string.IsNullOrWhiteSpace(message.SenderId)
                 || (string.IsNullOrWhiteSpace(message.Text)
@@ -380,12 +349,10 @@ namespace AmoraApp.Services
             if (message.CreatedAt == 0)
                 message.CreatedAt = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
 
-            // Remetente já conta como "leu"
             message.ReadBy ??= new Dictionary<string, bool>();
             if (!string.IsNullOrWhiteSpace(message.SenderId))
                 message.ReadBy[message.SenderId] = true;
 
-            // Envia mensagem
             var url = $"{BaseUrl}/chatMessages/{chatId}.json";
             var json = JsonSerializer.Serialize(message, _jsonOptions);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
@@ -397,7 +364,6 @@ namespace AmoraApp.Services
             var pushResult = JsonSerializer.Deserialize<FirebasePushResult>(resultJson, _jsonOptions);
             var newId = pushResult?.Name ?? string.Empty;
 
-            // Texto de preview para lista
             var lastPreview =
                 !string.IsNullOrWhiteSpace(message.Text)
                     ? message.Text
@@ -407,7 +373,6 @@ namespace AmoraApp.Services
                             ? "[Áudio]"
                             : string.Empty));
 
-            // Atualiza header com última mensagem
             var headerUrl = $"{BaseUrl}/chats/{chatId}.json";
             var patch = new
             {
@@ -418,13 +383,11 @@ namespace AmoraApp.Services
             var patchContent = new StringContent(patchJson, Encoding.UTF8, "application/json");
             await _httpClient.PatchAsync(headerUrl, patchContent);
 
-            // ==== unread count ====
             var header = await GetChatHeaderAsync(chatId);
             if (header != null && !string.IsNullOrWhiteSpace(message.SenderId))
             {
                 var senderId = message.SenderId;
 
-                // Se tiver Members, usa lista completa (grupo ou 1x1)
                 var members = header.Members?.Keys?.ToList();
                 if (members == null || members.Count == 0)
                 {
@@ -441,14 +404,12 @@ namespace AmoraApp.Services
 
                     if (userId == senderId)
                     {
-                        // remetente -> zera
                         await _httpClient.PutAsync(
                             metaPath,
                             new StringContent("0", Encoding.UTF8, "application/json"));
                     }
                     else
                     {
-                        // destinatários -> incrementa
                         var unreadResp = await _httpClient.GetAsync(metaPath);
                         var unreadJson = await unreadResp.Content.ReadAsStringAsync();
 
@@ -465,9 +426,6 @@ namespace AmoraApp.Services
             }
         }
 
-        /// <summary>
-        /// Marca mensagens como lidas (readBy[userId] = true) e zera unreadCount para esse usuário.
-        /// </summary>
         public async Task MarkMessagesAsReadAsync(string chatId, string userId, IEnumerable<ChatMessage> messages)
         {
             if (string.IsNullOrWhiteSpace(chatId) || string.IsNullOrWhiteSpace(userId))
@@ -524,7 +482,6 @@ namespace AmoraApp.Services
                 if (header == null)
                     continue;
 
-                // "Apagado" para esse usuário?
                 var hiddenUrl = $"{BaseUrl}/chatHidden/{userId}/{header.ChatId}.json";
                 var hiddenResponse = await _httpClient.GetAsync(hiddenUrl);
                 var hiddenJson = await hiddenResponse.Content.ReadAsStringAsync();
@@ -536,7 +493,6 @@ namespace AmoraApp.Services
                         continue;
                 }
 
-                // Participa?
                 bool participates = false;
 
                 if (!header.IsGroup)
@@ -553,11 +509,10 @@ namespace AmoraApp.Services
                 if (!participates)
                     continue;
 
-                // ===== Dados de exibição =====
                 bool isGroup = header.IsGroup;
                 string displayName;
                 string otherId = string.Empty;
-                string photoUrl;
+                string photoUrl = string.Empty;
 
                 int membersCount = 0;
                 if (header.Members != null)
@@ -582,7 +537,27 @@ namespace AmoraApp.Services
                         ? "Grupo"
                         : $"Grupo {header.GroupName}";
                     otherId = string.Empty;
-                    photoUrl = string.Empty; // aqui depois dá pra por um avatar de grupo fixo
+
+                    // 1) Já tem foto salva no header? usa.
+                    if (!string.IsNullOrWhiteSpace(header.PhotoUrl))
+                    {
+                        photoUrl = header.PhotoUrl;
+                    }
+                    else
+                    {
+                        // 2) Grupo antigo sem foto -> gera UMA vez aleatório e salva
+                        var auto = AvatarGenerator.GetGroupAvatarUrl(header.GroupName, header.ChatId);
+                        photoUrl = auto;
+
+                        try
+                        {
+                            await FirebaseDatabaseService.Instance.UpdateChatPhotoAsync(header.ChatId, auto);
+                        }
+                        catch
+                        {
+                            // se der erro, só segue com auto local mesmo
+                        }
+                    }
                 }
                 else
                 {

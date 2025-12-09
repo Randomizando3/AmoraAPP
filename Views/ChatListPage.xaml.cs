@@ -1,7 +1,9 @@
-﻿using AmoraApp.Models;
+﻿using AmoraApp.Helpers;
+using AmoraApp.Models;
 using AmoraApp.Services;
 using AmoraApp.ViewModels;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Storage;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,14 +24,13 @@ namespace AmoraApp.Views
         protected override async void OnAppearing()
         {
             base.OnAppearing();
-
             if (Vm != null)
                 await Vm.InitializeAsync();
         }
 
-        /// <summary>
-        /// Tap em avatar ou item da lista de chats.
-        /// </summary>
+        // ============================================================
+        //  TAP EM UM CHAT
+        // ============================================================
         private async void OnChatTapped(object sender, EventArgs e)
         {
             if (Vm == null)
@@ -46,14 +47,10 @@ namespace AmoraApp.Views
                 return;
             }
 
-            var options = new List<string>
-            {
-                "Abrir conversa"
-            };
+            var options = new List<string> { "Abrir conversa" };
 
             if (chat.IsGroup)
             {
-                // Todos podem ver a lista de membros
                 options.Add("Ver membros do grupo");
 
                 if (chat.IsGroupAdmin)
@@ -67,23 +64,14 @@ namespace AmoraApp.Views
                     options.Add("Sair do grupo");
                 }
 
-                var favLabel = chat.IsFavorite
-                    ? "Remover dos favoritos"
-                    : "Adicionar aos favoritos";
-                options.Add(favLabel);
+                options.Add(chat.IsFavorite ? "Remover dos favoritos" : "Adicionar aos favoritos");
             }
             else
             {
-                // NÃO é grupo => contato normal
                 if (!string.IsNullOrWhiteSpace(chat.UserId))
-                {
                     options.Add("Criar grupo com este contato");
-                }
 
-                var favLabel = chat.IsFavorite
-                    ? "Remover dos favoritos"
-                    : "Adicionar aos favoritos";
-                options.Add(favLabel);
+                options.Add(chat.IsFavorite ? "Remover dos favoritos" : "Adicionar aos favoritos");
 
                 options.Add("Bloquear usuário");
                 options.Add("Excluir chat");
@@ -107,21 +95,17 @@ namespace AmoraApp.Views
 
                 case "Adicionar aos favoritos":
                 case "Remover dos favoritos":
-                    if (Vm.ToggleFavoriteCommand.CanExecute(chat))
-                        Vm.ToggleFavoriteCommand.Execute(chat);
+                    Vm.ToggleFavoriteCommand.Execute(chat);
                     break;
 
                 case "Bloquear usuário":
-                    if (Vm.BlockChatCommand.CanExecute(chat))
-                        Vm.BlockChatCommand.Execute(chat);
+                    Vm.BlockChatCommand.Execute(chat);
                     break;
 
                 case "Excluir chat":
-                    if (Vm.DeleteChatCommand.CanExecute(chat))
-                        Vm.DeleteChatCommand.Execute(chat);
+                    Vm.DeleteChatCommand.Execute(chat);
                     break;
 
-                // ===== GRUPO =====
                 case "Ver membros do grupo":
                     await ShowGroupMembersAsync(chat);
                     break;
@@ -141,12 +125,12 @@ namespace AmoraApp.Views
                 case "Excluir grupo":
                     await DeleteGroupAsync(chat);
                     break;
-
-                default:
-                    break;
             }
         }
 
+        // ============================================================
+        //  CRIAR NOVO GRUPO COM UM CONTATO
+        // ============================================================
         private async Task CreateGroupWithContactAsync(ChatItem chat)
         {
             try
@@ -154,126 +138,135 @@ namespace AmoraApp.Views
                 var me = FirebaseAuthService.Instance.CurrentUserUid;
                 if (string.IsNullOrWhiteSpace(me))
                 {
-                    await DisplayAlert("Erro",
-                        "Usuário não logado.",
-                        "OK");
+                    await DisplayAlert("Erro", "Usuário não logado.", "OK");
                     return;
                 }
 
                 if (string.IsNullOrWhiteSpace(chat.UserId))
                 {
-                    await DisplayAlert("Erro",
-                        "Contato inválido para criar grupo.",
-                        "OK");
+                    await DisplayAlert("Erro", "Contato inválido para criar grupo.", "OK");
                     return;
                 }
 
+                // 1) Nome do grupo
                 var groupName = await DisplayPromptAsync(
                     "Novo grupo",
                     "Nome do grupo:",
-                    "Criar",
+                    "OK",
                     "Cancelar");
 
                 if (string.IsNullOrWhiteSpace(groupName))
                     return;
 
-                var trimmedName = groupName.Trim();
+                var trimmed = groupName.Trim();
 
-                var chatIdGroup = await ChatService.Instance.CreateGroupChatAsync(
-                    me,
-                    trimmedName,
-                    new[] { me, chat.UserId });
+                // 2) Pergunta sobre foto
+                var photoOption = await DisplayActionSheet(
+                    "Avatar do grupo",
+                    "Cancelar",
+                    null,
+                    "Escolher foto",
+                    "Usar avatar automático");
 
-                var groupItem = new ChatItem
+                string? finalPhotoUrl = null;
+
+                // 3) Foto selecionada pelo usuário
+                if (photoOption == "Escolher foto")
                 {
-                    ChatId = chatIdGroup,
-                    IsGroup = true,
-                    GroupName = trimmedName,
-                    DisplayName = $"Grupo {trimmedName}",
-                    MembersCount = 2,
-                    IsGroupAdmin = true
-                };
+                    var pick = await FilePicker.PickAsync(new PickOptions
+                    {
+                        FileTypes = FilePickerFileType.Images,
+                        PickerTitle = "Escolher foto"
+                    });
 
-                await Navigation.PushAsync(new ChatPage(groupItem));
+                    if (pick != null)
+                    {
+                        await using var s = await pick.OpenReadAsync();
+                        finalPhotoUrl = await FirebaseStorageService.Instance
+                            .UploadImageAsync(s, $"groupAvatars/{Guid.NewGuid():N}.jpg");
+                    }
+                }
+
+                // 4) Criar grupo
+                var chatId = await ChatService.Instance.CreateGroupChatAsync(
+                    me, trimmed, new[] { me, chat.UserId });
+
+                // 5) Se não houver foto manual, gerar automático (emoji)
+                if (string.IsNullOrWhiteSpace(finalPhotoUrl))
+                {
+                    string[] emojis = { "🍇", "🐱", "🍀", "🦊", "🌈", "🔥", "🎀", "⭐" };
+                    var emoji = emojis[new Random(trimmed.GetHashCode()).Next(emojis.Length)];
+
+                    // Criamos um unique URL lógico somente para usar a função que detecta avatar automático
+                    finalPhotoUrl = $"autoAvatar://{emoji}/#FFFFFF";
+                }
+
+                // 6) Salvar no grupo
+                await FirebaseDatabaseService.Instance.UpdateChatPhotoAsync(chatId, finalPhotoUrl);
+
+                // 7) Abrir
+                await Navigation.PushAsync(new ChatPage(new ChatItem
+                {
+                    ChatId = chatId,
+                    IsGroup = true,
+                    GroupName = trimmed,
+                    DisplayName = $"Grupo {trimmed}",
+                    PhotoUrl = finalPhotoUrl,
+                    IsGroupAdmin = true,
+                    MembersCount = 2
+                }));
             }
             catch (Exception ex)
             {
-                await DisplayAlert("Erro",
-                    "Não foi possível criar o grupo.\n" + ex.Message,
-                    "OK");
+                await DisplayAlert("Erro", "Falha ao criar grupo.\n" + ex.Message, "OK");
             }
         }
 
-        // ================== VER MEMBROS DO GRUPO ==================
-
+        // ============================================================
+        //  VER MEMBROS DO GRUPO
+        // ============================================================
         private async Task ShowGroupMembersAsync(ChatItem chat)
         {
             try
             {
-                if (chat == null || string.IsNullOrWhiteSpace(chat.ChatId))
-                    return;
-
-                var memberIds = await ChatService.Instance.GetGroupMemberIdsAsync(chat.ChatId);
-                if (memberIds == null || memberIds.Count == 0)
+                var ids = await ChatService.Instance.GetGroupMemberIdsAsync(chat.ChatId);
+                if (ids == null || ids.Count == 0)
                 {
-                    await DisplayAlert("Membros", "Nenhum membro encontrado neste grupo.", "OK");
+                    await DisplayAlert("Membros", "Nenhum membro encontrado.", "OK");
                     return;
                 }
 
-                var profiles = new List<UserProfile>();
-                foreach (var id in memberIds)
+                var list = new List<UserProfile>();
+                foreach (var id in ids)
                 {
                     var p = await FirebaseDatabaseService.Instance.GetUserProfileAsync(id);
-                    if (p != null)
-                        profiles.Add(p);
+                    if (p != null) list.Add(p);
                 }
 
-                if (profiles.Count == 0)
-                {
-                    await DisplayAlert("Membros", "Não foi possível carregar os perfis dos membros.", "OK");
-                    return;
-                }
+                var names = list.Select(p => p.DisplayName ?? p.Id).ToArray();
 
-                var options = profiles
-                    .Select(p => string.IsNullOrWhiteSpace(p.DisplayName) ? p.Id : p.DisplayName)
-                    .ToArray();
-
-                var chosen = await DisplayActionSheet(
-                    "Membros do grupo",
-                    "Cancelar",
-                    null,
-                    options);
-
+                var chosen = await DisplayActionSheet("Membros", "Cancelar", null, names);
                 if (string.IsNullOrWhiteSpace(chosen) || chosen == "Cancelar")
                     return;
 
-                var selectedProfile = profiles.FirstOrDefault(p =>
-                    (string.IsNullOrWhiteSpace(p.DisplayName) ? p.Id : p.DisplayName) == chosen);
-
-                if (selectedProfile == null)
-                    return;
-
-                // Abre Discover focado nesse membro
-                await Navigation.PushAsync(new DiscoverPage(selectedProfile));
+                var prof = list.FirstOrDefault(p => p.DisplayName == chosen || p.Id == chosen);
+                if (prof != null)
+                    await Navigation.PushAsync(new DiscoverPage(prof));
             }
             catch (Exception ex)
             {
-                await DisplayAlert("Erro",
-                    "Não foi possível carregar os membros do grupo.\n" + ex.Message,
-                    "OK");
+                await DisplayAlert("Erro", "Falha ao carregar membros.\n" + ex.Message, "OK");
             }
         }
 
-        // ================== GERENCIAMENTO DE GRUPO ==================
-
+        // ============================================================
+        //  SAIR DO GRUPO
+        // ============================================================
         private async Task LeaveGroupAsync(ChatItem chat)
         {
             try
             {
                 var me = FirebaseAuthService.Instance.CurrentUserUid;
-                if (string.IsNullOrWhiteSpace(me))
-                    return;
-
                 await ChatService.Instance.LeaveGroupAsync(chat.ChatId, me);
 
                 if (Vm != null)
@@ -281,190 +274,132 @@ namespace AmoraApp.Views
             }
             catch (Exception ex)
             {
-                await DisplayAlert("Erro",
-                    "Não foi possível sair do grupo.\n" + ex.Message,
-                    "OK");
+                await DisplayAlert("Erro", ex.Message, "OK");
             }
         }
 
+        // ============================================================
+        //  ADICIONAR MEMBROS
+        // ============================================================
         private async Task AddMembersToGroupAsync(ChatItem chat)
         {
             try
             {
-                var me = FirebaseAuthService.Instance.CurrentUserUid;
-                if (string.IsNullOrWhiteSpace(me))
-                    return;
-
                 if (!chat.IsGroupAdmin)
                 {
-                    await DisplayAlert("Erro",
-                        "Apenas o administrador do grupo pode adicionar membros.",
-                        "OK");
+                    await DisplayAlert("Erro", "Somente admins podem adicionar.", "OK");
                     return;
                 }
 
-                // Carrega todos os usuários possíveis a partir do seu serviço
-                // Aqui vou usar MatchService para simplicidade: você pode ajustar se quiser restringir.
-                var allUsers = await MatchService.Instance.GetUsersForDiscoverAsync(me);
+                var me = FirebaseAuthService.Instance.CurrentUserUid;
+                var users = await MatchService.Instance.GetUsersForDiscoverAsync(me);
 
-                // Remove quem já está no grupo
-                var memberIds = await ChatService.Instance.GetGroupMemberIdsAsync(chat.ChatId);
-                var candidates = allUsers
-                    .Where(u => !memberIds.Contains(u.Id))
-                    .ToList();
+                var members = await ChatService.Instance.GetGroupMemberIdsAsync(chat.ChatId);
 
-                if (candidates.Count == 0)
+                var list = users.Where(u => !members.Contains(u.Id)).ToList();
+
+                if (list.Count == 0)
                 {
-                    await DisplayAlert("Adicionar membros",
-                        "Nenhum usuário disponível para adicionar.",
-                        "OK");
+                    await DisplayAlert("Aviso", "Nenhum usuário disponível.", "OK");
                     return;
                 }
 
-                // Monta lista de nomes para escolher (um por vez, mais simples)
-                var options = candidates
-                    .Select(u => string.IsNullOrWhiteSpace(u.DisplayName) ? u.Id : u.DisplayName)
-                    .ToArray();
+                var names = list.Select(u => u.DisplayName ?? u.Id).ToArray();
 
-                var chosen = await DisplayActionSheet(
-                    "Adicionar membro",
-                    "Cancelar",
-                    null,
-                    options);
-
+                var chosen = await DisplayActionSheet("Adicionar membro", "Cancelar", null, names);
                 if (string.IsNullOrWhiteSpace(chosen) || chosen == "Cancelar")
                     return;
 
-                var selected = candidates.FirstOrDefault(u =>
-                    (string.IsNullOrWhiteSpace(u.DisplayName) ? u.Id : u.DisplayName) == chosen);
+                var pick = list.First(u => u.DisplayName == chosen || u.Id == chosen);
 
-                if (selected == null)
-                    return;
+                await ChatService.Instance.AddGroupMembersAsync(chat.ChatId, me, new[] { pick.Id });
 
-                await ChatService.Instance.AddGroupMembersAsync(chat.ChatId, me, new[] { selected.Id });
-
-                if (Vm != null)
-                    await Vm.InitializeAsync();
+                await Vm.InitializeAsync();
             }
             catch (Exception ex)
             {
-                await DisplayAlert("Erro",
-                    "Não foi possível adicionar o membro.\n" + ex.Message,
-                    "OK");
+                await DisplayAlert("Erro", ex.Message, "OK");
             }
         }
 
+        // ============================================================
+        //  REMOVER MEMBROS
+        // ============================================================
         private async Task RemoveMembersFromGroupAsync(ChatItem chat)
         {
             try
             {
-                var me = FirebaseAuthService.Instance.CurrentUserUid;
-                if (string.IsNullOrWhiteSpace(me))
-                    return;
-
                 if (!chat.IsGroupAdmin)
                 {
-                    await DisplayAlert("Erro",
-                        "Apenas o administrador do grupo pode remover membros.",
-                        "OK");
+                    await DisplayAlert("Erro", "Somente admins podem remover.", "OK");
                     return;
                 }
 
-                var memberIds = await ChatService.Instance.GetGroupMemberIdsAsync(chat.ChatId);
-                if (memberIds == null || memberIds.Count <= 1)
-                {
-                    await DisplayAlert("Remover membros",
-                        "Não há membros suficientes para remover.",
-                        "OK");
-                    return;
-                }
+                var me = FirebaseAuthService.Instance.CurrentUserUid;
+                var ids = await ChatService.Instance.GetGroupMemberIdsAsync(chat.ChatId);
 
                 var profiles = new List<UserProfile>();
-                foreach (var id in memberIds)
+                foreach (var id in ids)
                 {
                     var p = await FirebaseDatabaseService.Instance.GetUserProfileAsync(id);
-                    if (p != null)
+                    if (p != null && p.Id != me)
                         profiles.Add(p);
                 }
 
-                // Não permite remover a si mesmo aqui (use "Sair do grupo" pra isso)
-                profiles = profiles.Where(p => p.Id != me).ToList();
-
                 if (profiles.Count == 0)
                 {
-                    await DisplayAlert("Remover membros",
-                        "Nenhum membro disponível para remoção.",
-                        "OK");
+                    await DisplayAlert("Aviso", "Nenhum membro pode ser removido.", "OK");
                     return;
                 }
 
-                var options = profiles
-                    .Select(p => string.IsNullOrWhiteSpace(p.DisplayName) ? p.Id : p.DisplayName)
-                    .ToArray();
+                var names = profiles.Select(p => p.DisplayName ?? p.Id).ToArray();
 
-                var chosen = await DisplayActionSheet(
-                    "Remover membro",
-                    "Cancelar",
-                    null,
-                    options);
-
+                var chosen = await DisplayActionSheet("Remover membro", "Cancelar", null, names);
                 if (string.IsNullOrWhiteSpace(chosen) || chosen == "Cancelar")
                     return;
 
-                var selected = profiles.FirstOrDefault(p =>
-                    (string.IsNullOrWhiteSpace(p.DisplayName) ? p.Id : p.DisplayName) == chosen);
-
-                if (selected == null)
-                    return;
+                var selected = profiles.First(p => p.DisplayName == chosen || p.Id == chosen);
 
                 await ChatService.Instance.RemoveGroupMemberAsync(chat.ChatId, me, selected.Id);
 
-                if (Vm != null)
-                    await Vm.InitializeAsync();
+                await Vm.InitializeAsync();
             }
             catch (Exception ex)
             {
-                await DisplayAlert("Erro",
-                    "Não foi possível remover o membro.\n" + ex.Message,
-                    "OK");
+                await DisplayAlert("Erro", ex.Message, "OK");
             }
         }
 
+        // ============================================================
+        //  EXCLUIR GRUPO
+        // ============================================================
         private async Task DeleteGroupAsync(ChatItem chat)
         {
             try
             {
-                var me = FirebaseAuthService.Instance.CurrentUserUid;
-                if (string.IsNullOrWhiteSpace(me))
-                    return;
-
                 if (!chat.IsGroupAdmin)
                 {
-                    await DisplayAlert("Erro",
-                        "Apenas o administrador do grupo pode excluir o grupo.",
-                        "OK");
+                    await DisplayAlert("Erro", "Somente admins podem excluir.", "OK");
                     return;
                 }
 
                 var confirm = await DisplayAlert(
                     "Excluir grupo",
-                    "Tem certeza que deseja excluir este grupo para todos os participantes?",
-                    "Sim",
-                    "Não");
+                    "Deseja excluir este grupo para todos?",
+                    "Sim", "Não");
 
                 if (!confirm)
                     return;
 
+                var me = FirebaseAuthService.Instance.CurrentUserUid;
+
                 await ChatService.Instance.DeleteGroupAsync(chat.ChatId, me);
 
-                if (Vm != null)
-                    await Vm.InitializeAsync();
+                await Vm.InitializeAsync();
             }
             catch (Exception ex)
             {
-                await DisplayAlert("Erro",
-                    "Não foi possível excluir o grupo.\n" + ex.Message,
-                    "OK");
+                await DisplayAlert("Erro", ex.Message, "OK");
             }
         }
     }

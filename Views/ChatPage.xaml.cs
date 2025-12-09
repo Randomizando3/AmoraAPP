@@ -1,4 +1,5 @@
-﻿using AmoraApp.Models;
+﻿using AmoraApp.Helpers;
+using AmoraApp.Models;
 using AmoraApp.Services;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls;
@@ -124,19 +125,47 @@ namespace AmoraApp.Views
 
         private void UpdateHeader()
         {
-            // Foto do usuário / grupo
+            // FOTO / AVATAR
             try
             {
                 if (_chatItem != null && !string.IsNullOrWhiteSpace(_chatItem.PhotoUrl))
-                    UserPhotoImage.Source = _chatItem.PhotoUrl;
+                {
+                    // Se for avatar automático (emoji)
+                    if (AvatarGenerator.IsAutoGroupAvatar(_chatItem.PhotoUrl))
+                    {
+                        UserPhotoImage.Source =
+                            AvatarGenerator.GetGroupAvatarImageSourceFromUrl(_chatItem.PhotoUrl);
+                    }
+                    else
+                    {
+                        // URL normal (foto escolhida)
+                        UserPhotoImage.Source = _chatItem.PhotoUrl;
+                    }
+                }
+                else if (_isGroupChat)
+                {
+                    // Grupo sem foto => avatar automático baseado no nome
+                    var seed = !string.IsNullOrWhiteSpace(_groupName)
+                        ? _groupName
+                        : OtherUserName;
+
+                    var auto = AvatarGenerator.GetGroupAvatarUrl(seed);
+
+                    UserPhotoImage.Source =
+                        AvatarGenerator.GetGroupAvatarImageSourceFromUrl(auto);
+                }
                 else
+                {
+                    // Chat 1x1 sem foto
                     UserPhotoImage.Source = "user_placeholder.png";
+                }
             }
             catch
             {
                 UserPhotoImage.Source = "user_placeholder.png";
             }
 
+            // TEXTO
             if (_isGroupChat)
             {
                 var name = !string.IsNullOrWhiteSpace(_groupName)
@@ -150,7 +179,7 @@ namespace AmoraApp.Views
                 else
                     StatusLabel.Text = "Grupo";
 
-                StatusLabel.TextColor = Color.FromArgb("#F3E5F5"); // rosinha claro sobre o roxo
+                StatusLabel.TextColor = Color.FromArgb("#F3E5F5");
             }
             else
             {
@@ -353,6 +382,7 @@ namespace AmoraApp.Views
                 }
 
                 var roomName = $"amoraapp-{_chatId}";
+
                 var callUrl = $"https://meet.jit.si/{Uri.EscapeDataString(roomName)}";
 
                 await Launcher.OpenAsync(callUrl);
@@ -559,7 +589,7 @@ namespace AmoraApp.Views
                 _recordingTimer?.Stop();
                 _recordingTimer = Dispatcher.CreateTimer();
                 _recordingTimer.Interval = TimeSpan.FromSeconds(1);
-                _recordingTimer.Tick += (s, e) =>
+                _recordingTimer.Tick += (s, e2) =>
                 {
                     var elapsed = DateTime.UtcNow - _recordingStartUtc;
                     if (elapsed < TimeSpan.Zero)
@@ -985,7 +1015,7 @@ namespace AmoraApp.Views
             var bubble = new Frame
             {
                 BackgroundColor = isMine ? Color.FromArgb("#5d259c") : Colors.White,
-                BorderColor = isMine ? Colors.Transparent : Color.FromArgb("#D0D0D0"), // contorno cinza msg recebida
+                BorderColor = isMine ? Colors.Transparent : Color.FromArgb("#D0D0D0"),
                 CornerRadius = 16,
                 Padding = new Thickness(10),
                 Margin = new Thickness(0, 2),
@@ -1176,6 +1206,7 @@ namespace AmoraApp.Views
                     while (labelToId.ContainsKey(finalLabel))
                     {
                         finalLabel = $"{label} #{dup}";
+
                         dup++;
                     }
 

@@ -145,7 +145,6 @@ namespace AmoraApp.Services
             var dict = JsonSerializer.Deserialize<Dictionary<string, Post>>(json, _jsonOptions)
                        ?? new Dictionary<string, Post>();
 
-            // 🚫 CORRIGIDO! — troca da linha que gerava o erro CS1525
             var friendSet = new HashSet<string>(friendIds ?? Array.Empty<string>());
             friendSet.Add(myUid);
 
@@ -256,9 +255,7 @@ namespace AmoraApp.Services
                 .ToList();
         }
 
-
         // ------------ LIKES DE POST (POR USUÁRIO) ------------
-
         // /postLikes/{postId}/{userId} = true
 
         public async Task<(int likes, bool likedByMe)> GetPostLikesAsync(string postId, string currentUserId)
@@ -311,5 +308,20 @@ namespace AmoraApp.Services
             await _httpClient.PutAsync(url, content);
         }
 
+        // ============================================================
+        // CHAT - FOTO DO CHAT
+        // ============================================================
+
+        public async Task UpdateChatPhotoAsync(string chatId, string photoUrl)
+        {
+            if (string.IsNullOrWhiteSpace(chatId))
+                return;
+
+            // Usa sempre BaseUrl para manter padrão com o resto
+            var url = $"{BaseUrl}/chats/{chatId}/photoUrl.json";
+            var content = new StringContent($"\"{photoUrl}\"", Encoding.UTF8, "application/json");
+
+            await _httpClient.PutAsync(url, content);
+        }
     }
 }

@@ -3,24 +3,30 @@
     x:Class="AmoraApp.Views.ChatListPage"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:helpers="clr-namespace:AmoraApp.Helpers"
     BackgroundColor="#F1F2F6"
     Shell.NavBarIsVisible="False">
 
     <ContentPage.Resources>
+        <ResourceDictionary>
 
-        <!-- Badge de não lidas só aparece se UnreadCount > 0 -->
-        <Style x:Key="UnreadBadgeStyle" TargetType="Frame">
-            <Setter Property="IsVisible" Value="True" />
-            <Style.Triggers>
-                <DataTrigger
-                    TargetType="Frame"
-                    Binding="{Binding UnreadCount}"
-                    Value="0">
-                    <Setter Property="IsVisible" Value="False" />
-                </DataTrigger>
-            </Style.Triggers>
-        </Style>
+            <!-- Converter que trata PhotoUrl (URL normal ou autoAvatar://...) -->
+            <helpers:AvatarSourceConverter x:Key="AvatarSourceConverter" />
 
+            <!-- Badge de não lidas só aparece se UnreadCount > 0 -->
+            <Style x:Key="UnreadBadgeStyle" TargetType="Frame">
+                <Setter Property="IsVisible" Value="True" />
+                <Style.Triggers>
+                    <DataTrigger
+                        TargetType="Frame"
+                        Binding="{Binding UnreadCount}"
+                        Value="0">
+                        <Setter Property="IsVisible" Value="False" />
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+
+        </ResourceDictionary>
     </ContentPage.Resources>
 
     <Grid RowDefinitions="Auto,Auto,*"
@@ -182,7 +188,7 @@
                                         HasShadow="False"
                                         BackgroundColor="White">
                                         <Image
-                                            Source="{Binding PhotoUrl}"
+                                            Source="{Binding PhotoUrl, Converter={StaticResource AvatarSourceConverter}}"
                                             Aspect="AspectFill"
                                             WidthRequest="52"
                                             HeightRequest="52">
@@ -279,7 +285,7 @@
                                         HasShadow="False"
                                         BackgroundColor="White">
                                         <Image
-                                            Source="{Binding PhotoUrl}"
+                                            Source="{Binding PhotoUrl, Converter={StaticResource AvatarSourceConverter}}"
                                             Aspect="AspectFill"
                                             WidthRequest="52"
                                             HeightRequest="52">
@@ -354,7 +360,7 @@
                                 Padding="0"
                                 BackgroundColor="White">
                                 <Image
-                                    Source="{Binding PhotoUrl}"
+                                    Source="{Binding PhotoUrl, Converter={StaticResource AvatarSourceConverter}}"
                                     Aspect="AspectFill"
                                     WidthRequest="48"
                                     HeightRequest="48">

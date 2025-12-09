@@ -86,6 +86,39 @@
 		<MauiImage Update="Resources\Images\google.png">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</MauiImage>
+		<MauiImage Update="Resources\Images\group_placeholder.png">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</MauiImage>
+		<MauiImage Update="Resources\Images\group_placeholder1.png">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</MauiImage>
+		<MauiImage Update="Resources\Images\group_placeholder10.png">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</MauiImage>
+		<MauiImage Update="Resources\Images\group_placeholder2.png">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</MauiImage>
+		<MauiImage Update="Resources\Images\group_placeholder3.png">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</MauiImage>
+		<MauiImage Update="Resources\Images\group_placeholder4.png">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</MauiImage>
+		<MauiImage Update="Resources\Images\group_placeholder5.png">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</MauiImage>
+		<MauiImage Update="Resources\Images\group_placeholder6.png">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</MauiImage>
+		<MauiImage Update="Resources\Images\group_placeholder7.png">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</MauiImage>
+		<MauiImage Update="Resources\Images\group_placeholder8.png">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</MauiImage>
+		<MauiImage Update="Resources\Images\group_placeholder9.png">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</MauiImage>
 		<MauiImage Update="Resources\Images\heart.png">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</MauiImage>
@@ -117,6 +150,9 @@
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</MauiImage>
 		<MauiImage Update="Resources\Images\user.png">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</MauiImage>
+		<MauiImage Update="Resources\Images\user_placeholder.png">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</MauiImage>
 		
