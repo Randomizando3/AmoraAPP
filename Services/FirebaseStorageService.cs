@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text.Json;
@@ -17,11 +18,9 @@ namespace AmoraApp.Services
         private FirebaseStorageService() { }
 
         /// <summary>
-        /// Upload genérico de arquivo para o Firebase Storage e retorna a URL pública.
+        /// Upload genérico de arquivo para o Firebase Storage e retorna uma URL.
+        /// Observação: com regras "read: if true", a URL sem token funciona.
         /// </summary>
-        /// <param name="fileStream">Stream do arquivo</param>
-        /// <param name="fileName">Caminho/nome do arquivo dentro do bucket</param>
-        /// <param name="contentType">MIME type (ex: image/jpeg, audio/mpeg, application/octet-stream)</param>
         public async Task<string?> UploadFileAsync(Stream fileStream, string fileName, string contentType = "application/octet-stream")
         {
             if (fileStream == null)
@@ -30,85 +29,107 @@ namespace AmoraApp.Services
             if (string.IsNullOrWhiteSpace(fileName))
                 throw new ArgumentNullException(nameof(fileName));
 
-            // Bucket configurado no FirebaseSettings (ex: "seu-projeto.appspot.com")
             var bucket = FirebaseSettings.StorageBucket;
             if (string.IsNullOrWhiteSpace(bucket))
                 throw new InvalidOperationException("FirebaseSettings.StorageBucket não está configurado.");
 
-            // Token opcional (se regras exigirem auth)
+            // Lê para buffer (precisamos poder tentar mais de 1 método/URL)
+            byte[] data;
+            using (var ms = new MemoryStream())
+            {
+                await fileStream.CopyToAsync(ms);
+                data = ms.ToArray();
+            }
+
             var token = await FirebaseAuthService.Instance.GetIdTokenAsync();
+            var encodedName = Uri.EscapeDataString(fileName);
 
-            // Endpoint do Firebase Storage (API v0)
-            var uploadUrl = $"https://firebasestorage.googleapis.com/v0/b/{bucket}/o?name={Uri.EscapeDataString(fileName)}";
+            // Endpoint v0 (Firebase Storage REST)
+            var baseEndpoint = $"https://firebasestorage.googleapis.com/v0/b/{bucket}/o";
+            var urlMedia = $"{baseEndpoint}?uploadType=media&name={encodedName}";
+            var urlNameOnly = $"{baseEndpoint}?name={encodedName}";
 
-            if (!string.IsNullOrEmpty(token))
+            // Tenta combinações comuns para evitar "Invalid HTTP method/URL pair"
+            HttpResponseMessage resp;
+
+            resp = await TryUploadAsync(urlMedia, HttpMethod.Post, data, contentType, token);
+            if (IsInvalidMethodUrlPair(resp))
+                resp = await TryUploadAsync(urlMedia, HttpMethod.Put, data, contentType, token);
+
+            if (IsInvalidMethodUrlPair(resp))
+                resp = await TryUploadAsync(urlNameOnly, HttpMethod.Post, data, contentType, token);
+
+            var json = await resp.Content.ReadAsStringAsync();
+
+            if (!resp.IsSuccessStatusCode)
             {
-                uploadUrl += $"&uploadType=media&auth={token}";
+                throw new Exception(
+                    $"Erro ao enviar para Firebase Storage. Status: {(int)resp.StatusCode} - {resp.ReasonPhrase}\nResposta: {json}");
             }
-            else
+
+            // Resposta típica contém:
+            // { "name": "...", "bucket": "...", "downloadTokens": "..." }
+            using var doc = JsonDocument.Parse(json);
+            var root = doc.RootElement;
+
+            var storedName = root.TryGetProperty("name", out var nameProp)
+                ? (nameProp.GetString() ?? fileName)
+                : fileName;
+
+            // Se suas regras permitem read público (como no conjunto que te passei),
+            // a URL abaixo funciona sem token.
+            var publicUrl =
+                $"https://firebasestorage.googleapis.com/v0/b/{bucket}/o/{Uri.EscapeDataString(storedName)}?alt=media";
+
+            // Se vier downloadTokens, também montamos a URL com token (funciona mesmo com regras fechadas)
+            if (root.TryGetProperty("downloadTokens", out var tokenProp))
             {
-                // se você deixou as regras públicas para teste, isso ainda funciona
-                uploadUrl += "&uploadType=media";
-            }
-
-            try
-            {
-                using var content = new StreamContent(fileStream);
-                content.Headers.ContentType = new MediaTypeHeaderValue(contentType);
-
-                var response = await _http.PostAsync(uploadUrl, content);
-                var json = await response.Content.ReadAsStringAsync();
-
-                if (!response.IsSuccessStatusCode)
+                var dl = tokenProp.GetString();
+                if (!string.IsNullOrWhiteSpace(dl))
                 {
-                    throw new Exception(
-                        $"Erro ao enviar para Firebase Storage. Status: {(int)response.StatusCode} - {response.ReasonPhrase}\nResposta: {json}");
+                    // Pode vir com vários tokens separados por vírgula
+                    var first = dl.Split(',')[0].Trim();
+                    if (!string.IsNullOrWhiteSpace(first))
+                        return publicUrl + $"&token={first}";
                 }
-
-                using var doc = JsonDocument.Parse(json);
-                var root = doc.RootElement;
-
-                // Estrutura típica:
-                // {
-                //   "name": "users/uid/profile_xxx.jpg",
-                //   "bucket": "...",
-                //   "downloadTokens": "abc-123-xyz"
-                // }
-                if (!root.TryGetProperty("name", out var nameProp))
-                    throw new Exception("Resposta do Firebase Storage não contém 'name'.");
-
-                var storedName = nameProp.GetString() ?? fileName;
-                string? downloadToken = null;
-
-                if (root.TryGetProperty("downloadTokens", out var tokenProp))
-                {
-                    downloadToken = tokenProp.GetString();
-                }
-
-                // Monta URL pública
-                var baseUrl =
-                    $"https://firebasestorage.googleapis.com/v0/b/{bucket}/o/{Uri.EscapeDataString(storedName)}?alt=media";
-
-                if (!string.IsNullOrEmpty(downloadToken))
-                    baseUrl += $"&token={downloadToken}";
-
-                return baseUrl;
             }
-            catch (Exception ex)
-            {
-                throw new Exception("Falha ao fazer upload no Firebase Storage: " + ex.Message, ex);
-            }
+
+            return publicUrl;
+        }
+
+        private async Task<HttpResponseMessage> TryUploadAsync(
+            string url,
+            HttpMethod method,
+            byte[] data,
+            string contentType,
+            string? idToken)
+        {
+            using var req = new HttpRequestMessage(method, url);
+
+            // auth do Storage é via header, NÃO via ?auth=
+            if (!string.IsNullOrWhiteSpace(idToken))
+                req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", idToken);
+
+            var content = new ByteArrayContent(data);
+            content.Headers.ContentType = new MediaTypeHeaderValue(contentType);
+            req.Content = content;
+
+            return await _http.SendAsync(req);
+        }
+
+        private static bool IsInvalidMethodUrlPair(HttpResponseMessage resp)
+        {
+            if (resp.StatusCode != HttpStatusCode.BadRequest)
+                return false;
+
+            // Lemos o body fora? aqui não. Só flag para retry básico.
+            return true;
         }
 
         /// <summary>
         /// Mantido para compatibilidade: upload de imagem (usa image/jpeg).
         /// </summary>
-        /// <param name="fileStream">Stream da imagem</param>
-        /// <param name="fileName">Caminho/nome do arquivo dentro do bucket</param>
         public Task<string?> UploadImageAsync(Stream fileStream, string fileName)
-        {
-            // Reaproveita o método genérico, só fixando o contentType de imagem
-            return UploadFileAsync(fileStream, fileName, "image/jpeg");
-        }
+            => UploadFileAsync(fileStream, fileName, "image/jpeg");
     }
 }

@@ -59,41 +59,63 @@
 
                     <Grid ColumnDefinitions="Auto,*" ColumnSpacing="16">
                         <Grid>
+                            <!-- AVATAR (sem IsClippedToBounds; clip feito no Image) -->
                             <Border
                                 HeightRequest="96"
                                 WidthRequest="96"
                                 BackgroundColor="{StaticResource CardBackground}"
                                 Stroke="{StaticResource AccentPink}"
                                 StrokeThickness="3"
+                                Padding="3"
                                 HorizontalOptions="Center"
                                 VerticalOptions="Start">
                                 <Border.StrokeShape>
-                                    <EllipseGeometry Center="48,48" RadiusX="48" RadiusY="48" />
+                                    <Ellipse />
                                 </Border.StrokeShape>
 
-                                <Grid>
+                                <!-- Conteúdo interno fixo (96 - 3*2 = 90) -->
+                                <Grid
+                                    HeightRequest="90"
+                                    WidthRequest="90"
+                                    HorizontalOptions="Center"
+                                    VerticalOptions="Center">
+
+                                    <!-- Fundo branco circular (para não aparecer “vazado” atrás) -->
+                                    <Border
+                                        HeightRequest="90"
+                                        WidthRequest="90"
+                                        BackgroundColor="White"
+                                        StrokeThickness="0"
+                                        HorizontalOptions="Center"
+                                        VerticalOptions="Center">
+                                        <Border.StrokeShape>
+                                            <Ellipse />
+                                        </Border.StrokeShape>
+                                    </Border>
+
+                                    <!-- Foto -->
                                     <Image
+                                        HeightRequest="90"
+                                        WidthRequest="90"
+                                        HorizontalOptions="Center"
+                                        VerticalOptions="Center"
                                         Aspect="AspectFill"
                                         Source="{Binding PhotoUrl}">
                                         <Image.Clip>
-                                            <EllipseGeometry Center="48,48" RadiusX="48" RadiusY="48" />
+                                            <EllipseGeometry Center="45,45" RadiusX="45" RadiusY="45" />
                                         </Image.Clip>
+
                                         <Image.Triggers>
-                                            <DataTrigger
-                                                TargetType="Image"
-                                                Binding="{Binding PhotoUrl}"
-                                                Value="">
+                                            <DataTrigger TargetType="Image" Binding="{Binding PhotoUrl}" Value="">
                                                 <Setter Property="IsVisible" Value="False" />
                                             </DataTrigger>
-                                            <DataTrigger
-                                                TargetType="Image"
-                                                Binding="{Binding PhotoUrl}"
-                                                Value="{x:Null}">
+                                            <DataTrigger TargetType="Image" Binding="{Binding PhotoUrl}" Value="{x:Null}">
                                                 <Setter Property="IsVisible" Value="False" />
                                             </DataTrigger>
                                         </Image.Triggers>
                                     </Image>
 
+                                    <!-- Plus quando não tem foto -->
                                     <Label
                                         Text="+"
                                         FontSize="32"
@@ -102,20 +124,15 @@
                                         VerticalOptions="Center"
                                         IsVisible="False">
                                         <Label.Triggers>
-                                            <DataTrigger
-                                                TargetType="Label"
-                                                Binding="{Binding PhotoUrl}"
-                                                Value="">
+                                            <DataTrigger TargetType="Label" Binding="{Binding PhotoUrl}" Value="">
                                                 <Setter Property="IsVisible" Value="True" />
                                             </DataTrigger>
-                                            <DataTrigger
-                                                TargetType="Label"
-                                                Binding="{Binding PhotoUrl}"
-                                                Value="{x:Null}">
+                                            <DataTrigger TargetType="Label" Binding="{Binding PhotoUrl}" Value="{x:Null}">
                                                 <Setter Property="IsVisible" Value="True" />
                                             </DataTrigger>
                                         </Label.Triggers>
                                     </Label>
+
                                 </Grid>
                             </Border>
 
@@ -124,11 +141,7 @@
                             </Grid.GestureRecognizers>
                         </Grid>
 
-                        <VerticalStackLayout
-                            Grid.Column="1"
-                            VerticalOptions="Center"
-                            Spacing="8">
-
+                        <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="8">
                             <Frame
                                 BackgroundColor="{StaticResource InputBackground}"
                                 BorderColor="{StaticResource InputBorder}"
@@ -147,10 +160,7 @@
                     </Grid>
 
                     <VerticalStackLayout Spacing="4">
-                        <Label
-                            Style="{StaticResource SectionTitleStyle}"
-                            Text="Bio" />
-
+                        <Label Style="{StaticResource SectionTitleStyle}" Text="Bio" />
                         <Frame
                             BackgroundColor="{StaticResource InputBackground}"
                             BorderColor="{StaticResource InputBorder}"
@@ -170,9 +180,7 @@
                     </VerticalStackLayout>
 
                     <VerticalStackLayout Spacing="4">
-                        <Label
-                            Style="{StaticResource SectionTitleStyle}"
-                            Text="Profissão" />
+                        <Label Style="{StaticResource SectionTitleStyle}" Text="Profissão" />
 
                         <Grid RowDefinitions="Auto,Auto">
                             <Frame
@@ -206,10 +214,7 @@
                                 <CollectionView.ItemTemplate>
                                     <DataTemplate>
                                         <Grid Padding="10,6">
-                                            <Label
-                                                Text="{Binding .}"
-                                                FontSize="14"
-                                                TextColor="{StaticResource TextPrimary}" />
+                                            <Label Text="{Binding .}" FontSize="14" TextColor="{StaticResource TextPrimary}" />
                                         </Grid>
                                     </DataTemplate>
                                 </CollectionView.ItemTemplate>
@@ -218,10 +223,7 @@
                     </VerticalStackLayout>
 
                     <VerticalStackLayout Spacing="4">
-                        <Label
-                            Style="{StaticResource SectionTitleStyle}"
-                            Text="Escolaridade" />
-
+                        <Label Style="{StaticResource SectionTitleStyle}" Text="Escolaridade" />
                         <Frame
                             BackgroundColor="{StaticResource InputBackground}"
                             BorderColor="{StaticResource InputBorder}"
@@ -237,10 +239,7 @@
                     </VerticalStackLayout>
 
                     <VerticalStackLayout Spacing="4">
-                        <Label
-                            Style="{StaticResource SectionTitleStyle}"
-                            Text="Instituição de ensino" />
-
+                        <Label Style="{StaticResource SectionTitleStyle}" Text="Instituição de ensino" />
                         <Frame
                             BackgroundColor="{StaticResource InputBackground}"
                             BorderColor="{StaticResource InputBorder}"
@@ -258,10 +257,7 @@
                     </VerticalStackLayout>
 
                     <VerticalStackLayout Spacing="4">
-                        <Label
-                            Style="{StaticResource SectionTitleStyle}"
-                            Text="Gênero" />
-
+                        <Label Style="{StaticResource SectionTitleStyle}" Text="Gênero" />
                         <Frame
                             BackgroundColor="{StaticResource InputBackground}"
                             BorderColor="{StaticResource InputBorder}"
@@ -277,10 +273,7 @@
                     </VerticalStackLayout>
 
                     <VerticalStackLayout Spacing="4">
-                        <Label
-                            Style="{StaticResource SectionTitleStyle}"
-                            Text="Orientação sexual" />
-
+                        <Label Style="{StaticResource SectionTitleStyle}" Text="Orientação sexual" />
                         <Frame
                             BackgroundColor="{StaticResource InputBackground}"
                             BorderColor="{StaticResource InputBorder}"
@@ -296,9 +289,7 @@
                     </VerticalStackLayout>
 
                     <VerticalStackLayout Spacing="4">
-                        <Label
-                            Style="{StaticResource SectionTitleStyle}"
-                            Text="Busco por" />
+                        <Label Style="{StaticResource SectionTitleStyle}" Text="Busco por" />
 
                         <CollectionView
                             ItemsSource="{Binding RelationshipGoals}"
@@ -315,10 +306,7 @@
                                             BorderColor="{StaticResource CardBorder}"
                                             BackgroundColor="{StaticResource CardBackground}">
                                             <Frame.Triggers>
-                                                <DataTrigger
-                                                    TargetType="Frame"
-                                                    Binding="{Binding IsSelected}"
-                                                    Value="True">
+                                                <DataTrigger TargetType="Frame" Binding="{Binding IsSelected}" Value="True">
                                                     <Setter Property="BackgroundColor" Value="{StaticResource AccentPink}" />
                                                     <Setter Property="BorderColor" Value="{StaticResource AccentPink}" />
                                                 </DataTrigger>
@@ -331,10 +319,7 @@
                                                 VerticalOptions="Center"
                                                 TextColor="{StaticResource TextPrimary}">
                                                 <Label.Triggers>
-                                                    <DataTrigger
-                                                        TargetType="Label"
-                                                        Binding="{Binding IsSelected}"
-                                                        Value="True">
+                                                    <DataTrigger TargetType="Label" Binding="{Binding IsSelected}" Value="True">
                                                         <Setter Property="TextColor" Value="White" />
                                                     </DataTrigger>
                                                 </Label.Triggers>
@@ -353,10 +338,7 @@
                     </VerticalStackLayout>
 
                     <VerticalStackLayout Spacing="4">
-                        <Label
-                            Style="{StaticResource SectionTitleStyle}"
-                            Text="Religião" />
-
+                        <Label Style="{StaticResource SectionTitleStyle}" Text="Religião" />
                         <Frame
                             BackgroundColor="{StaticResource InputBackground}"
                             BorderColor="{StaticResource InputBorder}"
@@ -374,10 +356,7 @@
                     </VerticalStackLayout>
 
                     <VerticalStackLayout Spacing="4">
-                        <Label
-                            Style="{StaticResource SectionTitleStyle}"
-                            Text="Cidade onde vive" />
-
+                        <Label Style="{StaticResource SectionTitleStyle}" Text="Cidade onde vive" />
                         <Frame
                             BackgroundColor="{StaticResource InputBackground}"
                             BorderColor="{StaticResource InputBorder}"
@@ -396,10 +375,7 @@
                     </VerticalStackLayout>
 
                     <VerticalStackLayout Spacing="4">
-                        <Label
-                            Style="{StaticResource SectionTitleStyle}"
-                            Text="Número de celular" />
-
+                        <Label Style="{StaticResource SectionTitleStyle}" Text="Número de celular" />
                         <Frame
                             BackgroundColor="{StaticResource InputBackground}"
                             BorderColor="{StaticResource InputBorder}"
@@ -418,50 +394,33 @@
                     </VerticalStackLayout>
 
                     <VerticalStackLayout Spacing="4">
-                        <Label
-                            Style="{StaticResource SectionTitleStyle}"
-                            Text="Localização atual" />
-
+                        <Label Style="{StaticResource SectionTitleStyle}" Text="Localização atual" />
                         <Frame
                             BackgroundColor="{StaticResource InputBackground}"
                             BorderColor="{StaticResource InputBorder}"
                             HasShadow="False"
                             CornerRadius="10"
                             Padding="10,6">
-                            <Label
-                                Text="{Binding CurrentLocationText}"
-                                FontSize="14"
-                                TextColor="{StaticResource TextPrimary}" />
+                            <Label Text="{Binding CurrentLocationText}" FontSize="14" TextColor="{StaticResource TextPrimary}" />
                         </Frame>
                     </VerticalStackLayout>
 
                     <VerticalStackLayout Spacing="4">
-                        <Label
-                            Style="{StaticResource SectionTitleStyle}"
-                            Text="Data de nascimento" />
-
+                        <Label Style="{StaticResource SectionTitleStyle}" Text="Data de nascimento" />
                         <Frame
                             BackgroundColor="{StaticResource InputBackground}"
                             BorderColor="{StaticResource InputBorder}"
                             HasShadow="False"
                             CornerRadius="10"
                             Padding="10,4">
-                            <DatePicker
-                                Date="{Binding BirthDate}"
-                                Format="dd/MM/yyyy"
-                                TextColor="{StaticResource TextPrimary}" />
+                            <DatePicker Date="{Binding BirthDate}" Format="dd/MM/yyyy" TextColor="{StaticResource TextPrimary}" />
                         </Frame>
 
-                        <Label
-                            Text="{Binding AgeDisplay}"
-                            FontSize="13"
-                            TextColor="{StaticResource TextSecondary}" />
+                        <Label Text="{Binding AgeDisplay}" FontSize="13" TextColor="{StaticResource TextSecondary}" />
                     </VerticalStackLayout>
 
                     <VerticalStackLayout Spacing="4">
-                        <Label
-                            Style="{StaticResource SectionTitleStyle}"
-                            Text="Interesses" />
+                        <Label Style="{StaticResource SectionTitleStyle}" Text="Interesses" />
 
                         <CollectionView
                             ItemsSource="{Binding Interests}"
@@ -478,10 +437,7 @@
                                             BorderColor="{StaticResource CardBorder}"
                                             BackgroundColor="{StaticResource CardBackground}">
                                             <Frame.Triggers>
-                                                <DataTrigger
-                                                    TargetType="Frame"
-                                                    Binding="{Binding IsSelected}"
-                                                    Value="True">
+                                                <DataTrigger TargetType="Frame" Binding="{Binding IsSelected}" Value="True">
                                                     <Setter Property="BackgroundColor" Value="{StaticResource AccentPink}" />
                                                     <Setter Property="BorderColor" Value="{StaticResource AccentPink}" />
                                                 </DataTrigger>
@@ -494,10 +450,7 @@
                                                 VerticalOptions="Center"
                                                 TextColor="{StaticResource TextPrimary}">
                                                 <Label.Triggers>
-                                                    <DataTrigger
-                                                        TargetType="Label"
-                                                        Binding="{Binding IsSelected}"
-                                                        Value="True">
+                                                    <DataTrigger TargetType="Label" Binding="{Binding IsSelected}" Value="True">
                                                         <Setter Property="TextColor" Value="White" />
                                                     </DataTrigger>
                                                 </Label.Triggers>
@@ -516,9 +469,7 @@
                     </VerticalStackLayout>
 
                     <VerticalStackLayout Spacing="4">
-                        <Label
-                            Style="{StaticResource SectionTitleStyle}"
-                            Text="Fotos (até 30)" />
+                        <Label Style="{StaticResource SectionTitleStyle}" Text="{Binding PhotosSectionTitle}" />
 
                         <CollectionView
                             ItemsSource="{Binding ExtraPhotoSlots}"
@@ -540,16 +491,10 @@
                                                     Aspect="AspectFill"
                                                     Source="{Binding ImageUrl}">
                                                     <Image.Triggers>
-                                                        <DataTrigger
-                                                            TargetType="Image"
-                                                            Binding="{Binding ImageUrl}"
-                                                            Value="">
+                                                        <DataTrigger TargetType="Image" Binding="{Binding ImageUrl}" Value="">
                                                             <Setter Property="IsVisible" Value="False" />
                                                         </DataTrigger>
-                                                        <DataTrigger
-                                                            TargetType="Image"
-                                                            Binding="{Binding ImageUrl}"
-                                                            Value="{x:Null}">
+                                                        <DataTrigger TargetType="Image" Binding="{Binding ImageUrl}" Value="{x:Null}">
                                                             <Setter Property="IsVisible" Value="False" />
                                                         </DataTrigger>
                                                     </Image.Triggers>
@@ -577,9 +522,7 @@
                     </VerticalStackLayout>
 
                     <VerticalStackLayout Spacing="4">
-                        <Label
-                            Style="{StaticResource SectionTitleStyle}"
-                            Text="Vídeos (Premium – até 20, máx. 15s)" />
+                        <Label Style="{StaticResource SectionTitleStyle}" Text="Vídeos (Premium – até 20, máx. 15s)" />
 
                         <CollectionView
                             ItemsSource="{Binding ExtraVideoSlots}"
@@ -604,10 +547,7 @@
                                                     VerticalOptions="Center"
                                                     TextColor="{StaticResource AccentPink}">
                                                     <Label.Triggers>
-                                                        <DataTrigger
-                                                            TargetType="Label"
-                                                            Binding="{Binding HasVideo}"
-                                                            Value="False">
+                                                        <DataTrigger TargetType="Label" Binding="{Binding HasVideo}" Value="False">
                                                             <Setter Property="IsVisible" Value="False" />
                                                         </DataTrigger>
                                                     </Label.Triggers>
@@ -620,10 +560,7 @@
                                                     HorizontalOptions="Center"
                                                     VerticalOptions="Center">
                                                     <Label.Triggers>
-                                                        <DataTrigger
-                                                            TargetType="Label"
-                                                            Binding="{Binding ShowPlus}"
-                                                            Value="False">
+                                                        <DataTrigger TargetType="Label" Binding="{Binding ShowPlus}" Value="False">
                                                             <Setter Property="IsVisible" Value="False" />
                                                         </DataTrigger>
                                                     </Label.Triggers>
@@ -652,7 +589,6 @@
                         FontAttributes="Bold"
                         Clicked="OnSaveClicked" />
 
-                    <!-- BOTÃO DE LOGOUT -->
                     <Button
                         Margin="0,0,0,0"
                         Text="Sair da conta"
@@ -665,7 +601,6 @@
                         Clicked="OnLogoutClicked" />
 
                 </VerticalStackLayout>
-
             </VerticalStackLayout>
         </ScrollView>
     </Grid>

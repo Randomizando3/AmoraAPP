@@ -37,10 +37,8 @@
         </Style>
     </ContentPage.Resources>
 
-    <!-- GRID RAIZ: RefreshView + Overlay de imagem em tela cheia -->
     <Grid>
 
-        <!-- FEED COM REFRESH -->
         <RefreshView
             Command="{Binding LoadFeedCommand}"
             IsRefreshing="{Binding IsRefreshing}"
@@ -51,7 +49,6 @@
                 Margin="0,0,0,20"
                 BackgroundColor="Transparent">
 
-                <!-- espaçamento vertical entre os itens -->
                 <CollectionView.ItemsLayout>
                     <LinearItemsLayout Orientation="Vertical" ItemSpacing="5" />
                 </CollectionView.ItemsLayout>
@@ -75,14 +72,12 @@
                                 HorizontalOptions="Start"
                                 VerticalOptions="Center" />
 
-                            <!-- Lado direito: botão Amigos + ícone de solicitações -->
                             <HorizontalStackLayout
                                 Grid.Column="1"
                                 Spacing="8"
                                 HorizontalOptions="End"
                                 VerticalOptions="Center">
 
-                                <!-- Botão Amigos -->
                                 <Button
                                     Text="Amigos"
                                     FontSize="12"
@@ -93,12 +88,10 @@
                                     HeightRequest="32"
                                     Clicked="OnFriendsClicked" />
 
-                                <!-- Ícone de solicitações com badge -->
                                 <Grid
                                     HorizontalOptions="Center"
                                     VerticalOptions="Center">
 
-                                    <!-- Frame clicável inteiro -->
                                     <Frame
                                         WidthRequest="32"
                                         HeightRequest="32"
@@ -117,7 +110,6 @@
                                             VerticalOptions="Center" />
                                     </Frame>
 
-                                    <!-- Badge com número de solicitações -->
                                     <Frame
                                         WidthRequest="18"
                                         HeightRequest="18"
@@ -161,7 +153,6 @@
                                         <Grid HorizontalOptions="Center"
                                               VerticalOptions="Center">
 
-                                            <!-- Anel do story (circular) -->
                                             <Frame
                                                 WidthRequest="60"
                                                 HeightRequest="60"
@@ -172,7 +163,6 @@
                                                 HorizontalOptions="Center"
                                                 VerticalOptions="Center">
                                                 <Frame.Triggers>
-                                                    <!-- Roxo quando tem story -->
                                                     <DataTrigger
                                                         TargetType="Frame"
                                                         Binding="{Binding HasStory}"
@@ -197,7 +187,6 @@
                                                             <EllipseGeometry Center="28,28" RadiusX="28" RadiusY="28" />
                                                         </Image.Clip>
                                                         <Image.Triggers>
-                                                            <!-- Foto mais apagada se não tiver story -->
                                                             <DataTrigger
                                                                 TargetType="Image"
                                                                 Binding="{Binding HasStory}"
@@ -209,7 +198,6 @@
                                                 </Frame>
                                             </Frame>
 
-                                            <!-- Ícone de coração (match) -->
                                             <Label
                                                 Text="❤"
                                                 FontSize="12"
@@ -227,7 +215,6 @@
                                                 </Label.Triggers>
                                             </Label>
 
-                                            <!-- Botão '+' quando IsMe = true -->
                                             <Grid
                                                 IsVisible="{Binding IsMe}"
                                                 HorizontalOptions="End"
@@ -264,7 +251,6 @@
                                             LineBreakMode="TailTruncation"
                                             WidthRequest="70" />
 
-                                        <!-- Tap geral na bolha → ver stories -->
                                         <StackLayout.GestureRecognizers>
                                             <TapGestureRecognizer
                                                 Tapped="OnStoryTapped"
@@ -282,15 +268,12 @@
                             HasShadow="True"
                             Padding="8">
 
-                            <!-- Esquerda: texto + preview; Direita: botões empilhados -->
                             <Grid ColumnDefinitions="*,Auto"
                                   ColumnSpacing="6"
                                   VerticalOptions="Center">
 
-                                <!-- Texto + preview -->
                                 <StackLayout Grid.Column="0" Spacing="8">
 
-                                    <!-- Editor direto, sem Frame cinza em volta -->
                                     <Editor
                                         Placeholder="Compartilhe algo com seus amigos..."
                                         Text="{Binding NewPostText}"
@@ -301,7 +284,6 @@
                                         VerticalOptions="Start"
                                         Margin="4,4,4,0" />
 
-                                    <!-- Preview da imagem do novo post (altura fixa) -->
                                     <Image
                                         Style="{StaticResource NewPostPreviewImageStyle}"
                                         Source="{Binding NewPostImageUrl}"
@@ -315,14 +297,12 @@
                                     </Image>
                                 </StackLayout>
 
-                                <!-- Botões (um em cima do outro) -->
                                 <StackLayout
                                     Grid.Column="1"
                                     Spacing="8"
                                     VerticalOptions="Center"
                                     HorizontalOptions="Center">
 
-                                    <!-- Botão imagem (ícone cam.png) -->
                                     <Frame
                                         WidthRequest="32"
                                         HeightRequest="32"
@@ -340,7 +320,6 @@
                                             VerticalOptions="Center" />
                                     </Frame>
 
-                                    <!-- Botão Post (ícone send) -->
                                     <Frame
                                         WidthRequest="32"
                                         HeightRequest="32"
@@ -361,7 +340,6 @@
                             </Grid>
                         </Frame>
 
-                        <!-- MENSAGEM DE ERRO DO FEED / POST -->
                         <Label
                             Text="{Binding ErrorMessage}"
                             FontSize="12"
@@ -381,18 +359,18 @@
                             CornerRadius="8"
                             HasShadow="True"
                             BackgroundColor="White">
-                            <!-- +1 linha para preview de comentários -->
                             <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto">
 
-                                <!-- Header do post -->
+                                <!-- Header do post (ALTERADO para 3 colunas e botão ⋯) -->
                                 <Grid
                                     Grid.Row="0"
-                                    ColumnDefinitions="Auto,*"
+                                    ColumnDefinitions="Auto,*,Auto"
                                     Padding="12,12,12,8"
                                     VerticalOptions="Center">
 
-                                    <!-- Avatar do autor (circular) -->
+                                    <!-- Avatar -->
                                     <Frame
+                                        Grid.Column="0"
                                         WidthRequest="40"
                                         HeightRequest="40"
                                         CornerRadius="20"
@@ -414,6 +392,7 @@
                                         </Image>
                                     </Frame>
 
+                                    <!-- Nome + data -->
                                     <StackLayout
                                         Grid.Column="1"
                                         Spacing="2"
@@ -428,6 +407,21 @@
                                             FontSize="11"
                                             TextColor="#999999" />
                                     </StackLayout>
+
+                                    <!-- Botão de opções (denunciar) -->
+                                    <Button
+                                        Grid.Column="2"
+                                        Text="⋯"
+                                        FontSize="18"
+                                        WidthRequest="42"
+                                        HeightRequest="36"
+                                        Padding="0"
+                                        BackgroundColor="Transparent"
+                                        TextColor="#777"
+                                        Clicked="OnPostOptionsClicked"
+                                        CommandParameter="{Binding .}"
+                                        VerticalOptions="Center"
+                                        HorizontalOptions="End" />
                                 </Grid>
 
                                 <!-- Imagem (se tiver) -->
@@ -452,7 +446,7 @@
                                     FontSize="14"
                                     TextColor="#333333" />
 
-                                <!-- Preview de 1 ou 2 comentários -->
+                                <!-- Preview de comentários -->
                                 <StackLayout
                                     Grid.Row="3"
                                     Margin="16,0,16,4"
@@ -484,7 +478,6 @@
                                     Padding="16,8,16,12"
                                     VerticalOptions="Center">
 
-                                    <!-- Like: coração em círculo + contagem -->
                                     <HorizontalStackLayout
                                         Grid.Column="0"
                                         Spacing="6"
@@ -512,14 +505,12 @@
                                                 HorizontalOptions="Center"
                                                 VerticalOptions="Center">
                                                 <Image.Triggers>
-                                                    <!-- Menos destaque se não dei like -->
                                                     <DataTrigger
                                                         TargetType="Image"
                                                         Binding="{Binding LikedByMe}"
                                                         Value="False">
                                                         <Setter Property="Opacity" Value="0.35" />
                                                     </DataTrigger>
-                                                    <!-- Cheio se dei like -->
                                                     <DataTrigger
                                                         TargetType="Image"
                                                         Binding="{Binding LikedByMe}"
@@ -537,10 +528,8 @@
                                             VerticalOptions="Center" />
                                     </HorizontalStackLayout>
 
-                                    <!-- Espaço no meio -->
                                     <Grid Grid.Column="1" />
 
-                                    <!-- Comentários -->
                                     <Button
                                         Grid.Column="2"
                                         Text="Comentários"
@@ -559,13 +548,12 @@
             </CollectionView>
         </RefreshView>
 
-        <!-- OVERLAY DE IMAGEM EM TELA CHEIA -->
+        <!-- OVERLAY DE IMAGEM -->
         <Grid x:Name="ImageOverlay"
               BackgroundColor="#CC000000"
               IsVisible="False"
               Margin="-16,-20,-16,-8">
             <Grid.GestureRecognizers>
-                <!-- Tocar no fundo também fecha -->
                 <TapGestureRecognizer Tapped="OnCloseFullImageClicked" />
             </Grid.GestureRecognizers>
 
@@ -576,7 +564,6 @@
                     HorizontalOptions="Center"
                     VerticalOptions="Center" />
 
-                <!-- Botão X branco -->
                 <Button
                     Text="X"
                     TextColor="White"

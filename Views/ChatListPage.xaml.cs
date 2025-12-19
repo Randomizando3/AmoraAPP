@@ -29,15 +29,42 @@ namespace AmoraApp.Views
         }
 
         // ============================================================
-        //  TAP EM UM CHAT
+        //  TAP NA LISTA (vertical)
         // ============================================================
         private async void OnChatTapped(object sender, EventArgs e)
         {
-            if (Vm == null)
-                return;
-
             if (e is not TappedEventArgs tapped ||
                 tapped.Parameter is not ChatItem chat)
+                return;
+
+            await HandleChatActionSheetAsync(chat);
+        }
+
+        // ============================================================
+        //  SELEÇÃO NO CARROSSEL (matches/amigos)
+        //  - Muito mais confiável que GestureRecognizer em Android
+        // ============================================================
+        private async void OnHorizontalChatSelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (sender is not CollectionView cv)
+                return;
+
+            var selected = e.CurrentSelection?.FirstOrDefault();
+            if (selected is not ChatItem chat)
+                return;
+
+            // limpa seleção para permitir tocar no mesmo item de novo
+            cv.SelectedItem = null;
+
+            await HandleChatActionSheetAsync(chat);
+        }
+
+        // ============================================================
+        //  MENU DE AÇÕES (mesmo comportamento em qualquer lugar)
+        // ============================================================
+        private async Task HandleChatActionSheetAsync(ChatItem chat)
+        {
+            if (Vm == null || chat == null)
                 return;
 
             var uid = FirebaseAuthService.Instance.CurrentUserUid;
@@ -148,7 +175,6 @@ namespace AmoraApp.Views
                     return;
                 }
 
-                // 1) Nome do grupo
                 var groupName = await DisplayPromptAsync(
                     "Novo grupo",
                     "Nome do grupo:",
@@ -160,7 +186,6 @@ namespace AmoraApp.Views
 
                 var trimmed = groupName.Trim();
 
-                // 2) Pergunta sobre foto
                 var photoOption = await DisplayActionSheet(
                     "Avatar do grupo",
                     "Cancelar",
@@ -170,7 +195,6 @@ namespace AmoraApp.Views
 
                 string? finalPhotoUrl = null;
 
-                // 3) Foto selecionada pelo usuário
                 if (photoOption == "Escolher foto")
                 {
                     var pick = await FilePicker.PickAsync(new PickOptions
@@ -187,24 +211,18 @@ namespace AmoraApp.Views
                     }
                 }
 
-                // 4) Criar grupo
                 var chatId = await ChatService.Instance.CreateGroupChatAsync(
                     me, trimmed, new[] { me, chat.UserId });
 
-                // 5) Se não houver foto manual, gerar automático (emoji)
                 if (string.IsNullOrWhiteSpace(finalPhotoUrl))
                 {
                     string[] emojis = { "🍇", "🐱", "🍀", "🦊", "🌈", "🔥", "🎀", "⭐" };
                     var emoji = emojis[new Random(trimmed.GetHashCode()).Next(emojis.Length)];
-
-                    // Criamos um unique URL lógico somente para usar a função que detecta avatar automático
                     finalPhotoUrl = $"autoAvatar://{emoji}/#FFFFFF";
                 }
 
-                // 6) Salvar no grupo
                 await FirebaseDatabaseService.Instance.UpdateChatPhotoAsync(chatId, finalPhotoUrl);
 
-                // 7) Abrir
                 await Navigation.PushAsync(new ChatPage(new ChatItem
                 {
                     ChatId = chatId,

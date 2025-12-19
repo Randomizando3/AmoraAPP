@@ -169,17 +169,25 @@
                     TextColor="#555" />
 
                 <CollectionView
+                    x:Name="MatchesCollection"
                     ItemsSource="{Binding Matches}"
                     ItemsLayout="HorizontalList"
-                    HeightRequest="88"
-                    HorizontalScrollBarVisibility="Never">
+                    HeightRequest="92"
+                    HorizontalScrollBarVisibility="Never"
+                    SelectionMode="Single"
+                    SelectionChanged="OnHorizontalChatSelectionChanged">
+
                     <CollectionView.ItemTemplate>
                         <DataTemplate>
-                            <StackLayout Spacing="4"
-                                         HorizontalOptions="Center">
-                                <Grid>
+                            <!-- HITBOX TOTAL (imagem + nome) -->
+                            <Grid
+                                BackgroundColor="Transparent"
+                                Padding="6,4"
+                                WidthRequest="80"
+                                RowDefinitions="Auto,Auto">
 
-                                    <!-- Avatar circular menor -->
+                                <Grid Grid.Row="0" HorizontalOptions="Center">
+                                    <!-- Avatar circular -->
                                     <Frame
                                         WidthRequest="52"
                                         HeightRequest="52"
@@ -240,18 +248,13 @@
                                 </Grid>
 
                                 <Label
+                                    Grid.Row="1"
                                     Text="{Binding DisplayName}"
                                     FontSize="11"
                                     HorizontalTextAlignment="Center"
                                     LineBreakMode="TailTruncation"
-                                    WidthRequest="72" />
-
-                                <StackLayout.GestureRecognizers>
-                                    <TapGestureRecognizer
-                                        Tapped="OnChatTapped"
-                                        CommandParameter="{Binding .}" />
-                                </StackLayout.GestureRecognizers>
-                            </StackLayout>
+                                    Margin="0,4,0,0" />
+                            </Grid>
                         </DataTemplate>
                     </CollectionView.ItemTemplate>
                 </CollectionView>
@@ -266,17 +269,25 @@
                     TextColor="#555" />
 
                 <CollectionView
+                    x:Name="FriendsCollection"
                     ItemsSource="{Binding Friends}"
                     ItemsLayout="HorizontalList"
-                    HeightRequest="88"
-                    HorizontalScrollBarVisibility="Never">
+                    HeightRequest="92"
+                    HorizontalScrollBarVisibility="Never"
+                    SelectionMode="Single"
+                    SelectionChanged="OnHorizontalChatSelectionChanged">
+
                     <CollectionView.ItemTemplate>
                         <DataTemplate>
-                            <StackLayout Spacing="4"
-                                         HorizontalOptions="Center">
-                                <Grid>
+                            <!-- HITBOX TOTAL (imagem + nome) -->
+                            <Grid
+                                BackgroundColor="Transparent"
+                                Padding="6,4"
+                                WidthRequest="80"
+                                RowDefinitions="Auto,Auto">
 
-                                    <!-- Avatar circular menor -->
+                                <Grid Grid.Row="0" HorizontalOptions="Center">
+                                    <!-- Avatar circular -->
                                     <Frame
                                         WidthRequest="52"
                                         HeightRequest="52"
@@ -319,18 +330,13 @@
                                 </Grid>
 
                                 <Label
+                                    Grid.Row="1"
                                     Text="{Binding DisplayName}"
                                     FontSize="11"
                                     HorizontalTextAlignment="Center"
                                     LineBreakMode="TailTruncation"
-                                    WidthRequest="72" />
-
-                                <StackLayout.GestureRecognizers>
-                                    <TapGestureRecognizer
-                                        Tapped="OnChatTapped"
-                                        CommandParameter="{Binding .}" />
-                                </StackLayout.GestureRecognizers>
-                            </StackLayout>
+                                    Margin="0,4,0,0" />
+                            </Grid>
                         </DataTemplate>
                     </CollectionView.ItemTemplate>
                 </CollectionView>

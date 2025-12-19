@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -24,6 +25,10 @@ namespace AmoraApp.ViewModels
         // ===== Campos básicos =====
         [ObservableProperty] private string email;
         [ObservableProperty] private string password;
+
+        // NOVO: confirmação de senha
+        [ObservableProperty] private string confirmPassword;
+
         [ObservableProperty] private string displayName;
 
         [ObservableProperty] private bool isBusy;
@@ -60,18 +65,58 @@ namespace AmoraApp.ViewModels
         [ObservableProperty] private string phoneNumber;
 
         [ObservableProperty] private DateTime birthDate = DateTime.Today.AddYears(-18);
+
+        // NOVO (digitável): texto da data de nascimento (dd/MM/aaaa)
+        [ObservableProperty] private string birthDateText;
+
         public string AgeDisplay => $"{Age} anos";
 
-        // Atualiza idade quando muda BirthDate
+        private bool _syncingBirthText;
+
+        // Atualiza idade quando muda BirthDate (AGORA SEM "clamp" para 18)
         partial void OnBirthDateChanged(DateTime oldValue, DateTime newValue)
         {
             var today = DateTime.Today;
-            var age = today.Year - newValue.Year;
-            if (newValue.Date > today.AddYears(-age))
-                age--;
+            var calcAge = today.Year - newValue.Year;
+            if (newValue.Date > today.AddYears(-calcAge))
+                calcAge--;
 
-            if (age < 18) age = 18;
-            Age = age;
+            Age = calcAge;
+
+            // Mantém texto em sincronia (sem loop)
+            if (_syncingBirthText) return;
+            _syncingBirthText = true;
+            BirthDateText = newValue.ToString("dd/MM/yyyy");
+            _syncingBirthText = false;
+        }
+
+        // Quando o usuário digita, tenta interpretar.
+        partial void OnBirthDateTextChanged(string oldValue, string newValue)
+        {
+            if (_syncingBirthText) return;
+            if (string.IsNullOrWhiteSpace(newValue)) return;
+
+            // Se vier só números com 8 dígitos, formata automaticamente (ddMMyyyy -> dd/MM/yyyy)
+            var digits = new string(newValue.Where(char.IsDigit).ToArray());
+            if (digits.Length == 8 && !newValue.Contains("/"))
+            {
+                var formatted = $"{digits.Substring(0, 2)}/{digits.Substring(2, 2)}/{digits.Substring(4, 4)}";
+                _syncingBirthText = true;
+                BirthDateText = formatted;
+                _syncingBirthText = false;
+
+                newValue = formatted;
+            }
+
+            // Só tenta parse quando parece completo (10 chars dd/MM/yyyy)
+            if (newValue.Length < 10) return;
+
+            if (TryParseBirthDate(newValue, out var parsed))
+            {
+                _syncingBirthText = true;
+                BirthDate = parsed.Date;
+                _syncingBirthText = false;
+            }
         }
 
         partial void OnAgeChanged(int oldValue, int newValue)
@@ -113,6 +158,9 @@ namespace AmoraApp.ViewModels
             IsStepName = true;
             PrimaryButtonText = "Avançar";
 
+            // Valor inicial do texto da data
+            BirthDateText = BirthDate.ToString("dd/MM/yyyy");
+
             // Busco por
             RelationshipGoals.Add(new SelectableItem { Name = "Amizade" });
             RelationshipGoals.Add(new SelectableItem { Name = "Namoro" });
@@ -129,6 +177,39 @@ namespace AmoraApp.ViewModels
 
             foreach (var name in defaultInterests)
                 Interests.Add(new SelectableItem { Name = name });
+        }
+
+        private static bool TryParseBirthDate(string input, out DateTime date)
+        {
+            date = default;
+
+            if (string.IsNullOrWhiteSpace(input))
+                return false;
+
+            var trimmed = input.Trim();
+
+            // se veio "ddmmaaaa", converte para dd/MM/yyyy
+            var digits = new string(trimmed.Where(char.IsDigit).ToArray());
+            if (digits.Length == 8 && trimmed.Length != 10)
+                trimmed = $"{digits.Substring(0, 2)}/{digits.Substring(2, 2)}/{digits.Substring(4, 4)}";
+
+            var br = new CultureInfo("pt-BR");
+            return DateTime.TryParseExact(
+                trimmed,
+                "dd/MM/yyyy",
+                br,
+                DateTimeStyles.None,
+                out date
+            );
+        }
+
+        private static int CalculateAge(DateTime birthDate)
+        {
+            var today = DateTime.Today;
+            var calcAge = today.Year - birthDate.Year;
+            if (birthDate.Date > today.AddYears(-calcAge))
+                calcAge--;
+            return calcAge;
         }
 
         // =========================================================
@@ -152,7 +233,6 @@ namespace AmoraApp.ViewModels
                 var cred = await _authService.LoginWithEmailPasswordAsync(Email.Trim(), Password);
                 var uid = cred.User.Uid;
 
-                // UID salvo para auto-login
                 Preferences.Set("auth_uid", uid);
 
                 await PresenceService.Instance.SetOnlineAsync(uid);
@@ -182,7 +262,7 @@ namespace AmoraApp.ViewModels
             if (IsBusy) return;
             ErrorMessage = string.Empty;
 
-            // Etapa 1: Nome
+            // Etapa 1: Nome + Data de nascimento (18+)
             if (IsStepName)
             {
                 if (string.IsNullOrWhiteSpace(DisplayName))
@@ -190,6 +270,22 @@ namespace AmoraApp.ViewModels
                     ErrorMessage = "Qual é o seu nome?";
                     return;
                 }
+
+                if (!TryParseBirthDate(BirthDateText, out var parsedBirth))
+                {
+                    ErrorMessage = "Informe sua data de nascimento (dd/MM/aaaa).";
+                    return;
+                }
+
+                var computedAge = CalculateAge(parsedBirth.Date);
+                if (computedAge < 18)
+                {
+                    ErrorMessage = "O app é apenas para maiores de 18 anos.";
+                    return;
+                }
+
+                // Mantém consistência interna e mostra idade corretamente
+                BirthDate = parsedBirth.Date;
 
                 IsStepName = false;
                 IsStepEmail = true;
@@ -199,18 +295,26 @@ namespace AmoraApp.ViewModels
                 return;
             }
 
-            // Etapa 2: E-mail + senha
+            // Etapa 2: E-mail + senha + confirmação
             if (IsStepEmail)
             {
-                if (string.IsNullOrWhiteSpace(Email) || string.IsNullOrWhiteSpace(Password))
+                if (string.IsNullOrWhiteSpace(Email) ||
+                    string.IsNullOrWhiteSpace(Password) ||
+                    string.IsNullOrWhiteSpace(ConfirmPassword))
                 {
-                    ErrorMessage = "Informe um e-mail e uma senha.";
+                    ErrorMessage = "Informe um e-mail, uma senha e confirme a senha.";
                     return;
                 }
 
                 if (Password.Length < 6)
                 {
                     ErrorMessage = "A senha deve ter pelo menos 6 caracteres.";
+                    return;
+                }
+
+                if (!string.Equals(Password, ConfirmPassword, StringComparison.Ordinal))
+                {
+                    ErrorMessage = "As senhas não conferem. Verifique e tente novamente.";
                     return;
                 }
 
@@ -375,11 +479,21 @@ namespace AmoraApp.ViewModels
 
             try
             {
-                if (Age < 18)
+                // Revalida data (segurança extra)
+                if (!TryParseBirthDate(BirthDateText, out var parsedBirth))
+                {
+                    ErrorMessage = "Informe uma data de nascimento válida (dd/MM/aaaa).";
+                    return;
+                }
+
+                var computedAge = CalculateAge(parsedBirth.Date);
+                if (computedAge < 18)
                 {
                     ErrorMessage = "O app é apenas para maiores de 18 anos.";
                     return;
                 }
+
+                BirthDate = parsedBirth.Date;
 
                 if (string.IsNullOrWhiteSpace(City))
                 {
@@ -420,7 +534,6 @@ namespace AmoraApp.ViewModels
 
                 if (_isSocialSignUp)
                 {
-                    // Usuário já autenticado via Google
                     var currentUser = _authService.GetCurrentUser();
                     if (currentUser == null)
                     {
@@ -440,7 +553,6 @@ namespace AmoraApp.ViewModels
                 }
                 else
                 {
-                    // Fluxo tradicional: criar usuário com email/senha
                     if (string.IsNullOrWhiteSpace(Email) || string.IsNullOrWhiteSpace(Password))
                     {
                         ErrorMessage = "Informe um e-mail e uma senha.";
@@ -473,14 +585,12 @@ namespace AmoraApp.ViewModels
                     PhoneNumber = PhoneNumber?.Trim() ?? string.Empty,
                     LookingFor = selectedGoals,
                     Interests = selectedInterests,
-                    EmailVerified = true // já validado (código) ou Google
+                    EmailVerified = true
                 };
 
                 var birthUtc = new DateTimeOffset(BirthDate.Date).ToUnixTimeMilliseconds();
                 profile.BirthDateUtc = birthUtc;
 
-                // Foto: se o usuário escolheu uma foto manual, sobe pro Storage.
-                // Caso contrário, se veio do Google, usa PhotoUrl direto.
                 if (_photoBytes != null && _photoBytes.Length > 0)
                 {
                     using var ms = new MemoryStream(_photoBytes);
@@ -530,10 +640,6 @@ namespace AmoraApp.ViewModels
         // =========================================================
         // LOGIN COM GOOGLE (via WebView / SignInWithRedirectAsync)
         // =========================================================
-        /// <summary>
-        /// Login com Google usando fluxo de redirect. O callback abre um WebView,
-        /// espera o redirect para /__/auth/handler e devolve a URL final.
-        /// </summary>
         public async Task LoginWithGoogleAsync(Func<Uri, Task<Uri>> openBrowserAndWaitForRedirectAsync)
         {
             if (IsBusy) return;
@@ -544,18 +650,12 @@ namespace AmoraApp.ViewModels
             {
                 var client = _authService.Client;
 
-                // Delegate agora recebe string (startUrl) e retorna string (finalUrl)
                 var userCredential = await client.SignInWithRedirectAsync(
                     FirebaseProviderType.Google,
                     async startUrl =>
                     {
-                        // Converte a string que o Firebase manda para Uri
                         var startUri = new Uri(startUrl);
-
-                        // Usa o callback do LoginPage (que trabalha com Uri)
                         var finalUri = await openBrowserAndWaitForRedirectAsync(startUri);
-
-                        // Devolve como string, que é o que o delegate espera
                         return finalUri.ToString();
                     });
 
@@ -573,7 +673,6 @@ namespace AmoraApp.ViewModels
 
                 Preferences.Set("auth_uid", uid);
 
-                // Verifica se já existe perfil no banco
                 var existingProfile = await _dbService.GetUserProfileAsync(uid);
                 if (existingProfile != null)
                 {
@@ -582,7 +681,6 @@ namespace AmoraApp.ViewModels
                     return;
                 }
 
-                // Novo usuário via Google → ir para fluxo de criação de perfil
                 _isSocialSignUp = true;
 
                 DisplayName = name;
@@ -590,14 +688,12 @@ namespace AmoraApp.ViewModels
                 if (!string.IsNullOrEmpty(photo))
                     PhotoUrl = photo;
 
-                // Pular etapas de nome / email+senha / código
                 IsStepName = false;
                 IsStepEmail = false;
                 IsStepCode = false;
                 IsStepProfile = true;
                 PrimaryButtonText = "Concluir cadastro";
 
-                // Abre a tela de cadastro com este mesmo ViewModel
                 if (Application.Current.MainPage is NavigationPage nav)
                 {
                     await nav.PushAsync(new Views.RegisterPage(this));
@@ -612,7 +708,6 @@ namespace AmoraApp.ViewModels
                 IsBusy = false;
             }
         }
-
 
         // =========================================================
         // SOCIAL LOGIN APPLE (mantém placeholder)

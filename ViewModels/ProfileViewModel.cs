@@ -6,7 +6,6 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Numerics;
 using System.Threading.Tasks;
 
 namespace AmoraApp.ViewModels
@@ -125,6 +124,29 @@ namespace AmoraApp.ViewModels
         [ObservableProperty] private string errorMessage;
 
         public string CurrentUserId { get; set; } = string.Empty;
+
+        // ===== NOVO: Limite de fotos por plano =====
+        public int PhotoLimit => GetPhotoLimitForPlan(Plan);
+        public string PhotosSectionTitle => $"Fotos (até {PhotoLimit})";
+
+        partial void OnPlanChanged(string value)
+        {
+            OnPropertyChanged(nameof(PhotoLimit));
+            OnPropertyChanged(nameof(PhotosSectionTitle));
+        }
+
+        private static int GetPhotoLimitForPlan(string plan)
+        {
+            plan = (plan ?? "Free").Trim();
+
+            if (plan.Equals("Premium", StringComparison.OrdinalIgnoreCase))
+                return 30;
+
+            if (plan.Equals("Plus", StringComparison.OrdinalIgnoreCase))
+                return 15;
+
+            return 5; // Free
+        }
 
         // Sugestões de profissões
         private readonly List<string> _allJobTitles = new()
@@ -482,7 +504,6 @@ namespace AmoraApp.ViewModels
                 Religion = profile.Religion;
                 PhotoUrl = profile.PhotoUrl;
 
-                // Plano
                 Plan = string.IsNullOrWhiteSpace(profile.Plan) ? "Free" : profile.Plan;
 
                 Latitude = profile.Latitude;
@@ -491,7 +512,6 @@ namespace AmoraApp.ViewModels
                     ? "Localização ainda não capturada"
                     : profile.CurrentLocationText;
 
-                // Data de nascimento / idade
                 DateTime? birth = null;
                 if (profile.BirthDateUtc > 0)
                 {
@@ -502,20 +522,17 @@ namespace AmoraApp.ViewModels
                 }
                 else if (profile.Age > 0)
                 {
-                    // fallback aproximado pra dados antigos
                     birth = DateTime.UtcNow.AddYears(-profile.Age).Date;
                 }
 
                 BirthDate = birth;
 
-                // Fotos: migração de Gallery → Photos se necessário
                 var photos = (profile.Photos != null && profile.Photos.Count > 0)
                     ? profile.Photos
                     : (profile.Gallery ?? new List<string>());
 
                 ApplyPhotosToSlots(photos);
 
-                // Vídeos
                 var videos = profile.Videos ?? new List<string>();
                 ApplyVideosToSlots(videos);
 
@@ -570,11 +587,7 @@ namespace AmoraApp.ViewModels
                 var photos = BuildPhotosFromSlots();
                 var videos = BuildVideosFromSlots();
 
-                // Carrega o perfil existente para preservar plano, boosts etc.
-                var existing = await _dbService.GetUserProfileAsync(uid) ?? new UserProfile
-                {
-                    Id = uid
-                };
+                var existing = await _dbService.GetUserProfileAsync(uid) ?? new UserProfile { Id = uid };
 
                 existing.DisplayName = DisplayName ?? "";
                 existing.Email = Email ?? "";
@@ -594,7 +607,7 @@ namespace AmoraApp.ViewModels
 
                 existing.Photos = photos;
                 existing.Videos = videos;
-                existing.Gallery = photos; // compat
+                existing.Gallery = photos;
 
                 existing.Interests = GetSelectedInterests();
                 existing.LookingFor = GetSelectedRelationshipGoals();
@@ -603,7 +616,6 @@ namespace AmoraApp.ViewModels
                 existing.Longitude = Longitude;
                 existing.CurrentLocationText = CurrentLocationText ?? "";
 
-                // Mantém o plano atual (se o ViewModel tiver algo setado, atualiza)
                 existing.Plan = string.IsNullOrWhiteSpace(Plan) ? existing.Plan : Plan;
 
                 await _dbService.SaveUserProfileAsync(existing);
@@ -638,7 +650,6 @@ namespace AmoraApp.ViewModels
                     ? $"{result.Latitude:0.0000}, {result.Longitude:0.0000}"
                     : result.Description;
 
-                // Salva no perfil para ser usado depois no Discover
                 await SaveAsync();
             }
             catch (Exception ex)

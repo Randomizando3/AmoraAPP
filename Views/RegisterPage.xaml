@@ -4,474 +4,521 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     x:Name="RootPage"
-    BackgroundColor="White"
+    BackgroundColor="#000000"
     Shell.NavBarIsVisible="False">
 
-    <Grid RowDefinitions="*,Auto"
-          Padding="24,40,24,32">
+    <!-- GRID RAIZ: background (imagem) + conteúdo -->
+    <Grid>
 
-        <!-- =========================
-             CONTEÚDO CENTRAL
-        ========================== -->
-        <Grid Grid.Row="0">
+        <!-- BACKGROUND (imagem) -->
+        <Image
+            Source="loginbackground.jpg"
+            Aspect="AspectFill" />
 
-            <!-- Etapa 1: Nome -->
-            <VerticalStackLayout
-                IsVisible="{Binding IsStepName}"
-                VerticalOptions="Center"
-                Spacing="16">
-
-                <Label Text="Qual é o seu nome?"
-                       FontSize="22"
-                       HorizontalTextAlignment="Center"
-                       TextColor="#333" />
-
-                <!-- Caixa de texto para nome -->
-                <Frame BackgroundColor="#F3F4F6"
-                       BorderColor="#D1D5DB"
-                       CornerRadius="10"
-                       Padding="10,6"
-                       Margin="0,8,0,0">
-                    <Entry Text="{Binding DisplayName}"
-                           Placeholder="Digite seu nome" />
-                </Frame>
-            </VerticalStackLayout>
-
-            <!-- Etapa 2: Email + senha -->
-            <VerticalStackLayout
-                IsVisible="{Binding IsStepEmail}"
-                VerticalOptions="Center"
-                Spacing="12">
-
-                <Label Text="Agora para criar sua conta preciso de um email e senha"
-                       FontSize="18"
-                       HorizontalTextAlignment="Center"
-                       TextColor="#333" />
-
-                <!-- Caixa de texto para e-mail -->
-                <Frame BackgroundColor="#F3F4F6"
-                       BorderColor="#D1D5DB"
-                       CornerRadius="10"
-                       Padding="10,6"
-                       Margin="0,20,0,0">
-                    <Entry Text="{Binding Email}"
-                           Placeholder="email"
-                           Keyboard="Email" />
-                </Frame>
-
-                <!-- Caixa de texto para senha -->
-                <Frame BackgroundColor="#F3F4F6"
-                       BorderColor="#D1D5DB"
-                       CornerRadius="10"
-                       Padding="10,6"
-                       Margin="0,8,0,0">
-                    <Entry Text="{Binding Password}"
-                           Placeholder="senha"
-                           IsPassword="True" />
-                </Frame>
-            </VerticalStackLayout>
-
-            <!-- Etapa 3: Código -->
-            <VerticalStackLayout
-                IsVisible="{Binding IsStepCode}"
-                VerticalOptions="Center"
-                Spacing="16">
-
-                <Label Text="Insira o código enviado por email:"
-                       FontSize="18"
-                       HorizontalTextAlignment="Center"
-                       TextColor="#333" />
-
-                <!-- Caixa de texto para código -->
-                <Frame BackgroundColor="#F3F4F6"
-                       BorderColor="#D1D5DB"
-                       CornerRadius="10"
-                       Padding="10,6"
-                       Margin="0,8,0,0">
-                    <Entry Text="{Binding VerificationCode}"
-                           Placeholder="000000"
-                           Keyboard="Numeric" />
-                </Frame>
-            </VerticalStackLayout>
+        <!-- CONTEÚDO -->
+        <Grid RowDefinitions="*,Auto"
+              Padding="24,40,24,32">
 
             <!-- =========================
-                 Etapa 4: Perfil completo
+                 CONTEÚDO CENTRAL
             ========================== -->
-            <ScrollView IsVisible="{Binding IsStepProfile}">
-                <VerticalStackLayout Spacing="18" Padding="0,0,0,20">
+            <Grid Grid.Row="0">
 
-                    <!-- FOTO PRINCIPAL -->
-                    <Grid HorizontalOptions="Center">
-                        <Frame HeightRequest="120"
-                               WidthRequest="120"
-                               CornerRadius="60"
-                               BorderColor="#5d259c"
-                               BackgroundColor="#FFFFFF"
-                               Padding="0">
+                <!-- Etapa 1: Nome + Data de nascimento (18+) -->
+                <VerticalStackLayout
+                    IsVisible="{Binding IsStepName}"
+                    VerticalOptions="Center"
+                    Spacing="14">
 
-                            <Grid>
-                                <Image Aspect="AspectFill"
-                                       Source="{Binding PhotoUrl}">
-                                    <Image.Clip>
-                                        <EllipseGeometry Center="60,60" RadiusX="60" RadiusY="60" />
-                                    </Image.Clip>
-                                </Image>
+                    <Label Text="Qual é o seu nome?"
+                           FontSize="22"
+                           HorizontalTextAlignment="Center"
+                           TextColor="#333" />
 
-                                <!-- + quando não há foto -->
-                                <Label Text="+"
-                                       FontSize="36"
-                                       TextColor="#5d259c"
-                                       HorizontalOptions="Center"
-                                       VerticalOptions="Center">
-                                    <Label.Triggers>
-                                        <DataTrigger TargetType="Label"
-                                                     Binding="{Binding PhotoUrl}"
-                                                     Value="">
-                                            <Setter Property="IsVisible" Value="True"/>
-                                        </DataTrigger>
-                                        <DataTrigger TargetType="Label"
-                                                     Binding="{Binding PhotoUrl}"
-                                                     Value="{x:Null}">
-                                            <Setter Property="IsVisible" Value="True"/>
-                                        </DataTrigger>
-                                    </Label.Triggers>
-                                </Label>
-                            </Grid>
-
-                            <Frame.GestureRecognizers>
-                                <TapGestureRecognizer Command="{Binding ChangePhotoCommand}" />
-                            </Frame.GestureRecognizers>
-
-                        </Frame>
-                    </Grid>
-
-                    <!-- NOME -->
+                    <!-- Caixa de texto para nome -->
                     <Frame BackgroundColor="#F3F4F6"
                            BorderColor="#D1D5DB"
                            CornerRadius="10"
-                           Padding="10,6">
+                           Padding="10,6"
+                           Margin="0,6,0,0">
                         <Entry Text="{Binding DisplayName}"
-                               Placeholder="Seu nome"/>
+                               Placeholder="Digite seu nome" />
                     </Frame>
 
-                    <!-- BIO -->
-                    <Label Text="Bio"
+                    <!-- Data de nascimento -->
+                    <Label Text="Data de nascimento"
+                           FontSize="13"
                            FontAttributes="Bold"
-                           FontSize="14"
-                           TextColor="#555"/>
-                    <Frame BackgroundColor="#F3F4F6"
-                           BorderColor="#D1D5DB"
-                           CornerRadius="10"
-                           Padding="10">
-                        <Editor Text="{Binding Bio}"
-                                Placeholder="Fale um pouco sobre você"
-                                AutoSize="TextChanges"/>
-                    </Frame>
+                           TextColor="#555"
+                           Margin="2,6,0,0" />
 
-                    <!-- PROFISSÃO -->
-                    <Label Text="Profissão"
-                           FontAttributes="Bold"
-                           FontSize="14"
-                           TextColor="#555"/>
-                    <Frame BackgroundColor="#F3F4F6"
+                    <Frame BackgroundColor="#FFFFFF"
                            BorderColor="#D1D5DB"
                            CornerRadius="10"
                            Padding="10,6">
-                        <Entry Text="{Binding JobTitle}"
-                               Placeholder="Ex.: Designer, Desenvolvedor"/>
-                    </Frame>
-
-                    <!-- ESCOLARIDADE -->
-                    <Label Text="Escolaridade"
-                           FontAttributes="Bold"
-                           FontSize="14"
-                           TextColor="#555"/>
-                    <Frame BackgroundColor="#FFFFFF"
-                           BorderColor="#D1D5DB"
-                           CornerRadius="10"
-                           Padding="10,4">
-                        <Picker
-                            SelectedItem="{Binding EducationLevel}"
-                            Title="Selecione sua escolaridade"
-                            HorizontalOptions="FillAndExpand"
-                            HeightRequest="44">
-                            <Picker.Items>
-                                <x:String>Ensino médio completo</x:String>
-                                <x:String>Superior cursando</x:String>
-                                <x:String>Superior completo</x:String>
-                                <x:String>Pós / MBA</x:String>
-                                <x:String>Mestrado</x:String>
-                                <x:String>Doutorado</x:String>
-                                <x:String>Prefiro não informar</x:String>
-                            </Picker.Items>
-                        </Picker>
-                    </Frame>
-
-                    <!-- INSTITUIÇÃO -->
-                    <Label Text="Instituição de ensino"
-                           FontAttributes="Bold"
-                           FontSize="14"
-                           TextColor="#555"/>
-                    <Frame BackgroundColor="#F3F4F6"
-                           BorderColor="#D1D5DB"
-                           CornerRadius="10"
-                           Padding="10">
-                        <Entry Text="{Binding EducationInstitution}"
-                               Placeholder="Ex.: USP, Senac, ETEC"/>
-                    </Frame>
-
-                    <!-- GÊNERO -->
-                    <Label Text="Gênero"
-                           FontAttributes="Bold"
-                           FontSize="14"
-                           TextColor="#555"/>
-                    <Frame BackgroundColor="#FFFFFF"
-                           BorderColor="#D1D5DB"
-                           CornerRadius="10"
-                           Padding="10,4">
-                        <Picker
-                            SelectedItem="{Binding Gender}"
-                            Title="Selecione seu gênero"
-                            HorizontalOptions="FillAndExpand"
-                            HeightRequest="44">
-                            <Picker.Items>
-                                <x:String>Masculino</x:String>
-                                <x:String>Feminino</x:String>
-                                <x:String>Não-binário</x:String>
-                                <x:String>Outro</x:String>
-                                <x:String>Prefiro não dizer</x:String>
-                            </Picker.Items>
-                        </Picker>
-                    </Frame>
-
-                    <!-- ORIENTAÇÃO -->
-                    <Label Text="Orientação sexual"
-                           FontAttributes="Bold"
-                           FontSize="14"
-                           TextColor="#555"/>
-                    <Frame BackgroundColor="#FFFFFF"
-                           BorderColor="#D1D5DB"
-                           CornerRadius="10"
-                           Padding="10,4">
-                        <Picker
-                            SelectedItem="{Binding SexualOrientation}"
-                            Title="Selecione sua orientação"
-                            HorizontalOptions="FillAndExpand"
-                            HeightRequest="44">
-                            <Picker.Items>
-                                <x:String>Heterossexual</x:String>
-                                <x:String>Homossexual</x:String>
-                                <x:String>Bissexual</x:String>
-                                <x:String>Assexual</x:String>
-                                <x:String>Prefiro não dizer</x:String>
-                            </Picker.Items>
-                        </Picker>
-                    </Frame>
-
-                    <!-- O QUE BUSCA (pílulas) -->
-                    <Label Text="O que você busca?"
-                           FontAttributes="Bold"
-                           FontSize="14"
-                           TextColor="#555"/>
-
-                    <CollectionView
-                        ItemsSource="{Binding RelationshipGoals}"
-                        SelectionMode="None"
-                        ItemsLayout="VerticalGrid,2"
-                        HeightRequest="110">
-                        <CollectionView.ItemTemplate>
-                            <DataTemplate>
-                                <Grid Padding="4">
-                                    <Frame
-                                        CornerRadius="16"
-                                        HasShadow="False"
-                                        Padding="10,4"
-                                        BorderColor="#E0E2E7"
-                                        BackgroundColor="#FFFFFF">
-                                        <Frame.Triggers>
-                                            <DataTrigger
-                                                TargetType="Frame"
-                                                Binding="{Binding IsSelected}"
-                                                Value="True">
-                                                <Setter Property="BackgroundColor" Value="#5d259c" />
-                                                <Setter Property="BorderColor" Value="#5d259c" />
-                                            </DataTrigger>
-                                        </Frame.Triggers>
-
-                                        <Label
-                                            Text="{Binding Name}"
-                                            FontSize="13"
-                                            HorizontalOptions="Center"
-                                            VerticalOptions="Center"
-                                            TextColor="#13141F">
-                                            <Label.Triggers>
-                                                <DataTrigger
-                                                    TargetType="Label"
-                                                    Binding="{Binding IsSelected}"
-                                                    Value="True">
-                                                    <Setter Property="TextColor" Value="White" />
-                                                </DataTrigger>
-                                            </Label.Triggers>
-                                        </Label>
-
-                                        <Frame.GestureRecognizers>
-                                            <TapGestureRecognizer
-                                                Command="{Binding BindingContext.ToggleRelationshipGoalCommand, Source={x:Reference RootPage}}"
-                                                CommandParameter="{Binding .}" />
-                                        </Frame.GestureRecognizers>
-                                    </Frame>
-                                </Grid>
-                            </DataTemplate>
-                        </CollectionView.ItemTemplate>
-                    </CollectionView>
-
-                    <!-- RELIGIÃO -->
-                    <Label Text="Religião"
-                           FontAttributes="Bold"
-                           FontSize="14"
-                           TextColor="#555"/>
-                    <Frame BackgroundColor="#F3F4F6"
-                           BorderColor="#D1D5DB"
-                           CornerRadius="10"
-                           Padding="10">
-                        <Entry Text="{Binding Religion}"
-                               Placeholder="Ex.: Católica, Evangélica, Espírita..."/>
-                    </Frame>
-
-                    <!-- CIDADE -->
-                    <Label Text="Cidade"
-                           FontAttributes="Bold"
-                           FontSize="14"
-                           TextColor="#555"/>
-                    <Frame BackgroundColor="#F3F4F6"
-                           BorderColor="#D1D5DB"
-                           CornerRadius="10"
-                           Padding="10">
-                        <Entry Text="{Binding City}"
-                               Placeholder="Digite sua cidade"/>
-                    </Frame>
-
-                    <!-- TELEFONE -->
-                    <Label Text="Telefone"
-                           FontAttributes="Bold"
-                           FontSize="14"
-                           TextColor="#555"/>
-                    <Frame BackgroundColor="#F3F4F6"
-                           BorderColor="#D1D5DB"
-                           CornerRadius="10"
-                           Padding="10">
-                        <Entry Text="{Binding PhoneNumber}"
-                               Keyboard="Telephone"
-                               Placeholder="(11) 99999-9999"/>
-                    </Frame>
-
-                    <!-- NASCIMENTO -->
-                    <Label Text="Data de nascimento"
-                           FontAttributes="Bold"
-                           FontSize="14"
-                           TextColor="#555"/>
-                    <Frame BackgroundColor="#FFFFFF"
-                           BorderColor="#D1D5DB"
-                           CornerRadius="10"
-                           Padding="10,4">
-                        <DatePicker
-                            Date="{Binding BirthDate}"
-                            Format="dd/MM/yyyy"
-                            HorizontalOptions="FillAndExpand" />
+                        <Entry
+                            Text="{Binding BirthDateText}"
+                            Placeholder="dd/MM/aaaa"
+                            Keyboard="Numeric"
+                            MaxLength="10"
+                            TextColor="#222"
+                            PlaceholderColor="#BBBBBB" />
                     </Frame>
 
                     <Label Text="{Binding AgeDisplay}"
                            FontSize="12"
-                           TextColor="#666"/>
+                           TextColor="#666"
+                           HorizontalTextAlignment="Center"
+                           Margin="0,2,0,0" />
 
-                    <!-- INTERESSES (pílulas) -->
-                    <Label Text="Interesses"
-                           FontAttributes="Bold"
-                           FontSize="14"
-                           TextColor="#555" />
+                    <Label Text="Apenas maiores de 18 anos."
+                           FontSize="12"
+                           TextColor="#888"
+                           HorizontalTextAlignment="Center"
+                           Margin="0,-6,0,0" />
+                </VerticalStackLayout>
 
-                    <CollectionView
-                        ItemsSource="{Binding Interests}"
-                        SelectionMode="None"
-                        ItemsLayout="VerticalGrid,2"
-                        HeightRequest="170">
-                        <CollectionView.ItemTemplate>
-                            <DataTemplate>
-                                <Grid Padding="4">
-                                    <Frame
-                                        CornerRadius="16"
-                                        HasShadow="False"
-                                        Padding="10,4"
-                                        BorderColor="#E0E2E7"
-                                        BackgroundColor="#FFFFFF">
-                                        <Frame.Triggers>
-                                            <DataTrigger
-                                                TargetType="Frame"
-                                                Binding="{Binding IsSelected}"
-                                                Value="True">
-                                                <Setter Property="BackgroundColor" Value="#5d259c" />
-                                                <Setter Property="BorderColor" Value="#5d259c" />
+                <!-- Etapa 2: Email + senha + confirmar senha -->
+                <VerticalStackLayout
+                    IsVisible="{Binding IsStepEmail}"
+                    VerticalOptions="Center"
+                    Spacing="12">
+
+                    <Label Text="Agora para criar sua conta preciso de um email e senha"
+                           FontSize="18"
+                           HorizontalTextAlignment="Center"
+                           TextColor="#333" />
+
+                    <!-- Caixa de texto para e-mail -->
+                    <Frame BackgroundColor="#F3F4F6"
+                           BorderColor="#D1D5DB"
+                           CornerRadius="10"
+                           Padding="10,6"
+                           Margin="0,20,0,0">
+                        <Entry Text="{Binding Email}"
+                               Placeholder="email"
+                               Keyboard="Email" />
+                    </Frame>
+
+                    <!-- Senha -->
+                    <Frame BackgroundColor="#F3F4F6"
+                           BorderColor="#D1D5DB"
+                           CornerRadius="10"
+                           Padding="10,6"
+                           Margin="0,8,0,0">
+                        <Entry Text="{Binding Password}"
+                               Placeholder="senha"
+                               IsPassword="True" />
+                    </Frame>
+
+                    <!-- Confirmar senha (NOVO) -->
+                    <Frame BackgroundColor="#F3F4F6"
+                           BorderColor="#D1D5DB"
+                           CornerRadius="10"
+                           Padding="10,6"
+                           Margin="0,8,0,0">
+                        <Entry Text="{Binding ConfirmPassword}"
+                               Placeholder="confirmar senha"
+                               IsPassword="True" />
+                    </Frame>
+                </VerticalStackLayout>
+
+                <!-- Etapa 3: Código -->
+                <VerticalStackLayout
+                    IsVisible="{Binding IsStepCode}"
+                    VerticalOptions="Center"
+                    Spacing="16">
+
+                    <Label Text="Insira o código enviado por email:"
+                           FontSize="18"
+                           HorizontalTextAlignment="Center"
+                           TextColor="#333" />
+
+                    <Frame BackgroundColor="#F3F4F6"
+                           BorderColor="#D1D5DB"
+                           CornerRadius="10"
+                           Padding="10,6"
+                           Margin="0,8,0,0">
+                        <Entry Text="{Binding VerificationCode}"
+                               Placeholder="000000"
+                               Keyboard="Numeric" />
+                    </Frame>
+                </VerticalStackLayout>
+
+                <!-- =========================
+                     Etapa 4: Perfil completo
+                ========================== -->
+                <ScrollView IsVisible="{Binding IsStepProfile}">
+                    <VerticalStackLayout Spacing="18" Padding="0,0,0,20">
+
+                        <!-- FOTO PRINCIPAL -->
+                        <Grid HorizontalOptions="Center">
+                            <Frame HeightRequest="120"
+                                   WidthRequest="120"
+                                   CornerRadius="60"
+                                   BorderColor="#5d259c"
+                                   BackgroundColor="#FFFFFF"
+                                   Padding="0">
+
+                                <Grid>
+                                    <Image Aspect="AspectFill"
+                                           Source="{Binding PhotoUrl}">
+                                        <Image.Clip>
+                                            <EllipseGeometry Center="60,60" RadiusX="60" RadiusY="60" />
+                                        </Image.Clip>
+                                    </Image>
+
+                                    <Label Text="+"
+                                           FontSize="36"
+                                           TextColor="#5d259c"
+                                           HorizontalOptions="Center"
+                                           VerticalOptions="Center">
+                                        <Label.Triggers>
+                                            <DataTrigger TargetType="Label"
+                                                         Binding="{Binding PhotoUrl}"
+                                                         Value="">
+                                                <Setter Property="IsVisible" Value="True"/>
                                             </DataTrigger>
-                                        </Frame.Triggers>
+                                            <DataTrigger TargetType="Label"
+                                                         Binding="{Binding PhotoUrl}"
+                                                         Value="{x:Null}">
+                                                <Setter Property="IsVisible" Value="True"/>
+                                            </DataTrigger>
+                                        </Label.Triggers>
+                                    </Label>
+                                </Grid>
 
-                                        <Label
-                                            Text="{Binding Name}"
-                                            FontSize="13"
-                                            HorizontalOptions="Center"
-                                            VerticalOptions="Center"
-                                            TextColor="#13141F">
-                                            <Label.Triggers>
+                                <Frame.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding ChangePhotoCommand}" />
+                                </Frame.GestureRecognizers>
+
+                            </Frame>
+                        </Grid>
+
+                        <!-- NOME -->
+                        <Frame BackgroundColor="#F3F4F6"
+                               BorderColor="#D1D5DB"
+                               CornerRadius="10"
+                               Padding="10,6">
+                            <Entry Text="{Binding DisplayName}"
+                                   Placeholder="Seu nome"/>
+                        </Frame>
+
+                        <!-- BIO -->
+                        <Label Text="Bio"
+                               FontAttributes="Bold"
+                               FontSize="14"
+                               TextColor="#555"/>
+                        <Frame BackgroundColor="#F3F4F6"
+                               BorderColor="#D1D5DB"
+                               CornerRadius="10"
+                               Padding="10">
+                            <Editor Text="{Binding Bio}"
+                                    Placeholder="Fale um pouco sobre você"
+                                    AutoSize="TextChanges"/>
+                        </Frame>
+
+                        <!-- PROFISSÃO -->
+                        <Label Text="Profissão"
+                               FontAttributes="Bold"
+                               FontSize="14"
+                               TextColor="#555"/>
+                        <Frame BackgroundColor="#F3F4F6"
+                               BorderColor="#D1D5DB"
+                               CornerRadius="10"
+                               Padding="10,6">
+                            <Entry Text="{Binding JobTitle}"
+                                   Placeholder="Ex.: Designer, Desenvolvedor"/>
+                        </Frame>
+
+                        <!-- ESCOLARIDADE -->
+                        <Label Text="Escolaridade"
+                               FontAttributes="Bold"
+                               FontSize="14"
+                               TextColor="#555"/>
+                        <Frame BackgroundColor="#FFFFFF"
+                               BorderColor="#D1D5DB"
+                               CornerRadius="10"
+                               Padding="10,4">
+                            <Picker
+                                SelectedItem="{Binding EducationLevel}"
+                                Title="Selecione sua escolaridade"
+                                HorizontalOptions="FillAndExpand"
+                                HeightRequest="44">
+                                <Picker.Items>
+                                    <x:String>Ensino médio completo</x:String>
+                                    <x:String>Superior cursando</x:String>
+                                    <x:String>Superior completo</x:String>
+                                    <x:String>Pós / MBA</x:String>
+                                    <x:String>Mestrado</x:String>
+                                    <x:String>Doutorado</x:String>
+                                    <x:String>Prefiro não informar</x:String>
+                                </Picker.Items>
+                            </Picker>
+                        </Frame>
+
+                        <!-- INSTITUIÇÃO -->
+                        <Label Text="Instituição de ensino"
+                               FontAttributes="Bold"
+                               FontSize="14"
+                               TextColor="#555"/>
+                        <Frame BackgroundColor="#F3F4F6"
+                               BorderColor="#D1D5DB"
+                               CornerRadius="10"
+                               Padding="10">
+                            <Entry Text="{Binding EducationInstitution}"
+                                   Placeholder="Ex.: USP, Senac, ETEC"/>
+                        </Frame>
+
+                        <!-- GÊNERO -->
+                        <Label Text="Gênero"
+                               FontAttributes="Bold"
+                               FontSize="14"
+                               TextColor="#555"/>
+                        <Frame BackgroundColor="#FFFFFF"
+                               BorderColor="#D1D5DB"
+                               CornerRadius="10"
+                               Padding="10,4">
+                            <Picker
+                                SelectedItem="{Binding Gender}"
+                                Title="Selecione seu gênero"
+                                HorizontalOptions="FillAndExpand"
+                                HeightRequest="44">
+                                <Picker.Items>
+                                    <x:String>Masculino</x:String>
+                                    <x:String>Feminino</x:String>
+                                    <x:String>Não-binário</x:String>
+                                    <x:String>Outro</x:String>
+                                    <x:String>Prefiro não dizer</x:String>
+                                </Picker.Items>
+                            </Picker>
+                        </Frame>
+
+                        <!-- ORIENTAÇÃO -->
+                        <Label Text="Orientação sexual"
+                               FontAttributes="Bold"
+                               FontSize="14"
+                               TextColor="#555"/>
+                        <Frame BackgroundColor="#FFFFFF"
+                               BorderColor="#D1D5DB"
+                               CornerRadius="10"
+                               Padding="10,4">
+                            <Picker
+                                SelectedItem="{Binding SexualOrientation}"
+                                Title="Selecione sua orientação"
+                                HorizontalOptions="FillAndExpand"
+                                HeightRequest="44">
+                                <Picker.Items>
+                                    <x:String>Heterossexual</x:String>
+                                    <x:String>Homossexual</x:String>
+                                    <x:String>Bissexual</x:String>
+                                    <x:String>Assexual</x:String>
+                                    <x:String>Prefiro não dizer</x:String>
+                                </Picker.Items>
+                            </Picker>
+                        </Frame>
+
+                        <!-- O QUE BUSCA (pílulas) -->
+                        <Label Text="O que você busca?"
+                               FontAttributes="Bold"
+                               FontSize="14"
+                               TextColor="#555"/>
+
+                        <CollectionView
+                            ItemsSource="{Binding RelationshipGoals}"
+                            SelectionMode="None"
+                            ItemsLayout="VerticalGrid,2"
+                            HeightRequest="110">
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid Padding="4">
+                                        <Frame
+                                            CornerRadius="16"
+                                            HasShadow="False"
+                                            Padding="10,4"
+                                            BorderColor="#E0E2E7"
+                                            BackgroundColor="#FFFFFF">
+                                            <Frame.Triggers>
                                                 <DataTrigger
-                                                    TargetType="Label"
+                                                    TargetType="Frame"
                                                     Binding="{Binding IsSelected}"
                                                     Value="True">
-                                                    <Setter Property="TextColor" Value="White" />
+                                                    <Setter Property="BackgroundColor" Value="#5d259c" />
+                                                    <Setter Property="BorderColor" Value="#5d259c" />
                                                 </DataTrigger>
-                                            </Label.Triggers>
-                                        </Label>
+                                            </Frame.Triggers>
 
-                                        <Frame.GestureRecognizers>
-                                            <TapGestureRecognizer
-                                                Command="{Binding BindingContext.ToggleInterestCommand, Source={x:Reference RootPage}}"
-                                                CommandParameter="{Binding .}" />
-                                        </Frame.GestureRecognizers>
-                                    </Frame>
-                                </Grid>
-                            </DataTemplate>
-                        </CollectionView.ItemTemplate>
-                    </CollectionView>
+                                            <Label
+                                                Text="{Binding Name}"
+                                                FontSize="13"
+                                                HorizontalOptions="Center"
+                                                VerticalOptions="Center"
+                                                TextColor="#13141F">
+                                                <Label.Triggers>
+                                                    <DataTrigger
+                                                        TargetType="Label"
+                                                        Binding="{Binding IsSelected}"
+                                                        Value="True">
+                                                        <Setter Property="TextColor" Value="White" />
+                                                    </DataTrigger>
+                                                </Label.Triggers>
+                                            </Label>
 
-                </VerticalStackLayout>
-            </ScrollView>
+                                            <Frame.GestureRecognizers>
+                                                <TapGestureRecognizer
+                                                    Command="{Binding BindingContext.ToggleRelationshipGoalCommand, Source={x:Reference RootPage}}"
+                                                    CommandParameter="{Binding .}" />
+                                            </Frame.GestureRecognizers>
+                                        </Frame>
+                                    </Grid>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+
+                        <!-- RELIGIÃO -->
+                        <Label Text="Religião"
+                               FontAttributes="Bold"
+                               FontSize="14"
+                               TextColor="#555"/>
+                        <Frame BackgroundColor="#F3F4F6"
+                               BorderColor="#D1D5DB"
+                               CornerRadius="10"
+                               Padding="10">
+                            <Entry Text="{Binding Religion}"
+                                   Placeholder="Ex.: Católica, Evangélica, Espírita..."/>
+                        </Frame>
+
+                        <!-- CIDADE -->
+                        <Label Text="Cidade"
+                               FontAttributes="Bold"
+                               FontSize="14"
+                               TextColor="#555"/>
+                        <Frame BackgroundColor="#F3F4F6"
+                               BorderColor="#D1D5DB"
+                               CornerRadius="10"
+                               Padding="10">
+                            <Entry Text="{Binding City}"
+                                   Placeholder="Digite sua cidade"/>
+                        </Frame>
+
+                        <!-- TELEFONE -->
+                        <Label Text="Telefone"
+                               FontAttributes="Bold"
+                               FontSize="14"
+                               TextColor="#555"/>
+                        <Frame BackgroundColor="#F3F4F6"
+                               BorderColor="#D1D5DB"
+                               CornerRadius="10"
+                               Padding="10">
+                            <Entry Text="{Binding PhoneNumber}"
+                                   Keyboard="Telephone"
+                                   Placeholder="(11) 99999-9999"/>
+                        </Frame>
+
+                        <!-- (Opcional) mantém a idade visível aqui também -->
+                        <Label Text="Idade"
+                               FontAttributes="Bold"
+                               FontSize="14"
+                               TextColor="#555"/>
+                        <Frame BackgroundColor="#FFFFFF"
+                               BorderColor="#D1D5DB"
+                               CornerRadius="10"
+                               Padding="10,6">
+                            <Label Text="{Binding AgeDisplay}"
+                                   FontSize="13"
+                                   TextColor="#333"/>
+                        </Frame>
+
+                        <!-- INTERESSES (pílulas) -->
+                        <Label Text="Interesses"
+                               FontAttributes="Bold"
+                               FontSize="14"
+                               TextColor="#555" />
+
+                        <CollectionView
+                            ItemsSource="{Binding Interests}"
+                            SelectionMode="None"
+                            ItemsLayout="VerticalGrid,2"
+                            HeightRequest="170">
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid Padding="4">
+                                        <Frame
+                                            CornerRadius="16"
+                                            HasShadow="False"
+                                            Padding="10,4"
+                                            BorderColor="#E0E2E7"
+                                            BackgroundColor="#FFFFFF">
+                                            <Frame.Triggers>
+                                                <DataTrigger
+                                                    TargetType="Frame"
+                                                    Binding="{Binding IsSelected}"
+                                                    Value="True">
+                                                    <Setter Property="BackgroundColor" Value="#5d259c" />
+                                                    <Setter Property="BorderColor" Value="#5d259c" />
+                                                </DataTrigger>
+                                            </Frame.Triggers>
+
+                                            <Label
+                                                Text="{Binding Name}"
+                                                FontSize="13"
+                                                HorizontalOptions="Center"
+                                                VerticalOptions="Center"
+                                                TextColor="#13141F">
+                                                <Label.Triggers>
+                                                    <DataTrigger
+                                                        TargetType="Label"
+                                                        Binding="{Binding IsSelected}"
+                                                        Value="True">
+                                                        <Setter Property="TextColor" Value="White" />
+                                                    </DataTrigger>
+                                                </Label.Triggers>
+                                            </Label>
+
+                                            <Frame.GestureRecognizers>
+                                                <TapGestureRecognizer
+                                                    Command="{Binding BindingContext.ToggleInterestCommand, Source={x:Reference RootPage}}"
+                                                    CommandParameter="{Binding .}" />
+                                            </Frame.GestureRecognizers>
+                                        </Frame>
+                                    </Grid>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+
+                    </VerticalStackLayout>
+                </ScrollView>
+            </Grid>
+
+            <!-- RODAPÉ -->
+            <VerticalStackLayout Grid.Row="1" Spacing="8">
+
+                <Label Text="{Binding ErrorMessage}"
+                       FontSize="12"
+                       TextColor="Red"
+                       HorizontalTextAlignment="Center" />
+
+                <ActivityIndicator IsRunning="{Binding IsBusy}"
+                                   IsVisible="{Binding IsBusy}" />
+
+                <Button Text="{Binding PrimaryButtonText}"
+                        Command="{Binding NextStepCommand}"
+                        HeightRequest="48"
+                        CornerRadius="24"
+                        TextColor="White"
+                        FontAttributes="Bold">
+
+                    <Button.Background>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                            <GradientStop Color="#5d259c" Offset="0" />
+                            <GradientStop Color="#5d25c0" Offset="1" />
+                        </LinearGradientBrush>
+                    </Button.Background>
+                </Button>
+
+            </VerticalStackLayout>
+
         </Grid>
-
-        <!-- RODAPÉ -->
-        <VerticalStackLayout Grid.Row="1" Spacing="8">
-
-            <Label Text="{Binding ErrorMessage}"
-                   FontSize="12"
-                   TextColor="Red"
-                   HorizontalTextAlignment="Center" />
-
-            <ActivityIndicator IsRunning="{Binding IsBusy}"
-                               IsVisible="{Binding IsBusy}" />
-
-            <Button Text="{Binding PrimaryButtonText}"
-                    Command="{Binding NextStepCommand}"
-                    HeightRequest="48"
-                    CornerRadius="24"
-                    TextColor="White"
-                    FontAttributes="Bold">
-
-                <Button.Background>
-                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
-                        <GradientStop Color="#5d259c" Offset="0" />
-                        <GradientStop Color="#5d25c0" Offset="1" />
-                    </LinearGradientBrush>
-                </Button.Background>
-            </Button>
-
-        </VerticalStackLayout>
 
     </Grid>
 </ContentPage>

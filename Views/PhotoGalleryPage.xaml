@@ -8,12 +8,9 @@
 
     <Grid>
 
-        <!-- SCROLL PRINCIPAL -->
         <ScrollView x:Name="RootScroll">
-
             <VerticalStackLayout Spacing="12">
 
-                <!-- TOPO: BOTÃO VOLTAR -->
                 <Grid Padding="16,32,16,8"
                       ColumnDefinitions="Auto,*,Auto">
 
@@ -34,7 +31,6 @@
                            FontAttributes="Bold" />
                 </Grid>
 
-                <!-- FOTOS EMPILHADAS -->
                 <VerticalStackLayout
                     x:Name="PhotosSection"
                     BindableLayout.ItemsSource="{Binding Photos}"
@@ -46,7 +42,8 @@
                             <Frame CornerRadius="18"
                                    Padding="0"
                                    HasShadow="True"
-                                   Margin="0,0,0,8">
+                                   Margin="0,0,0,8"
+                                   IsClippedToBounds="True">
                                 <Image
                                     Source="{Binding .}"
                                     Aspect="AspectFill"
@@ -56,7 +53,6 @@
                     </BindableLayout.ItemTemplate>
                 </VerticalStackLayout>
 
-                <!-- SEÇÃO DE INFORMAÇÕES -->
                 <Grid x:Name="InfoSection"
                       Padding="16,12,16,16">
 
@@ -73,7 +69,6 @@
                         <ScrollView>
                             <StackLayout Spacing="8">
 
-                                <!-- Nome, idade -->
                                 <StackLayout Orientation="Horizontal" Spacing="4">
                                     <Label Text="{Binding User.DisplayName}"
                                            FontSize="20"
@@ -89,120 +84,56 @@
                                            TextColor="#222222" />
                                 </StackLayout>
 
-                                <!-- Cidade -->
                                 <Label Text="{Binding User.City}"
                                        FontSize="14"
                                        TextColor="#777777" />
 
-                                <!-- Bio resumida -->
                                 <Label
                                     Text="{Binding User.Bio}"
                                     FontSize="13"
                                     TextColor="#555555"
                                     LineBreakMode="WordWrap" />
 
-                                <!-- Chips Online / distância (ainda visuais) -->
                                 <StackLayout Orientation="Horizontal" Spacing="10" Margin="0,6,0,0">
-                                    <Border
-                                        BackgroundColor="#FFE7F4"
-                                        Stroke="#F3C9E2"
-                                        StrokeThickness="2">
+                                    <Border BackgroundColor="#FFE7F4" Stroke="#F3C9E2" StrokeThickness="2">
                                         <Border.StrokeShape>
                                             <RoundRectangle CornerRadius="12" />
                                         </Border.StrokeShape>
-                                        <Label Text="Online"
-                                               Margin="10,4"
-                                               TextColor="#5d259c"
-                                               FontSize="11" />
+                                        <Label Text="Online" Margin="10,4" TextColor="#5d259c" FontSize="11" />
                                     </Border>
 
-                                    <Border
-                                        BackgroundColor="#F0F0F0"
-                                        Stroke="#DDDDDD"
-                                        StrokeThickness="2">
+                                    <Border BackgroundColor="#F0F0F0" Stroke="#DDDDDD" StrokeThickness="2">
                                         <Border.StrokeShape>
                                             <RoundRectangle CornerRadius="12" />
                                         </Border.StrokeShape>
-                                        <Label Text="3 km away"
-                                               Margin="10,4"
-                                               TextColor="#555555"
-                                               FontSize="11" />
+                                        <Label Text="3 km away" Margin="10,4" TextColor="#555555" FontSize="11" />
                                     </Border>
                                 </StackLayout>
 
-                                <!-- Sobre mim -->
-                                <Label Text="Sobre mim"
-                                       FontSize="14"
-                                       FontAttributes="Bold"
-                                       TextColor="#222222"
-                                       Margin="0,12,0,0" />
-                                <Label
-                                    Text="{Binding User.Bio}"
-                                    FontSize="13"
-                                    TextColor="#555555"
-                                    LineBreakMode="WordWrap" />
+                                <Label Text="Sobre mim" FontSize="14" FontAttributes="Bold" TextColor="#222222" Margin="0,12,0,0" />
+                                <Label Text="{Binding User.Bio}" FontSize="13" TextColor="#555555" LineBreakMode="WordWrap" />
 
-                                <!-- Trabalho e estudos -->
-                                <Label Text="Trabalho e estudos"
-                                       FontSize="14"
-                                       FontAttributes="Bold"
-                                       TextColor="#222222"
-                                       Margin="0,12,0,0" />
+                                <Label Text="Trabalho e estudos" FontSize="14" FontAttributes="Bold" TextColor="#222222" Margin="0,12,0,0" />
+                                <Label Text="{Binding User.JobTitle}" FontSize="13" TextColor="#555555" LineBreakMode="TailTruncation" />
+                                <Label Text="{Binding User.EducationLevel}" FontSize="13" TextColor="#555555" LineBreakMode="TailTruncation" />
+                                <Label Text="{Binding User.EducationInstitution}" FontSize="13" TextColor="#555555" LineBreakMode="TailTruncation" />
 
-                                <Label Text="{Binding User.JobTitle}"
-                                       FontSize="13"
-                                       TextColor="#555555"
-                                       LineBreakMode="TailTruncation" />
+                                <Label Text="Identidade" FontSize="14" FontAttributes="Bold" TextColor="#222222" Margin="0,12,0,0" />
+                                <Label Text="{Binding User.Gender}" FontSize="13" TextColor="#555555" />
+                                <Label Text="{Binding User.SexualOrientation}" FontSize="13" TextColor="#555555" />
 
-                                <Label Text="{Binding User.EducationLevel}"
-                                       FontSize="13"
-                                       TextColor="#555555"
-                                       LineBreakMode="TailTruncation" />
+                                <Label Text="Interesses" FontSize="14" FontAttributes="Bold" TextColor="#222222" Margin="0,12,0,0" />
 
-                                <Label Text="{Binding User.EducationInstitution}"
-                                       FontSize="13"
-                                       TextColor="#555555"
-                                       LineBreakMode="TailTruncation" />
-
-                                <!-- Gênero e orientação -->
-                                <Label Text="Identidade"
-                                       FontSize="14"
-                                       FontAttributes="Bold"
-                                       TextColor="#222222"
-                                       Margin="0,12,0,0" />
-
-                                <Label Text="{Binding User.Gender}"
-                                       FontSize="13"
-                                       TextColor="#555555" />
-
-                                <Label Text="{Binding User.SexualOrientation}"
-                                       FontSize="13"
-                                       TextColor="#555555" />
-
-                                <!-- Interesses -->
-                                <Label Text="Interesses"
-                                       FontSize="14"
-                                       FontAttributes="Bold"
-                                       TextColor="#222222"
-                                       Margin="0,12,0,0" />
-
-                                <FlexLayout
-                                    Wrap="Wrap"
-                                    AlignItems="Center"
-                                    BindableLayout.ItemsSource="{Binding User.Interests}">
+                                <FlexLayout Wrap="Wrap" AlignItems="Center" BindableLayout.ItemsSource="{Binding User.Interests}">
                                     <BindableLayout.ItemTemplate>
                                         <DataTemplate>
-                                            <Frame
-                                                Padding="8,4"
-                                                Margin="0,4,6,4"
-                                                BackgroundColor="#FFE7F4"
-                                                BorderColor="#F3C9E2"
-                                                CornerRadius="12"
-                                                HasShadow="False">
-                                                <Label
-                                                    Text="{Binding .}"
-                                                    FontSize="11"
-                                                    TextColor="#5d259c" />
+                                            <Frame Padding="8,4"
+                                                   Margin="0,4,6,4"
+                                                   BackgroundColor="#FFE7F4"
+                                                   BorderColor="#F3C9E2"
+                                                   CornerRadius="12"
+                                                   HasShadow="False">
+                                                <Label Text="{Binding .}" FontSize="11" TextColor="#5d259c" />
                                             </Frame>
                                         </DataTemplate>
                                     </BindableLayout.ItemTemplate>
@@ -213,12 +144,10 @@
                     </Border>
                 </Grid>
 
-                <!-- Espaço extra no fim -->
                 <BoxView HeightRequest="40" />
             </VerticalStackLayout>
         </ScrollView>
 
-        <!-- BOTÃO FLUTUANTE "i" PARA IR ÀS INFOS -->
         <Frame
             x:Name="InfoFab"
             WidthRequest="40"

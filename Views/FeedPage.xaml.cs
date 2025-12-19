@@ -28,25 +28,21 @@ namespace AmoraApp.Views
                 await _vm.LoadFeedCommand.ExecuteAsync(null);
         }
 
-        // Abrir solicitações de amizade (ícone 👥)
         private async void OnRequestsTapped(object sender, EventArgs e)
         {
             await Navigation.PushAsync(new FriendRequestsPage());
         }
 
-        // Abrir lista de amigos
         private async void OnFriendsClicked(object sender, EventArgs e)
         {
             await Navigation.PushAsync(new FriendsPage());
         }
 
-        // Tap no story → abre viewer (se tiver stories)
         private async void OnStoryTapped(object sender, TappedEventArgs e)
         {
             if (e.Parameter is not StoryBubble bubble)
                 return;
 
-            // Se não tem story, não faz nada
             if (!bubble.HasStory)
                 return;
 
@@ -64,7 +60,6 @@ namespace AmoraApp.Views
             await Navigation.PushModalAsync(new StoryViewerPage(bubbles.ToList(), index));
         }
 
-        // "+" no story do próprio usuário → cria novo story (Galeria ou Câmera)
         private async void OnAddStoryTapped(object sender, TappedEventArgs e)
         {
             try
@@ -83,7 +78,6 @@ namespace AmoraApp.Views
                 if (string.IsNullOrEmpty(action) || action == "Cancelar")
                     return;
 
-                // Stream da imagem que será enviada
                 using var stream = await GetImageStreamForStoryAsync(action);
                 if (stream == null)
                     return;
@@ -95,7 +89,6 @@ namespace AmoraApp.Views
 
                 await StoryService.Instance.AddStoryAsync(uid, url);
 
-                // Recarrega feed para atualizar bolhas
                 if (_vm != null)
                     await _vm.LoadFeedCommand.ExecuteAsync(null);
             }
@@ -105,7 +98,6 @@ namespace AmoraApp.Views
             }
         }
 
-        // Helper para pegar a imagem do story (Galeria ou Câmera)
         private async System.Threading.Tasks.Task<System.IO.Stream?> GetImageStreamForStoryAsync(string action)
         {
             if (action == "Galeria")
@@ -139,7 +131,6 @@ namespace AmoraApp.Views
             return null;
         }
 
-        // Botão da câmera no "novo post" (só galeria por enquanto)
         private async void OnAddImageClicked(object sender, EventArgs e)
         {
             try
@@ -164,7 +155,6 @@ namespace AmoraApp.Views
 
                 if (!string.IsNullOrEmpty(url) && BindingContext is FeedViewModel vm)
                 {
-                    // Ao setar aqui, o preview aparece no card de novo post
                     vm.NewPostImageUrl = url;
                 }
             }
@@ -174,7 +164,6 @@ namespace AmoraApp.Views
             }
         }
 
-        // Abrir tela de comentários
         private async void OnCommentClicked(object sender, EventArgs e)
         {
             if ((sender as Button)?.CommandParameter is not Post post)
@@ -183,7 +172,7 @@ namespace AmoraApp.Views
             await Navigation.PushModalAsync(new CommentsPage(post));
         }
 
-        // ===== IMAGEM DO POST EM TELA CHEIA (overlay) =====
+        // ===== IMAGEM EM TELA CHEIA =====
 
         private void OnPostImageTapped(object sender, TappedEventArgs e)
         {
@@ -201,6 +190,115 @@ namespace AmoraApp.Views
         {
             ImageOverlay.IsVisible = false;
             FullImageView.Source = null;
+        }
+
+        // ==========================================================
+        //  MENU DE OPÇÕES DO POST (⋯) — DENUNCIAR
+        // ==========================================================
+        private async void OnPostOptionsClicked(object sender, EventArgs e)
+        {
+            try
+            {
+                if ((sender as Button)?.CommandParameter is not Post post)
+                    return;
+
+                var me = FirebaseAuthService.Instance.CurrentUserUid;
+                if (string.IsNullOrWhiteSpace(me))
+                {
+                    await DisplayAlert("Erro", "Usuário não logado.", "OK");
+                    return;
+                }
+
+                if (!string.IsNullOrWhiteSpace(post.UserId) && post.UserId == me)
+                {
+                    await DisplayAlert("Aviso", "Você não pode denunciar seu próprio conteúdo.", "OK");
+                    return;
+                }
+
+                var action = await DisplayActionSheet(
+                    "Opções",
+                    "Cancelar",
+                    null,
+                    "Denunciar publicação",
+                    "Denunciar perfil");
+
+                if (string.IsNullOrWhiteSpace(action) || action == "Cancelar")
+                    return;
+
+                var reason = await AskReportReasonAsync();
+                if (string.IsNullOrWhiteSpace(reason))
+                    return;
+
+                var extra = await DisplayPromptAsync(
+                    "Detalhes (opcional)",
+                    "Se quiser, descreva rapidamente o motivo:",
+                    "Enviar",
+                    "Pular",
+                    maxLength: 180,
+                    keyboard: Keyboard.Text);
+
+                var report = new ReportItem
+                {
+                    ReporterUserId = me,
+                    TargetUserId = post.UserId ?? string.Empty,
+                    TargetUserName = post.UserName ?? string.Empty,
+                    CreatedAtUtcMs = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
+                    AppArea = "feed",
+                    Reason = reason,
+                    ExtraDetails = extra ?? string.Empty
+                };
+
+                if (action == "Denunciar publicação")
+                {
+                    report.Type = "post";
+                    report.PostId = post.Id ?? string.Empty;
+
+                    var preview = (post.Text ?? string.Empty).Trim();
+                    if (preview.Length > 140)
+                        preview = preview.Substring(0, 140);
+
+                    report.PostTextPreview = preview;
+                    report.PostImageUrl = post.ImageUrl ?? string.Empty;
+                }
+                else
+                {
+                    report.Type = "profile";
+                }
+
+                var reportId = await FirebaseDatabaseService.Instance.CreateReportAsync(report);
+
+                if (string.IsNullOrWhiteSpace(reportId))
+                {
+                    await DisplayAlert("Aviso", "Sua denúncia não gerou ID no servidor. Verifique regras do Firebase.", "OK");
+                    return;
+                }
+
+                await DisplayAlert("Denúncia enviada", "Obrigado. Vamos analisar o conteúdo.", "OK");
+            }
+            catch (Exception ex)
+            {
+                await DisplayAlert("Erro", "Não foi possível enviar a denúncia:\n" + ex.Message, "OK");
+            }
+        }
+
+        private async System.Threading.Tasks.Task<string?> AskReportReasonAsync()
+        {
+            var reason = await DisplayActionSheet(
+                "Qual o motivo?",
+                "Cancelar",
+                null,
+                "Spam",
+                "Nudez / conteúdo sexual",
+                "Ódio / discurso de ódio",
+                "Violência",
+                "Assédio",
+                "Golpe / fraude",
+                "Outros");
+
+            if (string.IsNullOrWhiteSpace(reason) || reason == "Cancelar")
+                return null;
+
+            return reason;
         }
     }
 }

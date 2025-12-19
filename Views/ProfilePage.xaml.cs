@@ -1,5 +1,4 @@
 ﻿using System;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using AmoraApp.Services;
@@ -145,10 +144,13 @@ namespace AmoraApp.Views
 
             if (!hasPhoto)
             {
+                // ===== NOVO: limite por plano =====
                 var currentPhotos = _vm.ExtraPhotoSlots.Count(s => !string.IsNullOrWhiteSpace(s.ImageUrl));
-                if (currentPhotos >= 30)
+                var limit = _vm.PhotoLimit;
+
+                if (currentPhotos >= limit)
                 {
-                    await DisplayAlert("Limite atingido", "Você já adicionou o máximo de 30 fotos.", "OK");
+                    await DisplayAlert("Limite atingido", $"Seu plano permite até {limit} fotos.", "OK");
                     return;
                 }
 
@@ -200,10 +202,7 @@ namespace AmoraApp.Views
                 else if (action == "Ver")
                 {
                     if (!string.IsNullOrWhiteSpace(slot.ImageUrl))
-                    {
-                        // Abre overlay dentro do app
                         await Navigation.PushModalAsync(new PhotoPreviewPage(slot.ImageUrl));
-                    }
                 }
                 else if (action == "Substituir pela galeria")
                 {
@@ -246,7 +245,6 @@ namespace AmoraApp.Views
                 _vm.CurrentUserId = uid;
             }
 
-            // Descobre o plano atual do usuário
             var planService = PlanService.Instance;
             var planType = planService.ParsePlanFromString(_vm.Plan ?? "Free");
 
@@ -254,13 +252,11 @@ namespace AmoraApp.Views
 
             if (!hasVideo)
             {
-                // Só Premium pode adicionar vídeos
                 if (planType != PlanType.Premium)
                 {
                     await DisplayAlert(
                         "Recurso Premium",
-                        "Adicionar vídeos ao perfil é exclusivo do plano Premium.\n" +
-                        "Assine o plano Premium para liberar vídeos no seu perfil.",
+                        "Adicionar vídeos ao perfil é exclusivo do plano Premium.\nAssine o Premium para liberar.",
                         "OK");
                     return;
                 }
@@ -317,13 +313,11 @@ namespace AmoraApp.Views
                 }
                 else if (action == "Substituir (galeria)")
                 {
-                    // Substituir também é operação Premium
                     if (planType != PlanType.Premium)
                     {
                         await DisplayAlert(
                             "Recurso Premium",
-                            "Substituir vídeos do perfil é exclusivo do plano Premium.\n" +
-                            "Assine o plano Premium para alterar seus vídeos.",
+                            "Substituir vídeos do perfil é exclusivo do plano Premium.",
                             "OK");
                         return;
                     }
@@ -364,8 +358,7 @@ namespace AmoraApp.Views
                     return null;
 
                 using var stream = await result.OpenReadAsync();
-                var url = await FirebaseStorageService.Instance.UploadImageAsync(stream, fileName);
-                return url;
+                return await FirebaseStorageService.Instance.UploadFileAsync(stream, fileName, "image/jpeg");
             }
             catch (Exception ex)
             {
@@ -389,8 +382,7 @@ namespace AmoraApp.Views
                     return null;
 
                 using var stream = await photo.OpenReadAsync();
-                var url = await FirebaseStorageService.Instance.UploadImageAsync(stream, fileName);
-                return url;
+                return await FirebaseStorageService.Instance.UploadFileAsync(stream, fileName, "image/jpeg");
             }
             catch (Exception ex)
             {
@@ -405,8 +397,7 @@ namespace AmoraApp.Views
             {
                 var result = await FilePicker.PickAsync(new PickOptions
                 {
-                    PickerTitle = "Escolha um vídeo (até 15s)"
-                    ,
+                    PickerTitle = "Escolha um vídeo (até 15s)",
                     FileTypes = FilePickerFileType.Videos
                 });
 
@@ -414,8 +405,9 @@ namespace AmoraApp.Views
                     return null;
 
                 using var stream = await result.OpenReadAsync();
-                var url = await FirebaseStorageService.Instance.UploadImageAsync(stream, fileName);
-                return url;
+
+                // ===== IMPORTANTE: vídeo não é image/jpeg =====
+                return await FirebaseStorageService.Instance.UploadFileAsync(stream, fileName, "video/mp4");
             }
             catch (Exception ex)
             {

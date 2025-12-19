@@ -323,5 +323,72 @@ namespace AmoraApp.Services
 
             await _httpClient.PutAsync(url, content);
         }
+
+
+        private string WithAuth(string url, string? token)
+        {
+            if (string.IsNullOrWhiteSpace(token))
+                return url;
+
+            var sep = url.Contains("?") ? "&" : "?";
+            return url + $"{sep}auth={Uri.EscapeDataString(token)}";
+        }
+
+        private async Task EnsureSuccessAsync(HttpResponseMessage response)
+        {
+            if (response.IsSuccessStatusCode)
+                return;
+
+            var body = await response.Content.ReadAsStringAsync();
+            throw new Exception($"Firebase RTDB error: HTTP {(int)response.StatusCode} - {response.ReasonPhrase}\n{body}");
+        }
+
+        private class FirebasePushResult
+        {
+            public string Name { get; set; } = string.Empty;
+        }
+
+        // ============================================================
+        // REPORTS (DENÚNCIAS)
+        // /reports/{reportId}
+        // ============================================================
+
+        public async Task<string> CreateReportAsync(ReportItem report)
+        {
+            if (report == null)
+                throw new ArgumentNullException(nameof(report));
+
+            // token (se as regras do RTDB exigirem auth)
+            var token = await FirebaseAuthService.Instance.GetIdTokenAsync();
+
+            // 1) Push (gera a key)
+            var url = WithAuth($"{BaseUrl}/reports.json", token);
+            var json = JsonSerializer.Serialize(report, _jsonOptions);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            var response = await _httpClient.PostAsync(url, content);
+            await EnsureSuccessAsync(response);
+
+            var resultJson = await response.Content.ReadAsStringAsync();
+            var result = JsonSerializer.Deserialize<FirebasePushResult>(resultJson, _jsonOptions);
+
+            var id = result?.Name ?? string.Empty;
+
+            // 2) PUT com o Id dentro do objeto (fica consistente e facilita o admin depois)
+            if (!string.IsNullOrWhiteSpace(id))
+            {
+                report.Id = id;
+
+                var putUrl = WithAuth($"{BaseUrl}/reports/{id}.json", token);
+                var putJson = JsonSerializer.Serialize(report, _jsonOptions);
+                var putContent = new StringContent(putJson, Encoding.UTF8, "application/json");
+
+                var putResp = await _httpClient.PutAsync(putUrl, putContent);
+                await EnsureSuccessAsync(putResp);
+            }
+
+            return id;
+        }
+
     }
 }
