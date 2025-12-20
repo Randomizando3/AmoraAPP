@@ -1,5 +1,6 @@
-﻿using Android.App;
+using Android.App;
 using Android.Runtime;
+using Plugin.FirebasePushNotification;
 
 namespace AmoraApp
 {
@@ -12,5 +13,15 @@ namespace AmoraApp
         }
 
         protected override MauiApp CreateMauiApp() => MauiProgram.CreateMauiApp();
+
+        public override void OnCreate()
+        {
+            base.OnCreate();
+
+            FirebasePushNotificationManager.DefaultNotificationChannelId = "general";
+            FirebasePushNotificationManager.DefaultNotificationChannelName = "General";
+
+            FirebasePushNotificationManager.Initialize(this, true);
+        }
     }
 }
