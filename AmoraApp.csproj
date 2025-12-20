@@ -176,15 +176,16 @@
 	  <None Remove="002 - APP DE NAMORO.lnk" />
 	</ItemGroup>
 
-	<ItemGroup>
-		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
-		<PackageReference Include="CountryStateCityLibrary" Version="1.2.7" />
-		<PackageReference Include="FirebaseAuthentication.net" Version="4.1.0" />
-		<PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
-		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="9.0.8" />
-		<PackageReference Include="Plugin.Maui.Audio" Version="4.0.0" />
-		<PackageReference Include="System.Runtime.InteropServices" Version="4.3.0" />
-	</ItemGroup>
+        <ItemGroup>
+                <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+                <PackageReference Include="CountryStateCityLibrary" Version="1.2.7" />
+                <PackageReference Include="FirebaseAuthentication.net" Version="4.1.0" />
+                <PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
+                <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="9.0.8" />
+                <PackageReference Include="Plugin.FirebasePushNotification" Version="3.4.35" />
+                <PackageReference Include="Plugin.Maui.Audio" Version="4.0.0" />
+                <PackageReference Include="System.Runtime.InteropServices" Version="4.3.0" />
+        </ItemGroup>
 
 	<ItemGroup>
 	  <MauiXaml Update="Views\Admin\AdminHomePage.xaml">
