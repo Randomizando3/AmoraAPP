@@ -193,6 +193,11 @@
                 <PackageReference Include="Xamarin.GooglePlayServices.Tasks" Version="118.0.2" />
         </ItemGroup>
 
+        <!-- Habilita depuração explícita no Android em builds Debug, adicionando um fragmento de manifest com android:debuggable="true". -->
+        <ItemGroup Condition="'$(Configuration)' == 'Debug' AND $(TargetFramework.Contains('android'))">
+                <AndroidManifest Include="Platforms/Android/AndroidManifest.Debug.xml" />
+        </ItemGroup>
+
 	<ItemGroup>
 	  <MauiXaml Update="Views\Admin\AdminHomePage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
