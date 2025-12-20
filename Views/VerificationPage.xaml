@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="AmoraApp.Views.VerificationPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    BackgroundColor="#F5F6F8"
+    Shell.NavBarIsVisible="False">
+
+    <Grid RowDefinitions="Auto,*" Padding="20,30,20,20">
+
+        <!-- Header -->
+        <Grid RowDefinitions="Auto" ColumnDefinitions="Auto,*,Auto" Margin="0,0,0,12">
+            <Image Source="icon_back.png" HeightRequest="24" WidthRequest="24">
+                <Image.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnBackTapped" />
+                </Image.GestureRecognizers>
+            </Image>
+
+            <Label Grid.Column="1"
+                   Text="Verificação"
+                   HorizontalOptions="Center"
+                   VerticalOptions="Center"
+                   FontSize="20"
+                   FontAttributes="Bold"
+                   TextColor="#111827" />
+
+            <Label Grid.Column="2" Text="" />
+        </Grid>
+
+        <ScrollView Grid.Row="1">
+            <VerticalStackLayout Spacing="14">
+
+                <Frame HasShadow="False" CornerRadius="14" Padding="14" BackgroundColor="White" BorderColor="#E5E7EB">
+                    <VerticalStackLayout Spacing="8">
+                        <Label Text="Envie uma selfie segurando um documento"
+                               FontAttributes="Bold"
+                               FontSize="14"
+                               TextColor="#111827" />
+                        <Label Text="Isso ajuda a confirmar que a conta é real. Seus dados ficam em análise no painel do admin."
+                               FontSize="12"
+                               TextColor="#6B7280" />
+                    </VerticalStackLayout>
+                </Frame>
+
+                <!-- Selfie -->
+                <Frame HasShadow="False" CornerRadius="14" Padding="14" BackgroundColor="White" BorderColor="#E5E7EB">
+                    <VerticalStackLayout Spacing="10">
+                        <Label Text="1) Selfie" FontAttributes="Bold" FontSize="14" TextColor="#111827" />
+
+                        <Grid HeightRequest="180">
+                            <Image x:Name="SelfiePreview" Aspect="AspectFill" IsVisible="False" />
+                            <Label x:Name="SelfiePlaceholder" Text="Nenhuma selfie selecionada"
+                                   HorizontalOptions="Center" VerticalOptions="Center"
+                                   TextColor="#6B7280" />
+                        </Grid>
+
+                        <Button Text="Selecionar selfie"
+                                CornerRadius="22"
+                                HeightRequest="44"
+                                BackgroundColor="#5d259c"
+                                TextColor="White"
+                                Clicked="OnPickSelfieClicked" />
+                    </VerticalStackLayout>
+                </Frame>
+
+                <!-- Documento -->
+                <Frame HasShadow="False" CornerRadius="14" Padding="14" BackgroundColor="White" BorderColor="#E5E7EB">
+                    <VerticalStackLayout Spacing="10">
+                        <Label Text="2) Documento" FontAttributes="Bold" FontSize="14" TextColor="#111827" />
+
+                        <Grid HeightRequest="180">
+                            <Image x:Name="DocPreview" Aspect="AspectFill" IsVisible="False" />
+                            <Label x:Name="DocPlaceholder" Text="Nenhuma foto do documento selecionada"
+                                   HorizontalOptions="Center" VerticalOptions="Center"
+                                   TextColor="#6B7280" />
+                        </Grid>
+
+                        <Button Text="Selecionar documento"
+                                CornerRadius="22"
+                                HeightRequest="44"
+                                BackgroundColor="#5d259c"
+                                TextColor="White"
+                                Clicked="OnPickDocClicked" />
+                    </VerticalStackLayout>
+                </Frame>
+
+                <Button x:Name="SubmitBtn"
+                        Text="Enviar para verificação"
+                        CornerRadius="24"
+                        HeightRequest="48"
+                        BackgroundColor="#111827"
+                        TextColor="White"
+                        FontAttributes="Bold"
+                        Clicked="OnSubmitClicked" />
+
+                <Label x:Name="StatusLabel"
+                       Text=""
+                       FontSize="12"
+                       TextColor="#6B7280"
+                       HorizontalOptions="Center" />
+
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
+</ContentPage>

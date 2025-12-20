@@ -212,9 +212,7 @@ namespace AmoraApp.ViewModels
             return calcAge;
         }
 
-        // =========================================================
-        // LOGIN EMAIL/SENHA
-        // =========================================================
+
         [RelayCommand]
         private async Task LoginAsync()
         {
@@ -235,6 +233,15 @@ namespace AmoraApp.ViewModels
 
                 Preferences.Set("auth_uid", uid);
 
+                // ===== BLOQUEIO POR SUSPENSÃO (7 dias ou até a data definida) =====
+                var blocked = await BlockIfSuspendedAsync(uid);
+                if (blocked)
+                {
+                    // opcional: limpa o uid local para evitar “sessão fantasma”
+                    Preferences.Remove("auth_uid");
+                    return;
+                }
+
                 await PresenceService.Instance.SetOnlineAsync(uid);
 
                 Application.Current.MainPage = new AppShell();
@@ -252,6 +259,9 @@ namespace AmoraApp.ViewModels
                 IsBusy = false;
             }
         }
+
+
+
 
         // =========================================================
         // FLUXO DE REGISTRO EM ETAPAS
@@ -676,10 +686,19 @@ namespace AmoraApp.ViewModels
                 var existingProfile = await _dbService.GetUserProfileAsync(uid);
                 if (existingProfile != null)
                 {
+                    // ===== BLOQUEIO POR SUSPENSÃO =====
+                    var blocked = await BlockIfSuspendedAsync(uid);
+                    if (blocked)
+                    {
+                        Preferences.Remove("auth_uid");
+                        return;
+                    }
+
                     await PresenceService.Instance.SetOnlineAsync(uid);
                     Application.Current.MainPage = new AppShell();
                     return;
                 }
+
 
                 _isSocialSignUp = true;
 
@@ -720,5 +739,49 @@ namespace AmoraApp.ViewModels
                 "Login com Apple será configurado em uma próxima etapa.",
                 "OK");
         }
+
+        private static string FormatSuspendedUntil(long untilUtcMs)
+        {
+            if (untilUtcMs <= 0) return "indefinido";
+            try
+            {
+                var dt = DateTimeOffset.FromUnixTimeMilliseconds(untilUtcMs).ToLocalTime();
+                return dt.ToString("dd/MM/yyyy HH:mm");
+            }
+            catch
+            {
+                return "indefinido";
+            }
+        }
+
+        /// <summary>
+        /// Verifica suspensão e auto-reativa se expirou.
+        /// Retorna true se o login deve ser BLOQUEADO.
+        /// </summary>
+        private async Task<bool> BlockIfSuspendedAsync(string uid)
+        {
+            try
+            {
+                var (isSuspended, untilMs) = await _dbService.CheckAndAutoUnsuspendIfExpiredAsync(uid);
+
+                if (!isSuspended)
+                    return false;
+
+                // ainda suspenso (não expirou)
+                var untilTxt = FormatSuspendedUntil(untilMs);
+                ErrorMessage = $"Sua conta está suspensa até {untilTxt}.";
+                return true;
+            }
+            catch (Exception ex)
+            {
+                // Se falhar a checagem por regra/rede, você pode escolher:
+                // - liberar login (mais permissivo) OU
+                // - bloquear login (mais seguro).
+                // Aqui vou bloquear com mensagem clara.
+                ErrorMessage = "Não foi possível validar o status da conta. Tente novamente. " + ex.Message;
+                return true;
+            }
+        }
+
     }
 }

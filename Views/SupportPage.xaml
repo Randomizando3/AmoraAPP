@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="AmoraApp.Views.SupportPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    BackgroundColor="#F5F6F8"
+    Shell.NavBarIsVisible="False">
+
+    <Grid RowDefinitions="Auto,*" Padding="20,30,20,20">
+        <Grid ColumnDefinitions="Auto,*,Auto" Margin="0,0,0,12">
+            <Image Source="icon_back.png" HeightRequest="24" WidthRequest="24">
+                <Image.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnBackTapped" />
+                </Image.GestureRecognizers>
+            </Image>
+
+            <Label Grid.Column="1"
+                   Text="SAC"
+                   HorizontalOptions="Center"
+                   VerticalOptions="Center"
+                   FontSize="20"
+                   FontAttributes="Bold"
+                   TextColor="#111827" />
+
+            <Label Grid.Column="2" Text="" />
+        </Grid>
+
+        <ScrollView Grid.Row="1">
+            <VerticalStackLayout Spacing="12">
+
+                <Frame HasShadow="False" CornerRadius="14" Padding="14" BackgroundColor="White" BorderColor="#E5E7EB">
+                    <VerticalStackLayout Spacing="6">
+                        <Label Text="Envie sua mensagem para o suporte"
+                               FontAttributes="Bold"
+                               FontSize="14"
+                               TextColor="#111827" />
+                        <Label Text="Informe seus dados para retorno. A mensagem aparecerá no painel do admin."
+                               FontSize="12"
+                               TextColor="#6B7280" />
+                    </VerticalStackLayout>
+                </Frame>
+
+                <Frame HasShadow="False" CornerRadius="12" Padding="10,6" BackgroundColor="#E5E7EB" BorderColor="#D1D5DB">
+                    <Entry x:Name="NameEntry" Placeholder="Seu nome" BackgroundColor="Transparent" TextColor="#111827" />
+                </Frame>
+
+                <Frame HasShadow="False" CornerRadius="12" Padding="10,6" BackgroundColor="#E5E7EB" BorderColor="#D1D5DB">
+                    <Entry x:Name="EmailEntry" Placeholder="Seu e-mail" Keyboard="Email" BackgroundColor="Transparent" TextColor="#111827" />
+                </Frame>
+
+                <Frame HasShadow="False" CornerRadius="12" Padding="10,6" BackgroundColor="#E5E7EB" BorderColor="#D1D5DB">
+                    <Entry x:Name="PhoneEntry" Placeholder="Telefone" Keyboard="Telephone" BackgroundColor="Transparent" TextColor="#111827" />
+                </Frame>
+
+                <Frame HasShadow="False" CornerRadius="12" Padding="10,8" BackgroundColor="#E5E7EB" BorderColor="#D1D5DB" HeightRequest="130">
+                    <Editor x:Name="MessageEditor"
+                            Placeholder="Descreva sua dúvida ou problema"
+                            BackgroundColor="Transparent"
+                            TextColor="#111827"
+                            AutoSize="Disabled" />
+                </Frame>
+
+                <Button x:Name="SendBtn"
+                        Text="Enviar"
+                        CornerRadius="24"
+                        HeightRequest="48"
+                        BackgroundColor="#5d259c"
+                        TextColor="White"
+                        FontAttributes="Bold"
+                        Clicked="OnSendClicked" />
+
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
+</ContentPage>

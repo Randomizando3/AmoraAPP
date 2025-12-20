@@ -80,6 +80,26 @@ namespace AmoraApp.Views
             }
         }
 
+        // ===== NOVO: handler do botão Admin =====
+        private async void OnAdminClicked(object sender, EventArgs e)
+        {
+            // Proteção adicional (o botão já some pelo IsVisible, mas isso garante)
+            if (!_vm.IsAdmin)
+            {
+                await DisplayAlert("Acesso negado", "Você não tem permissão para acessar o Admin.", "OK");
+                return;
+            }
+
+            // Opção A: abrir um "AdminHomePage" (recomendado se você tiver um hub)
+            await Shell.Current.GoToAsync(nameof(AmoraApp.Views.Admin.AdminHomePage));
+
+            // Opção B: abrir direto o AdminPostsPage (se já existir rota registrada)
+            //await Shell.Current.GoToAsync(nameof(AmoraApp.Views.Admin.AdminPostsPage));
+
+            // Se você não usa rotas por nome, alternativa:
+            // await Navigation.PushAsync(new AmoraApp.Views.Admin.AdminPostsPage());
+        }
+
         private async void OnChangePhotoClicked(object sender, EventArgs e)
         {
             if (string.IsNullOrEmpty(_vm.CurrentUserId))
@@ -144,7 +164,7 @@ namespace AmoraApp.Views
 
             if (!hasPhoto)
             {
-                // ===== NOVO: limite por plano =====
+                // limite por plano
                 var currentPhotos = _vm.ExtraPhotoSlots.Count(s => !string.IsNullOrWhiteSpace(s.ImageUrl));
                 var limit = _vm.PhotoLimit;
 
@@ -405,8 +425,6 @@ namespace AmoraApp.Views
                     return null;
 
                 using var stream = await result.OpenReadAsync();
-
-                // ===== IMPORTANTE: vídeo não é image/jpeg =====
                 return await FirebaseStorageService.Instance.UploadFileAsync(stream, fileName, "video/mp4");
             }
             catch (Exception ex)
@@ -431,6 +449,11 @@ namespace AmoraApp.Views
 
             Application.Current.MainPage =
                 new NavigationPage(new LoginPage(new AuthViewModel()));
+        }
+
+        private async void OnVerifyClicked(object sender, EventArgs e)
+        {
+            await Shell.Current.GoToAsync(nameof(VerificationPage));
         }
     }
 }

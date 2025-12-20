@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="AmoraApp.Views.Admin.AdminReportsPage"
+    x:Name="Root"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    BackgroundColor="#F5F6F8"
+    Shell.NavBarIsVisible="False">
+
+    <Grid RowDefinitions="Auto,Auto,*" Padding="20,30,20,20">
+
+        <!-- HEADER -->
+        <Grid ColumnDefinitions="Auto,*,Auto" Margin="0,0,0,10">
+            <Image Source="icon_back.png" HeightRequest="24" WidthRequest="24">
+                <Image.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnBackTapped"/>
+                </Image.GestureRecognizers>
+            </Image>
+
+            <Label Grid.Column="1"
+                   Text="Admin • Denúncias"
+                   HorizontalOptions="Center"
+                   VerticalOptions="Center"
+                   FontSize="18"
+                   FontAttributes="Bold"
+                   TextColor="#111827"/>
+
+            <Image Grid.Column="2" Source="refresh.png" HeightRequest="22" WidthRequest="22">
+                <Image.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnRefreshTapped"/>
+                </Image.GestureRecognizers>
+            </Image>
+        </Grid>
+
+        <Label Grid.Row="1"
+               Text="{Binding StatusText}"
+               FontSize="12"
+               TextColor="#6B7280"
+               Margin="0,0,0,8"/>
+
+        <CollectionView Grid.Row="2"
+                        ItemsSource="{Binding Items}"
+                        SelectionMode="None">
+
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <SwipeView>
+                        <SwipeView.RightItems>
+                            <SwipeItems Mode="Reveal">
+
+                                <SwipeItem Text="Detalhes"
+                                           BackgroundColor="#111827"
+                                           Command="{Binding BindingContext.DetailsCommand, Source={x:Reference Root}}"
+                                           CommandParameter="{Binding .}" />
+
+                                <SwipeItem Text="Ignorar"
+                                           BackgroundColor="#6B7280"
+                                           Command="{Binding BindingContext.IgnoreCommand, Source={x:Reference Root}}"
+                                           CommandParameter="{Binding .}" />
+
+                                <SwipeItem Text="Excluir Post"
+                                           BackgroundColor="#F59E0B"
+                                           Command="{Binding BindingContext.DeletePostCommand, Source={x:Reference Root}}"
+                                           CommandParameter="{Binding .}" />
+
+                                <SwipeItem Text="Suspender 7 dias"
+                                           BackgroundColor="#8B5CF6"
+                                           Command="{Binding BindingContext.Suspend7DaysCommand, Source={x:Reference Root}}"
+                                           CommandParameter="{Binding .}" />
+
+                                <SwipeItem Text="Deletar Usuário"
+                                           BackgroundColor="#EF4444"
+                                           Command="{Binding BindingContext.DeleteUserCommand, Source={x:Reference Root}}"
+                                           CommandParameter="{Binding .}" />
+
+                            </SwipeItems>
+                        </SwipeView.RightItems>
+
+                        <Frame BackgroundColor="White"
+                               BorderColor="#E5E7EB"
+                               CornerRadius="14"
+                               HasShadow="False"
+                               Padding="12"
+                               Margin="0,0,0,10">
+
+                            <Grid RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="*,Auto" RowSpacing="6">
+
+                                <Label Text="{Binding TargetUserName}"
+                                       FontAttributes="Bold"
+                                       TextColor="#111827"
+                                       FontSize="14" />
+
+                                <Label Grid.Column="1"
+                                       Text="{Binding Status}"
+                                       FontSize="12"
+                                       TextColor="#6B7280"
+                                       VerticalOptions="Center" />
+
+                                <Label Grid.Row="1"
+                                       Grid.ColumnSpan="2"
+                                       Text="{Binding Reason}"
+                                       FontSize="13"
+                                       TextColor="#111827"
+                                       LineBreakMode="TailTruncation" />
+
+                                <Label Grid.Row="2"
+                                       Grid.ColumnSpan="2"
+                                       Text="{Binding Type}"
+                                       FontSize="12"
+                                       TextColor="#6B7280" />
+
+                            </Grid>
+                        </Frame>
+                    </SwipeView>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+
+        </CollectionView>
+    </Grid>
+</ContentPage>

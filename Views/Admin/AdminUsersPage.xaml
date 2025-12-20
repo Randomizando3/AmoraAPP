@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="AmoraApp.Views.Admin.AdminUsersPage"
+    x:Name="Root"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    BackgroundColor="#F5F6F8"
+    Shell.NavBarIsVisible="False">
+
+    <Grid RowDefinitions="Auto,Auto,Auto,*" Padding="20,30,20,20">
+
+        <Grid ColumnDefinitions="Auto,*,Auto" Margin="0,0,0,10">
+            <Image Source="icon_back.png" HeightRequest="24" WidthRequest="24">
+                <Image.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnBackTapped"/>
+                </Image.GestureRecognizers>
+            </Image>
+
+            <Label Grid.Column="1" Text="Admin • Usuários"
+                   HorizontalOptions="Center"
+                   VerticalOptions="Center"
+                   FontSize="18"
+                   FontAttributes="Bold"
+                   TextColor="#111827"/>
+
+            <Image Grid.Column="2" Source="refresh.png" HeightRequest="22" WidthRequest="22">
+                <Image.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnRefreshTapped"/>
+                </Image.GestureRecognizers>
+            </Image>
+        </Grid>
+
+        <Frame Grid.Row="1" BackgroundColor="White" BorderColor="#E5E7EB" CornerRadius="14" HasShadow="False" Padding="10" Margin="0,0,0,10">
+            <Entry Placeholder="Buscar por nome/uid (enter)" Text="{Binding SearchText}" Completed="OnSearchCompleted" />
+        </Frame>
+
+        <Label Grid.Row="2" Text="{Binding StatusText}" FontSize="12" TextColor="#6B7280" Margin="0,0,0,8"/>
+
+        <CollectionView Grid.Row="3" ItemsSource="{Binding Items}" SelectionMode="None">
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <SwipeView>
+                        <SwipeView.RightItems>
+                            <SwipeItems Mode="Reveal">
+                                <SwipeItem Text="Plano" BackgroundColor="#5d259c"
+                                           Command="{Binding BindingContext.PlanCommand, Source={x:Reference Root}}"
+                                           CommandParameter="{Binding .}"/>
+                                <SwipeItem Text="Boost Tokens" BackgroundColor="#111827"
+                                           Command="{Binding BindingContext.TokensCommand, Source={x:Reference Root}}"
+                                           CommandParameter="{Binding .}"/>
+                                <SwipeItem Text="Verificação" BackgroundColor="#0EA5E9"
+                                           Command="{Binding BindingContext.VerifyCommand, Source={x:Reference Root}}"
+                                           CommandParameter="{Binding .}"/>
+                                <SwipeItem Text="Deletar Perfil" BackgroundColor="#EF4444"
+                                           Command="{Binding BindingContext.DeleteCommand, Source={x:Reference Root}}"
+                                           CommandParameter="{Binding .}"/>
+                            </SwipeItems>
+                        </SwipeView.RightItems>
+
+                        <Frame BackgroundColor="White" BorderColor="#E5E7EB" CornerRadius="14" HasShadow="False" Padding="12" Margin="0,0,0,10">
+                            <VerticalStackLayout Spacing="6">
+                                <Grid ColumnDefinitions="Auto,*,Auto">
+                                    <Image Source="{Binding PhotoUrl}" HeightRequest="38" WidthRequest="38" Aspect="AspectFill"/>
+                                    <VerticalStackLayout Grid.Column="1" Spacing="0" Margin="10,0">
+                                        <Label Text="{Binding DisplayName}" FontAttributes="Bold" TextColor="#111827"/>
+                                        <Label Text="{Binding Id}" FontSize="11" TextColor="#6B7280" LineBreakMode="TailTruncation"/>
+                                    </VerticalStackLayout>
+                                    <Label Grid.Column="2" Text="{Binding Plan}" FontSize="12" TextColor="#6B7280"/>
+                                </Grid>
+
+                                <Grid ColumnDefinitions="*,Auto" Margin="0,2,0,0">
+                                    <Label Text="{Binding VerificationStatus}" FontSize="12" TextColor="#6B7280"/>
+                                    <Label Grid.Column="1" Text="{Binding IsVerified}" FontSize="12" TextColor="#6B7280"/>
+                                </Grid>
+                            </VerticalStackLayout>
+                        </Frame>
+                    </SwipeView>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+    </Grid>
+</ContentPage>

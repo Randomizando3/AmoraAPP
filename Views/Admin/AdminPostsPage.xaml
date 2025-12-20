@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="AmoraApp.Views.Admin.AdminPostsPage"
+    x:Name="Root"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    BackgroundColor="#F5F6F8"
+    Shell.NavBarIsVisible="False">
+
+    <Grid RowDefinitions="Auto,Auto,*" Padding="20,30,20,20">
+
+        <!-- Header -->
+        <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto" Margin="0,0,0,10">
+            <Image Source="icon_back.png" HeightRequest="24" WidthRequest="24">
+                <Image.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnBackTapped"/>
+                </Image.GestureRecognizers>
+            </Image>
+
+            <Label Grid.Column="1"
+                   Text="Admin • Posts"
+                   HorizontalOptions="Center"
+                   VerticalOptions="Center"
+                   FontSize="18"
+                   FontAttributes="Bold"
+                   TextColor="#111827"/>
+
+            <Image Grid.Column="2" Source="refresh.png" HeightRequest="22" WidthRequest="22">
+                <Image.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnRefreshTapped"/>
+                </Image.GestureRecognizers>
+            </Image>
+        </Grid>
+
+        <Label Grid.Row="1"
+               Text="{Binding StatusText}"
+               FontSize="12"
+               TextColor="#6B7280"
+               Margin="0,0,0,8"/>
+
+        <CollectionView Grid.Row="2"
+                        ItemsSource="{Binding Items}"
+                        SelectionMode="None">
+
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <SwipeView>
+                        <SwipeView.RightItems>
+                            <SwipeItems Mode="Reveal">
+                                <SwipeItem Text="Deletar"
+                                           BackgroundColor="#EF4444"
+                                           Command="{Binding BindingContext.DeleteCommand, Source={x:Reference Root}}"
+                                           CommandParameter="{Binding .}"/>
+                            </SwipeItems>
+                        </SwipeView.RightItems>
+
+                        <Frame BackgroundColor="White"
+                               BorderColor="#E5E7EB"
+                               CornerRadius="14"
+                               HasShadow="False"
+                               Padding="12"
+                               Margin="0,0,0,10">
+
+                            <VerticalStackLayout Spacing="6">
+
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <Label Text="{Binding UserName}"
+                                           FontAttributes="Bold"
+                                           TextColor="#111827"/>
+                                    <Label Grid.Column="1"
+                                           Text="{Binding Likes}"
+                                           FontSize="12"
+                                           TextColor="#6B7280"/>
+                                </Grid>
+
+                                <Label Text="{Binding Text}"
+                                       FontSize="13"
+                                       TextColor="#111827"
+                                       LineBreakMode="TailTruncation" />
+
+                                <!-- Imagem do post (mostra só se tiver URL) -->
+                                <Image Source="{Binding ImageUrl}"
+                                       Aspect="AspectFill"
+                                       HeightRequest="140">
+
+                                    <Image.Style>
+                                        <Style TargetType="Image">
+                                            <Setter Property="IsVisible" Value="True" />
+                                            <Style.Triggers>
+                                                <DataTrigger TargetType="Image" Binding="{Binding ImageUrl}" Value="{x:Null}">
+                                                    <Setter Property="IsVisible" Value="False" />
+                                                </DataTrigger>
+                                                <DataTrigger TargetType="Image" Binding="{Binding ImageUrl}" Value="">
+                                                    <Setter Property="IsVisible" Value="False" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Image.Style>
+
+                                </Image>
+
+                            </VerticalStackLayout>
+                        </Frame>
+                    </SwipeView>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+
+        </CollectionView>
+
+    </Grid>
+</ContentPage>

@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="AmoraApp.Views.Admin.AdminVerificationsPage"
+    x:Name="Root"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    BackgroundColor="#F5F6F8"
+    Shell.NavBarIsVisible="False">
+
+    <Grid RowDefinitions="Auto,Auto,*" Padding="20,30,20,20">
+
+        <Grid ColumnDefinitions="Auto,*,Auto" Margin="0,0,0,10">
+            <Image Source="icon_back.png" HeightRequest="24" WidthRequest="24">
+                <Image.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnBackTapped"/>
+                </Image.GestureRecognizers>
+            </Image>
+
+            <Label Grid.Column="1" Text="Admin • Verificações"
+                   HorizontalOptions="Center"
+                   VerticalOptions="Center"
+                   FontSize="18"
+                   FontAttributes="Bold"
+                   TextColor="#111827"/>
+
+            <Image Grid.Column="2" Source="refresh.png" HeightRequest="22" WidthRequest="22">
+                <Image.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnRefreshTapped"/>
+                </Image.GestureRecognizers>
+            </Image>
+        </Grid>
+
+        <Label Grid.Row="1" Text="{Binding StatusText}" FontSize="12" TextColor="#6B7280" Margin="0,0,0,8"/>
+
+        <CollectionView Grid.Row="2" ItemsSource="{Binding Items}" SelectionMode="None">
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <SwipeView>
+                        <SwipeView.RightItems>
+                            <SwipeItems Mode="Reveal">
+                                <SwipeItem Text="Aprovar" BackgroundColor="#16A34A"
+                                           Command="{Binding BindingContext.ApproveCommand, Source={x:Reference Root}}"
+                                           CommandParameter="{Binding .}"/>
+                                <SwipeItem Text="Rejeitar" BackgroundColor="#EF4444"
+                                           Command="{Binding BindingContext.RejectCommand, Source={x:Reference Root}}"
+                                           CommandParameter="{Binding .}"/>
+                            </SwipeItems>
+                        </SwipeView.RightItems>
+
+                        <Frame BackgroundColor="White" BorderColor="#E5E7EB" CornerRadius="14" HasShadow="False" Padding="12" Margin="0,0,0,10">
+                            <VerticalStackLayout Spacing="8">
+                                <Grid ColumnDefinitions="Auto,*">
+                                    <Image Source="{Binding UserPhotoUrl}" HeightRequest="40" WidthRequest="40" Aspect="AspectFill"/>
+                                    <VerticalStackLayout Grid.Column="1" Margin="10,0" Spacing="0">
+                                        <Label Text="{Binding UserName}" FontAttributes="Bold" TextColor="#111827"/>
+                                        <Label Text="{Binding UserId}" FontSize="11" TextColor="#6B7280" LineBreakMode="TailTruncation"/>
+                                    </VerticalStackLayout>
+                                </Grid>
+
+                                <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                                    <Image Source="{Binding SelfieUrl}" Aspect="AspectFill" HeightRequest="120"/>
+                                    <Image Grid.Column="1" Source="{Binding DocumentUrl}" Aspect="AspectFill" HeightRequest="120"/>
+                                </Grid>
+
+                                <Label Text="{Binding Status}" FontSize="12" TextColor="#6B7280"/>
+                            </VerticalStackLayout>
+                        </Frame>
+
+                    </SwipeView>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+    </Grid>
+</ContentPage>

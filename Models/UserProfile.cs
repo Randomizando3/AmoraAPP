@@ -43,10 +43,10 @@ namespace AmoraApp.Models
         // O que busca no app (multi-seleção: amizade, namoro, casamento, casual)
         public List<string> LookingFor { get; set; } = new();
 
-        // Foto principal (usada em Discover, bolhas de story, etc.)
+        // Foto principal
         public string PhotoUrl { get; set; } = string.Empty;
 
-        // LEGADO: sua galeria antiga – mantido pra compatibilidade/migração.
+        // LEGADO
         public List<string> Gallery { get; set; } = new();
 
         // Até 30 fotos extras
@@ -55,15 +55,14 @@ namespace AmoraApp.Models
         // Até 20 vídeos de até 15s
         public List<string> Videos { get; set; } = new();
 
-        // Tags de interesses selecionadas (ex: Música, Filmes, Viagem...)
+        // Tags de interesses selecionadas
         public List<string> Interests { get; set; } = new();
 
-        // Status online (para exibição no Discover)
+        // Status online
         public bool IsOnline { get; set; } = false;
         public long LastOnlineUtc { get; set; } = 0;
 
         // ===== Localização =====
-
         public double Latitude { get; set; } = 0;
         public double Longitude { get; set; } = 0;
         public string CurrentLocationText { get; set; } = string.Empty;
@@ -74,7 +73,6 @@ namespace AmoraApp.Models
         // ===== Email =====
         public bool EmailVerified { get; set; } = false;
 
-
         /// <summary>
         /// Plano atual do usuário: "Free", "Plus" ou "Premium".
         /// Default = Free.
@@ -82,41 +80,23 @@ namespace AmoraApp.Models
         public string Plan { get; set; } = "Free";
 
         // ===== BOOST / DESTAQUE =====
-
-        /// <summary>
-        /// Se true, o perfil está com boost ativo (destaque) no Discover.
-        /// </summary>
         public bool IsBoostActive { get; set; } = false;
-
-        /// <summary>
-        /// Quando o boost termina (Unix time em segundos UTC).
-        /// 0 = sem boost.
-        /// </summary>
         public long BoostExpiresUtc { get; set; } = 0;
-
-        /// <summary>
-        /// Fator de prioridade enquanto o boost está ativo.
-        /// Ex.: 5 para Plus, 10 para Premium, etc.
-        /// </summary>
         public int BoostMultiplier { get; set; } = 1;
-
-        /// <summary>
-        /// Quantidade de boosts avulsos (pacotes adicionais).
-        /// Usado para plano Free poder ativar boost consumindo 1 token.
-        /// </summary>
         public int ExtraBoostTokens { get; set; } = 0;
-
-        /// <summary>
-        /// Quantas vezes o usuário usou boost no dia registrado em BoostUsesDayUtc.
-        /// </summary>
         public int BoostUsesToday { get; set; } = 0;
-
-        /// <summary>
-        /// Dia (UTC) em que o contador BoostUsesToday vale.
-        /// Armazenado como Unix time em segundos da data à meia-noite UTC.
-        /// </summary>
         public long BoostUsesDayUtc { get; set; } = 0;
 
+        // ===== VERIFICAÇÃO =====
+        // True = usuário verificado (badge aparece)
+        public bool IsVerified { get; set; } = false;
 
+        // "none" | "pending" | "approved" | "rejected"
+        public string VerificationStatus { get; set; } = "none";
+
+        // auditoria básica
+        public long VerificationSubmittedAtUtcMs { get; set; } = 0;
+        public long VerifiedAtUtcMs { get; set; } = 0;
+        public string VerifiedByAdminUid { get; set; } = string.Empty;
     }
 }

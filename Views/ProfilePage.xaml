@@ -35,7 +35,8 @@
         <ScrollView>
             <VerticalStackLayout Padding="20,30,20,20" Spacing="18">
 
-                <Grid ColumnDefinitions="Auto,*" Margin="0,0,0,10">
+                <!-- HEADER (Back + Título + Botões Admin/Verificar) -->
+                <Grid ColumnDefinitions="Auto,*,Auto" Margin="0,0,0,10" VerticalOptions="Center">
                     <Image
                         Source="icon_back.png"
                         HeightRequest="24"
@@ -53,95 +54,98 @@
                         FontAttributes="Bold"
                         Text="Seu perfil"
                         TextColor="{StaticResource TextPrimary}" />
+
+                    <!-- Botões à direita -->
+                    <HorizontalStackLayout Grid.Column="2" Spacing="8" VerticalOptions="Center" HorizontalOptions="End">
+
+                        <!-- Admin (só aparece se for admin) -->
+                        <Button
+                            Text="Admin"
+                            HeightRequest="36"
+                            CornerRadius="18"
+                            Padding="14,0"
+                            BackgroundColor="{StaticResource AccentDark}"
+                            TextColor="White"
+                            FontAttributes="Bold"
+                            Clicked="OnAdminClicked"
+                            IsVisible="{Binding IsAdmin}" />
+
+                        <!-- Verificar (só aparece se puder solicitar verificação) -->
+                        <Button
+                            Text="Verificar"
+                            HeightRequest="36"
+                            CornerRadius="18"
+                            Padding="14,0"
+                            BackgroundColor="{StaticResource AccentPink}"
+                            TextColor="White"
+                            FontAttributes="Bold"
+                            Clicked="OnVerifyClicked"
+                            IsVisible="{Binding CanRequestVerification}" />
+                    </HorizontalStackLayout>
                 </Grid>
 
                 <VerticalStackLayout Spacing="18">
 
                     <Grid ColumnDefinitions="Auto,*" ColumnSpacing="16">
+                        <!-- AVATAR (circular alinhado) -->
                         <Grid>
-                            <!-- AVATAR (sem IsClippedToBounds; clip feito no Image) -->
-                            <Border
+                            <!-- outer ring -->
+                            <Frame
                                 HeightRequest="96"
                                 WidthRequest="96"
-                                BackgroundColor="{StaticResource CardBackground}"
-                                Stroke="{StaticResource AccentPink}"
-                                StrokeThickness="3"
                                 Padding="3"
-                                HorizontalOptions="Center"
-                                VerticalOptions="Start">
-                                <Border.StrokeShape>
-                                    <Ellipse />
-                                </Border.StrokeShape>
+                                CornerRadius="48"
+                                HasShadow="False"
+                                BorderColor="{StaticResource AccentPink}"
+                                BackgroundColor="{StaticResource CardBackground}">
 
-                                <!-- Conteúdo interno fixo (96 - 3*2 = 90) -->
-                                <Grid
-                                    HeightRequest="90"
-                                    WidthRequest="90"
-                                    HorizontalOptions="Center"
-                                    VerticalOptions="Center">
+                                <!-- inner clip -->
+                                <Frame
+                                    Padding="0"
+                                    CornerRadius="45"
+                                    HasShadow="False"
+                                    BackgroundColor="{StaticResource CardBackground}"
+                                    IsClippedToBounds="True">
 
-                                    <!-- Fundo branco circular (para não aparecer “vazado” atrás) -->
-                                    <Border
-                                        HeightRequest="90"
-                                        WidthRequest="90"
-                                        BackgroundColor="White"
-                                        StrokeThickness="0"
-                                        HorizontalOptions="Center"
-                                        VerticalOptions="Center">
-                                        <Border.StrokeShape>
-                                            <Ellipse />
-                                        </Border.StrokeShape>
-                                    </Border>
+                                    <Grid>
+                                        <Image Aspect="AspectFill" Source="{Binding PhotoUrl}">
+                                            <Image.Triggers>
+                                                <DataTrigger TargetType="Image" Binding="{Binding PhotoUrl}" Value="">
+                                                    <Setter Property="IsVisible" Value="False" />
+                                                </DataTrigger>
+                                                <DataTrigger TargetType="Image" Binding="{Binding PhotoUrl}" Value="{x:Null}">
+                                                    <Setter Property="IsVisible" Value="False" />
+                                                </DataTrigger>
+                                            </Image.Triggers>
+                                        </Image>
 
-                                    <!-- Foto -->
-                                    <Image
-                                        HeightRequest="90"
-                                        WidthRequest="90"
-                                        HorizontalOptions="Center"
-                                        VerticalOptions="Center"
-                                        Aspect="AspectFill"
-                                        Source="{Binding PhotoUrl}">
-                                        <Image.Clip>
-                                            <EllipseGeometry Center="45,45" RadiusX="45" RadiusY="45" />
-                                        </Image.Clip>
+                                        <Label
+                                            Text="+"
+                                            FontSize="32"
+                                            TextColor="{StaticResource AccentPink}"
+                                            HorizontalOptions="Center"
+                                            VerticalOptions="Center"
+                                            IsVisible="False">
+                                            <Label.Triggers>
+                                                <DataTrigger TargetType="Label" Binding="{Binding PhotoUrl}" Value="">
+                                                    <Setter Property="IsVisible" Value="True" />
+                                                </DataTrigger>
+                                                <DataTrigger TargetType="Label" Binding="{Binding PhotoUrl}" Value="{x:Null}">
+                                                    <Setter Property="IsVisible" Value="True" />
+                                                </DataTrigger>
+                                            </Label.Triggers>
+                                        </Label>
+                                    </Grid>
 
-                                        <Image.Triggers>
-                                            <DataTrigger TargetType="Image" Binding="{Binding PhotoUrl}" Value="">
-                                                <Setter Property="IsVisible" Value="False" />
-                                            </DataTrigger>
-                                            <DataTrigger TargetType="Image" Binding="{Binding PhotoUrl}" Value="{x:Null}">
-                                                <Setter Property="IsVisible" Value="False" />
-                                            </DataTrigger>
-                                        </Image.Triggers>
-                                    </Image>
-
-                                    <!-- Plus quando não tem foto -->
-                                    <Label
-                                        Text="+"
-                                        FontSize="32"
-                                        TextColor="{StaticResource AccentPink}"
-                                        HorizontalOptions="Center"
-                                        VerticalOptions="Center"
-                                        IsVisible="False">
-                                        <Label.Triggers>
-                                            <DataTrigger TargetType="Label" Binding="{Binding PhotoUrl}" Value="">
-                                                <Setter Property="IsVisible" Value="True" />
-                                            </DataTrigger>
-                                            <DataTrigger TargetType="Label" Binding="{Binding PhotoUrl}" Value="{x:Null}">
-                                                <Setter Property="IsVisible" Value="True" />
-                                            </DataTrigger>
-                                        </Label.Triggers>
-                                    </Label>
-
-                                </Grid>
-                            </Border>
+                                </Frame>
+                            </Frame>
 
                             <Grid.GestureRecognizers>
                                 <TapGestureRecognizer Tapped="OnChangePhotoClicked" />
                             </Grid.GestureRecognizers>
                         </Grid>
 
-                        <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="8">
+                        <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="6">
                             <Frame
                                 BackgroundColor="{StaticResource InputBackground}"
                                 BorderColor="{StaticResource InputBorder}"
@@ -156,9 +160,36 @@
                                     PlaceholderColor="#9CA3AF"
                                     FontSize="16" />
                             </Frame>
+
+                            <!-- Badge Verificado -->
+                            <HorizontalStackLayout Spacing="8" IsVisible="False">
+                                <HorizontalStackLayout.Triggers>
+                                    <DataTrigger TargetType="HorizontalStackLayout" Binding="{Binding IsVerified}" Value="True">
+                                        <Setter Property="IsVisible" Value="True" />
+                                    </DataTrigger>
+                                </HorizontalStackLayout.Triggers>
+
+                                <Label Text="✔" TextColor="{StaticResource AccentPink}" FontSize="14" />
+                                <Label Text="Verificado" TextColor="{StaticResource TextSecondary}" FontSize="13" />
+                            </HorizontalStackLayout>
+
+                            <!-- Status de verificação (pendente / rejeitado) -->
+                            <Frame
+                                BackgroundColor="#FFF7ED"
+                                BorderColor="#FED7AA"
+                                HasShadow="False"
+                                CornerRadius="10"
+                                Padding="10,6"
+                                IsVisible="{Binding ShowVerificationStatus}">
+                                <Label
+                                    Text="{Binding VerificationStatusLabel}"
+                                    FontSize="12"
+                                    TextColor="#9A3412" />
+                            </Frame>
                         </VerticalStackLayout>
                     </Grid>
 
+                    <!-- Bio -->
                     <VerticalStackLayout Spacing="4">
                         <Label Style="{StaticResource SectionTitleStyle}" Text="Bio" />
                         <Frame
@@ -179,9 +210,9 @@
                         </Frame>
                     </VerticalStackLayout>
 
+                    <!-- Profissão -->
                     <VerticalStackLayout Spacing="4">
                         <Label Style="{StaticResource SectionTitleStyle}" Text="Profissão" />
-
                         <Grid RowDefinitions="Auto,Auto">
                             <Frame
                                 BackgroundColor="{StaticResource InputBackground}"
@@ -222,6 +253,7 @@
                         </Grid>
                     </VerticalStackLayout>
 
+                    <!-- Escolaridade -->
                     <VerticalStackLayout Spacing="4">
                         <Label Style="{StaticResource SectionTitleStyle}" Text="Escolaridade" />
                         <Frame
@@ -238,6 +270,7 @@
                         </Frame>
                     </VerticalStackLayout>
 
+                    <!-- Instituição -->
                     <VerticalStackLayout Spacing="4">
                         <Label Style="{StaticResource SectionTitleStyle}" Text="Instituição de ensino" />
                         <Frame
@@ -256,6 +289,7 @@
                         </Frame>
                     </VerticalStackLayout>
 
+                    <!-- Gênero -->
                     <VerticalStackLayout Spacing="4">
                         <Label Style="{StaticResource SectionTitleStyle}" Text="Gênero" />
                         <Frame
@@ -272,6 +306,7 @@
                         </Frame>
                     </VerticalStackLayout>
 
+                    <!-- Orientação -->
                     <VerticalStackLayout Spacing="4">
                         <Label Style="{StaticResource SectionTitleStyle}" Text="Orientação sexual" />
                         <Frame
@@ -283,11 +318,12 @@
                             <Picker
                                 ItemsSource="{Binding SexualOrientationOptions}"
                                 SelectedItem="{Binding SexualOrientation}"
-                                Title="Selecione sua orientação sexual"
+                                Title="Selecione sua orientação"
                                 TextColor="{StaticResource TextPrimary}" />
                         </Frame>
                     </VerticalStackLayout>
 
+                    <!-- Busco por -->
                     <VerticalStackLayout Spacing="4">
                         <Label Style="{StaticResource SectionTitleStyle}" Text="Busco por" />
 
@@ -337,6 +373,7 @@
                         </CollectionView>
                     </VerticalStackLayout>
 
+                    <!-- Religião -->
                     <VerticalStackLayout Spacing="4">
                         <Label Style="{StaticResource SectionTitleStyle}" Text="Religião" />
                         <Frame
@@ -355,6 +392,7 @@
                         </Frame>
                     </VerticalStackLayout>
 
+                    <!-- Cidade -->
                     <VerticalStackLayout Spacing="4">
                         <Label Style="{StaticResource SectionTitleStyle}" Text="Cidade onde vive" />
                         <Frame
@@ -374,6 +412,7 @@
                         </Frame>
                     </VerticalStackLayout>
 
+                    <!-- Celular -->
                     <VerticalStackLayout Spacing="4">
                         <Label Style="{StaticResource SectionTitleStyle}" Text="Número de celular" />
                         <Frame
@@ -393,6 +432,7 @@
                         </Frame>
                     </VerticalStackLayout>
 
+                    <!-- Localização -->
                     <VerticalStackLayout Spacing="4">
                         <Label Style="{StaticResource SectionTitleStyle}" Text="Localização atual" />
                         <Frame
@@ -405,6 +445,7 @@
                         </Frame>
                     </VerticalStackLayout>
 
+                    <!-- Nascimento -->
                     <VerticalStackLayout Spacing="4">
                         <Label Style="{StaticResource SectionTitleStyle}" Text="Data de nascimento" />
                         <Frame
@@ -419,6 +460,7 @@
                         <Label Text="{Binding AgeDisplay}" FontSize="13" TextColor="{StaticResource TextSecondary}" />
                     </VerticalStackLayout>
 
+                    <!-- Interesses -->
                     <VerticalStackLayout Spacing="4">
                         <Label Style="{StaticResource SectionTitleStyle}" Text="Interesses" />
 
@@ -468,6 +510,7 @@
                         </CollectionView>
                     </VerticalStackLayout>
 
+                    <!-- Fotos extras -->
                     <VerticalStackLayout Spacing="4">
                         <Label Style="{StaticResource SectionTitleStyle}" Text="{Binding PhotosSectionTitle}" />
 
@@ -521,6 +564,7 @@
                         </CollectionView>
                     </VerticalStackLayout>
 
+                    <!-- Vídeos -->
                     <VerticalStackLayout Spacing="4">
                         <Label Style="{StaticResource SectionTitleStyle}" Text="Vídeos (Premium – até 20, máx. 15s)" />
 

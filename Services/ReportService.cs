@@ -27,10 +27,15 @@ namespace AmoraApp.Services
 
             baseUrl = baseUrl.TrimEnd('/');
 
-            // Tenta pegar token do usuário logado (se as regras exigirem auth)
+            // garante Id (pra ficar previsível no admin)
+            if (string.IsNullOrWhiteSpace(report.Id))
+                report.Id = $"r_{Guid.NewGuid():N}";
+
+            // tenta token (se regras exigirem)
             var token = await TryGetIdTokenAsync();
 
-            var url = $"{baseUrl}/reports.json";
+            // PUT em /reports/{id}.json
+            var url = $"{baseUrl}/reports/{Uri.EscapeDataString(report.Id)}.json";
             if (!string.IsNullOrWhiteSpace(token))
                 url += $"?auth={Uri.EscapeDataString(token)}";
 
@@ -41,7 +46,7 @@ namespace AmoraApp.Services
             });
 
             using var content = new StringContent(json, Encoding.UTF8, "application/json");
-            var resp = await _http.PostAsync(url, content);
+            var resp = await _http.PutAsync(url, content);
 
             if (!resp.IsSuccessStatusCode)
             {
@@ -49,6 +54,7 @@ namespace AmoraApp.Services
                 throw new InvalidOperationException($"Falha ao enviar denúncia. HTTP {(int)resp.StatusCode}. {body}");
             }
         }
+
 
         /// <summary>
         /// Tenta obter o IdToken via reflexão para evitar dependência rígida de assinatura.

@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="AmoraApp.Views.Admin.AdminHomePage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    BackgroundColor="#F5F6F8"
+    Shell.NavBarIsVisible="False">
+
+    <Grid RowDefinitions="Auto,*" Padding="20,30,20,20">
+
+        <!-- Header -->
+        <Grid ColumnDefinitions="Auto,*,Auto" Margin="0,0,0,12">
+            <Image Source="icon_back.png" HeightRequest="24" WidthRequest="24">
+                <Image.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnBackTapped"/>
+                </Image.GestureRecognizers>
+            </Image>
+
+            <Label Grid.Column="1" Text="Admin"
+                   HorizontalOptions="Center"
+                   VerticalOptions="Center"
+                   FontSize="20"
+                   FontAttributes="Bold"
+                   TextColor="#111827" />
+
+            <Label Grid.Column="2" Text="" />
+        </Grid>
+
+        <ScrollView Grid.Row="1">
+            <VerticalStackLayout Spacing="12">
+
+                <Frame BackgroundColor="White" BorderColor="#E5E7EB" CornerRadius="14" HasShadow="False" Padding="14">
+                    <Label Text="Painel de moderação e suporte."
+                           FontSize="12"
+                           TextColor="#6B7280"/>
+                </Frame>
+
+                <Button Text="Denúncias"
+                        HeightRequest="48"
+                        CornerRadius="24"
+                        BackgroundColor="#5d259c"
+                        TextColor="White"
+                        FontAttributes="Bold"
+                        Clicked="OnReportsClicked"/>
+
+                <Button Text="Posts"
+                        HeightRequest="48"
+                        CornerRadius="24"
+                        BackgroundColor="#111827"
+                        TextColor="White"
+                        FontAttributes="Bold"
+                        Clicked="OnPostsClicked"/>
+
+                <Button Text="Usuários"
+                        HeightRequest="48"
+                        CornerRadius="24"
+                        BackgroundColor="#111827"
+                        TextColor="White"
+                        FontAttributes="Bold"
+                        Clicked="OnUsersClicked"/>
+
+                <Button Text="Verificações"
+                        HeightRequest="48"
+                        CornerRadius="24"
+                        BackgroundColor="#111827"
+                        TextColor="White"
+                        FontAttributes="Bold"
+                        Clicked="OnVerificationsClicked"/>
+
+                <Button Text="Tickets (SAC)"
+                        HeightRequest="48"
+                        CornerRadius="24"
+                        BackgroundColor="#111827"
+                        TextColor="White"
+                        FontAttributes="Bold"
+                        Clicked="OnTicketsClicked"/>
+
+            </VerticalStackLayout>
+        </ScrollView>
+
+    </Grid>
+</ContentPage>

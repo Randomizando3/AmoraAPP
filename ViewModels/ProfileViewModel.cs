@@ -1,62 +1,75 @@
 ﻿using AmoraApp.Models;
 using AmoraApp.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
+using Microsoft.Maui.Controls;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Windows.Input;
 
 namespace AmoraApp.ViewModels
 {
-    // Slot individual de foto (até 30)
-    public partial class PhotoSlot : ObservableObject
+    public class PhotoSlot : ObservableObject
     {
-        [ObservableProperty] private int index;
-        [ObservableProperty] private string imageUrl;
+        private int _index;
+        public int Index { get => _index; set => SetProperty(ref _index, value); }
 
-        // usado no XAML para mostrar o "+" quando vazio
-        public bool ShowPlus => string.IsNullOrWhiteSpace(ImageUrl);
-
-        partial void OnImageUrlChanged(string value)
+        private string? _imageUrl;
+        public string? ImageUrl
         {
-            OnPropertyChanged(nameof(ShowPlus));
+            get => _imageUrl;
+            set
+            {
+                if (SetProperty(ref _imageUrl, value))
+                    OnPropertyChanged(nameof(ShowPlus));
+            }
         }
+
+        public bool ShowPlus => string.IsNullOrWhiteSpace(ImageUrl);
     }
 
-    // Slot individual de vídeo (até 20)
-    public partial class VideoSlot : ObservableObject
+    public class VideoSlot : ObservableObject
     {
-        [ObservableProperty] private int index;
-        [ObservableProperty] private string videoUrl;
+        private int _index;
+        public int Index { get => _index; set => SetProperty(ref _index, value); }
+
+        private string? _videoUrl;
+        public string? VideoUrl
+        {
+            get => _videoUrl;
+            set
+            {
+                if (SetProperty(ref _videoUrl, value))
+                {
+                    OnPropertyChanged(nameof(ShowPlus));
+                    OnPropertyChanged(nameof(HasVideo));
+                }
+            }
+        }
 
         public bool ShowPlus => string.IsNullOrWhiteSpace(VideoUrl);
         public bool HasVideo => !string.IsNullOrWhiteSpace(VideoUrl);
-
-        partial void OnVideoUrlChanged(string value)
-        {
-            OnPropertyChanged(nameof(ShowPlus));
-            OnPropertyChanged(nameof(HasVideo));
-        }
     }
 
-    // Chip genérico (interesse / "busco por")
-    public partial class InterestItem : ObservableObject
+    public class InterestItem : ObservableObject
     {
-        [ObservableProperty] private string name;
-        [ObservableProperty] private bool isSelected;
+        private string _name = "";
+        public string Name { get => _name; set => SetProperty(ref _name, value); }
+
+        private bool _isSelected;
+        public bool IsSelected { get => _isSelected; set => SetProperty(ref _isSelected, value); }
 
         public InterestItem() { }
-
         public InterestItem(string name, bool selected = false)
         {
-            this.name = name;
-            isSelected = selected;
+            Name = name;
+            IsSelected = selected;
         }
     }
 
-    public partial class ProfileViewModel : ObservableObject
+    public class ProfileViewModel : ObservableObject
     {
         private readonly FirebaseAuthService _authService;
         private readonly FirebaseDatabaseService _dbService;
@@ -64,88 +77,252 @@ namespace AmoraApp.ViewModels
         private const int MaxPhotos = 30;
         private const int MaxVideos = 20;
 
-        // Campos básicos
-        [ObservableProperty] private string displayName;
-        [ObservableProperty] private string email;
-        [ObservableProperty] private string bio;
+        public ProfileViewModel() : this(FirebaseAuthService.Instance, FirebaseDatabaseService.Instance) { }
 
-        // Profissão
-        [ObservableProperty] private string jobTitle;
+        public ProfileViewModel(FirebaseAuthService authService, FirebaseDatabaseService dbService)
+        {
+            _authService = authService;
+            _dbService = dbService;
 
-        // Escolaridade (nível) + instituição
-        [ObservableProperty] private string educationLevel;
-        [ObservableProperty] private string educationInstitution;
+            ToggleInterestCommand = new Command<InterestItem>(item =>
+            {
+                if (item == null) return;
+                item.IsSelected = !item.IsSelected;
+            });
 
-        [ObservableProperty] private string city;
+            ToggleRelationshipGoalCommand = new Command<InterestItem>(item =>
+            {
+                if (item == null) return;
+                item.IsSelected = !item.IsSelected;
+            });
 
-        // Telefone / celular
-        [ObservableProperty] private string phoneNumber;
+            InitPhotoSlots();
+            InitVideoSlots();
+            InitInterests(null);
+            InitRelationshipGoals(null);
+        }
 
-        // Gênero
-        [ObservableProperty] private string gender;
-
-        // Orientação sexual
-        [ObservableProperty] private string sexualOrientation;
-
-        // Religião
-        [ObservableProperty] private string religion;
-
-        [ObservableProperty] private string photoUrl;
-
-        // Plano atual ("Free", "Plus", "Premium")
-        [ObservableProperty] private string plan = "Free";
-
-        // Data de nascimento
-        [ObservableProperty] private DateTime? birthDate;
-
-        // ===== Localização =====
-        [ObservableProperty] private double latitude;
-        [ObservableProperty] private double longitude;
-        [ObservableProperty] private string currentLocationText = "Localização ainda não capturada";
-
-        // Slots de fotos (até 30)
-        [ObservableProperty] private ObservableCollection<PhotoSlot> extraPhotoSlots = new();
-
-        // Slots de vídeos (até 20)
-        [ObservableProperty] private ObservableCollection<VideoSlot> extraVideoSlots = new();
-
-        // Interesses
-        [ObservableProperty] private ObservableCollection<InterestItem> interests = new();
-
-        // "Busco por" (amizade, namoro, etc.)
-        [ObservableProperty] private ObservableCollection<InterestItem> relationshipGoals = new();
-
-        // Autocomplete de profissões
-        [ObservableProperty] private ObservableCollection<string> jobSuggestions = new();
-        [ObservableProperty] private bool isJobSuggestionsVisible;
-
-        // Estado
-        [ObservableProperty] private bool isBusy;
-        [ObservableProperty] private string errorMessage;
+        // ===== Backing profile (fonte única) =====
+        private UserProfile _profile = new();
+        public UserProfile Profile
+        {
+            get => _profile;
+            private set => SetProperty(ref _profile, value);
+        }
 
         public string CurrentUserId { get; set; } = string.Empty;
 
-        // ===== NOVO: Limite de fotos por plano =====
+        // ===== Propriedades bindáveis (1:1 com UserProfile) =====
+        public string DisplayName
+        {
+            get => Profile.DisplayName;
+            set { if (Profile.DisplayName != value) { Profile.DisplayName = value ?? ""; OnPropertyChanged(); } }
+        }
+
+        public string Email
+        {
+            get => Profile.Email;
+            set { if (Profile.Email != value) { Profile.Email = value ?? ""; OnPropertyChanged(); } }
+        }
+
+        public string Bio
+        {
+            get => Profile.Bio;
+            set { if (Profile.Bio != value) { Profile.Bio = value ?? ""; OnPropertyChanged(); } }
+        }
+
+        public string JobTitle
+        {
+            get => Profile.JobTitle;
+            set { if (Profile.JobTitle != value) { Profile.JobTitle = value ?? ""; OnPropertyChanged(); } }
+        }
+
+        public string EducationLevel
+        {
+            get => Profile.EducationLevel;
+            set { if (Profile.EducationLevel != value) { Profile.EducationLevel = value ?? ""; OnPropertyChanged(); } }
+        }
+
+        public string EducationInstitution
+        {
+            get => Profile.EducationInstitution;
+            set { if (Profile.EducationInstitution != value) { Profile.EducationInstitution = value ?? ""; OnPropertyChanged(); } }
+        }
+
+        public string City
+        {
+            get => Profile.City;
+            set { if (Profile.City != value) { Profile.City = value ?? ""; OnPropertyChanged(); } }
+        }
+
+        public string PhoneNumber
+        {
+            get => Profile.PhoneNumber;
+            set { if (Profile.PhoneNumber != value) { Profile.PhoneNumber = value ?? ""; OnPropertyChanged(); } }
+        }
+
+        public string Gender
+        {
+            get => Profile.Gender;
+            set { if (Profile.Gender != value) { Profile.Gender = value ?? ""; OnPropertyChanged(); } }
+        }
+
+        public string SexualOrientation
+        {
+            get => Profile.SexualOrientation;
+            set { if (Profile.SexualOrientation != value) { Profile.SexualOrientation = value ?? ""; OnPropertyChanged(); } }
+        }
+
+        public string Religion
+        {
+            get => Profile.Religion;
+            set { if (Profile.Religion != value) { Profile.Religion = value ?? ""; OnPropertyChanged(); } }
+        }
+
+        public string PhotoUrl
+        {
+            get => Profile.PhotoUrl;
+            set { if (Profile.PhotoUrl != value) { Profile.PhotoUrl = value ?? ""; OnPropertyChanged(); } }
+        }
+
+        public string Plan
+        {
+            get => Profile.Plan;
+            set
+            {
+                var v = string.IsNullOrWhiteSpace(value) ? "Free" : value;
+                if (Profile.Plan != v)
+                {
+                    Profile.Plan = v;
+                    OnPropertyChanged();
+                    OnPropertyChanged(nameof(PhotoLimit));
+                    OnPropertyChanged(nameof(PhotosSectionTitle));
+                }
+            }
+        }
+
+        public double Latitude
+        {
+            get => Profile.Latitude;
+            set { if (Profile.Latitude != value) { Profile.Latitude = value; OnPropertyChanged(); } }
+        }
+
+        public double Longitude
+        {
+            get => Profile.Longitude;
+            set { if (Profile.Longitude != value) { Profile.Longitude = value; OnPropertyChanged(); } }
+        }
+
+        public string CurrentLocationText
+        {
+            get => Profile.CurrentLocationText;
+            set { if (Profile.CurrentLocationText != value) { Profile.CurrentLocationText = value ?? ""; OnPropertyChanged(); } }
+        }
+
+        // ===== Admin / Verificação (do seu UserProfile) =====
+        private bool _isAdmin;
+        public bool IsAdmin { get => _isAdmin; private set => SetProperty(ref _isAdmin, value); }
+
+        public bool IsVerified
+        {
+            get => Profile.IsVerified;
+            set
+            {
+                if (Profile.IsVerified != value)
+                {
+                    Profile.IsVerified = value;
+                    OnPropertyChanged();
+                    RaiseVerificationComputed();
+                }
+            }
+        }
+
+        public string VerificationStatus
+        {
+            get => Profile.VerificationStatus;
+            set
+            {
+                var v = NormalizeStatus(value);
+                if (Profile.VerificationStatus != v)
+                {
+                    Profile.VerificationStatus = v;
+                    OnPropertyChanged();
+                    RaiseVerificationComputed();
+                }
+            }
+        }
+
+        private void RaiseVerificationComputed()
+        {
+            OnPropertyChanged(nameof(CanRequestVerification));
+            OnPropertyChanged(nameof(ShowVerificationStatus));
+            OnPropertyChanged(nameof(VerificationStatusLabel));
+        }
+
+        public bool CanRequestVerification =>
+            !IsVerified && !string.Equals(VerificationStatus, "pending", StringComparison.OrdinalIgnoreCase);
+
+        public bool ShowVerificationStatus =>
+            !IsVerified &&
+            (string.Equals(VerificationStatus, "pending", StringComparison.OrdinalIgnoreCase) ||
+             string.Equals(VerificationStatus, "rejected", StringComparison.OrdinalIgnoreCase));
+
+        public string VerificationStatusLabel
+        {
+            get
+            {
+                if (string.Equals(VerificationStatus, "pending", StringComparison.OrdinalIgnoreCase))
+                    return "Verificação pendente. Aguarde a análise.";
+                if (string.Equals(VerificationStatus, "rejected", StringComparison.OrdinalIgnoreCase))
+                    return "Verificação rejeitada. Você pode solicitar novamente.";
+                return "";
+            }
+        }
+
+        private static string NormalizeStatus(string? raw)
+        {
+            var s = (raw ?? "").Trim().ToLowerInvariant();
+            return s switch
+            {
+                "approved" => "approved",
+                "pending" => "pending",
+                "rejected" => "rejected",
+                "none" => "none",
+                "" => "none",
+                _ => s
+            };
+        }
+
+        // ===== Estado =====
+        private bool _isBusy;
+        public bool IsBusy { get => _isBusy; private set => SetProperty(ref _isBusy, value); }
+
+        private string _errorMessage = "";
+        public string ErrorMessage { get => _errorMessage; private set => SetProperty(ref _errorMessage, value); }
+
+        // ===== Slots / Lists =====
+        public ObservableCollection<PhotoSlot> ExtraPhotoSlots { get; } = new();
+        public ObservableCollection<VideoSlot> ExtraVideoSlots { get; } = new();
+
+        public ObservableCollection<InterestItem> Interests { get; } = new();
+        public ObservableCollection<InterestItem> RelationshipGoals { get; } = new();
+
+        public ObservableCollection<string> JobSuggestions { get; } = new();
+        private bool _isJobSuggestionsVisible;
+        public bool IsJobSuggestionsVisible { get => _isJobSuggestionsVisible; set => SetProperty(ref _isJobSuggestionsVisible, value); }
+
+        public ICommand ToggleInterestCommand { get; }
+        public ICommand ToggleRelationshipGoalCommand { get; }
+
         public int PhotoLimit => GetPhotoLimitForPlan(Plan);
         public string PhotosSectionTitle => $"Fotos (até {PhotoLimit})";
 
-        partial void OnPlanChanged(string value)
-        {
-            OnPropertyChanged(nameof(PhotoLimit));
-            OnPropertyChanged(nameof(PhotosSectionTitle));
-        }
-
-        private static int GetPhotoLimitForPlan(string plan)
+        private static int GetPhotoLimitForPlan(string? plan)
         {
             plan = (plan ?? "Free").Trim();
-
-            if (plan.Equals("Premium", StringComparison.OrdinalIgnoreCase))
-                return 30;
-
-            if (plan.Equals("Plus", StringComparison.OrdinalIgnoreCase))
-                return 15;
-
-            return 5; // Free
+            if (plan.Equals("Premium", StringComparison.OrdinalIgnoreCase)) return 30;
+            if (plan.Equals("Plus", StringComparison.OrdinalIgnoreCase)) return 15;
+            return 5;
         }
 
         // Sugestões de profissões
@@ -177,7 +354,6 @@ namespace AmoraApp.ViewModels
             "Freelancer"
         };
 
-        // Interesses padrão
         private static readonly string[] DefaultInterests =
         {
             "Música","Filmes","Séries","Viagem","Games","Pets",
@@ -185,232 +361,82 @@ namespace AmoraApp.ViewModels
             "Arte","Natureza","Praia","Balada","Café"
         };
 
-        // Opções do "Busco por"
         private static readonly string[] DefaultRelationshipGoals =
         {
             "Amizade","Namoro","Casamento","Casual"
         };
 
-        // Opções de escolaridade / gênero / orientação sexual
-        public IList<string> EducationLevelOptions { get; } = new List<string>
-        {
-            "Ensino fundamental incompleto",
-            "Ensino fundamental completo",
-            "Ensino médio incompleto",
-            "Ensino médio completo",
-            "Técnico",
-            "Superior incompleto",
-            "Superior completo",
-            "Pós-graduação",
-            "Mestrado",
-            "Doutorado",
-            "Prefiro não dizer"
-        };
-
-        public IList<string> GenderOptions { get; } = new List<string>
-        {
-            "Homem",
-            "Mulher",
-            "Homem trans",
-            "Mulher trans",
-            "Não-binário",
-            "Outro",
-            "Prefiro não dizer"
-        };
-
-        public IList<string> SexualOrientationOptions { get; } = new List<string>
-        {
-            "Heterossexual",
-            "Homossexual",
-            "Bissexual",
-            "Pansexual",
-            "Assexual",
-            "Prefiro não dizer"
-        };
-
-        // Exibição da idade (derivada da BirthDate)
-        public string AgeDisplay
-        {
-            get
-            {
-                if (!BirthDate.HasValue)
-                    return "Não informado";
-
-                var age = CalculateAgeFromDate(BirthDate.Value);
-                if (age <= 0) return "Não informado";
-                return $"{age} anos";
-            }
-        }
-
-        partial void OnBirthDateChanged(DateTime? value)
-        {
-            OnPropertyChanged(nameof(AgeDisplay));
-        }
-
-        public ProfileViewModel()
-            : this(FirebaseAuthService.Instance, FirebaseDatabaseService.Instance)
-        {
-        }
-
-        public ProfileViewModel(FirebaseAuthService authService, FirebaseDatabaseService dbService)
-        {
-            _authService = authService;
-            _dbService = dbService;
-
-            InitPhotoSlots();
-            InitVideoSlots();
-            InitInterests(null);
-            InitRelationshipGoals(null);
-        }
-
-        #region Inicialização slots
-
         private void InitPhotoSlots()
         {
             ExtraPhotoSlots.Clear();
             for (int i = 0; i < MaxPhotos; i++)
-            {
-                ExtraPhotoSlots.Add(new PhotoSlot
-                {
-                    Index = i,
-                    ImageUrl = null
-                });
-            }
+                ExtraPhotoSlots.Add(new PhotoSlot { Index = i, ImageUrl = null });
         }
 
         private void InitVideoSlots()
         {
             ExtraVideoSlots.Clear();
             for (int i = 0; i < MaxVideos; i++)
-            {
-                ExtraVideoSlots.Add(new VideoSlot
-                {
-                    Index = i,
-                    VideoUrl = null
-                });
-            }
+                ExtraVideoSlots.Add(new VideoSlot { Index = i, VideoUrl = null });
         }
 
-        private void ApplyPhotosToSlots(IList<string> photos)
+        private void ApplyPhotosToSlots(List<string>? photos)
         {
             InitPhotoSlots();
-
-            if (photos == null)
-                return;
-
-            int limit = Math.Min(MaxPhotos, photos.Count);
-            for (int i = 0; i < limit; i++)
-            {
+            photos ??= new List<string>();
+            for (int i = 0; i < Math.Min(MaxPhotos, photos.Count); i++)
                 ExtraPhotoSlots[i].ImageUrl = photos[i];
-            }
         }
 
-        private void ApplyVideosToSlots(IList<string> videos)
+        private void ApplyVideosToSlots(List<string>? videos)
         {
             InitVideoSlots();
-
-            if (videos == null)
-                return;
-
-            int limit = Math.Min(MaxVideos, videos.Count);
-            for (int i = 0; i < limit; i++)
-            {
+            videos ??= new List<string>();
+            for (int i = 0; i < Math.Min(MaxVideos, videos.Count); i++)
                 ExtraVideoSlots[i].VideoUrl = videos[i];
-            }
         }
 
         private List<string> BuildPhotosFromSlots()
         {
-            return ExtraPhotoSlots
+            var all = ExtraPhotoSlots
                 .Where(s => !string.IsNullOrWhiteSpace(s.ImageUrl))
-                .Select(s => s.ImageUrl)
+                .Select(s => s.ImageUrl!.Trim())
                 .ToList();
+
+            return all.Take(Math.Max(0, PhotoLimit)).ToList();
         }
 
         private List<string> BuildVideosFromSlots()
         {
             return ExtraVideoSlots
                 .Where(s => !string.IsNullOrWhiteSpace(s.VideoUrl))
-                .Select(s => s.VideoUrl)
+                .Select(s => s.VideoUrl!.Trim())
                 .ToList();
         }
 
-        #endregion
-
-        #region Interesses
-
-        private void InitInterests(IEnumerable<string> selected)
+        private void InitInterests(IEnumerable<string>? selected)
         {
             Interests.Clear();
-
-            var selectedSet = new HashSet<string>(
-                selected ?? Array.Empty<string>(),
-                StringComparer.OrdinalIgnoreCase);
-
+            var set = new HashSet<string>(selected ?? Array.Empty<string>(), StringComparer.OrdinalIgnoreCase);
             foreach (var name in DefaultInterests)
-            {
-                Interests.Add(new InterestItem(name, selectedSet.Contains(name)));
-            }
+                Interests.Add(new InterestItem(name, set.Contains(name)));
         }
 
-        [RelayCommand]
-        private void ToggleInterest(InterestItem item)
-        {
-            if (item == null) return;
-            item.IsSelected = !item.IsSelected;
-        }
-
-        private List<string> GetSelectedInterests()
-        {
-            return Interests
-                .Where(i => i.IsSelected)
-                .Select(i => i.Name)
-                .ToList();
-        }
-
-        #endregion
-
-        #region "Busco por" (relationship goals)
-
-        private void InitRelationshipGoals(IEnumerable<string> selected)
+        private void InitRelationshipGoals(IEnumerable<string>? selected)
         {
             RelationshipGoals.Clear();
-
-            var selectedSet = new HashSet<string>(
-                selected ?? Array.Empty<string>(),
-                StringComparer.OrdinalIgnoreCase);
-
+            var set = new HashSet<string>(selected ?? Array.Empty<string>(), StringComparer.OrdinalIgnoreCase);
             foreach (var name in DefaultRelationshipGoals)
-            {
-                RelationshipGoals.Add(new InterestItem(name, selectedSet.Contains(name)));
-            }
+                RelationshipGoals.Add(new InterestItem(name, set.Contains(name)));
         }
 
-        [RelayCommand]
-        private void ToggleRelationshipGoal(InterestItem item)
-        {
-            if (item == null) return;
-            item.IsSelected = !item.IsSelected;
-        }
+        private List<string> GetSelectedInterests() =>
+            Interests.Where(i => i.IsSelected).Select(i => i.Name).ToList();
 
-        private List<string> GetSelectedRelationshipGoals()
-        {
-            return RelationshipGoals
-                .Where(i => i.IsSelected)
-                .Select(i => i.Name)
-                .ToList();
-        }
-
-        #endregion
-
-        #region Profissão (autocomplete)
+        private List<string> GetSelectedRelationshipGoals() =>
+            RelationshipGoals.Where(i => i.IsSelected).Select(i => i.Name).ToList();
 
         public void OnJobTextChanged(string text)
-        {
-            UpdateJobSuggestions(text);
-        }
-
-        private void UpdateJobSuggestions(string text)
         {
             JobSuggestions.Clear();
 
@@ -421,7 +447,6 @@ namespace AmoraApp.ViewModels
             }
 
             var term = text.Trim().ToLowerInvariant();
-
             var matches = _allJobTitles
                 .Where(j => j.ToLowerInvariant().Contains(term))
                 .OrderBy(j => j)
@@ -434,35 +459,13 @@ namespace AmoraApp.ViewModels
             IsJobSuggestionsVisible = JobSuggestions.Count > 0;
         }
 
-        #endregion
-
-        #region Idade (cálculo)
-
-        private int CalculateAgeFromDate(DateTime birthDate)
-        {
-            var today = DateTime.UtcNow.Date;
-            var b = birthDate.Date;
-
-            int age = today.Year - b.Year;
-            if (b > today.AddYears(-age))
-                age--;
-
-            if (age < 0) age = 0;
-            if (age > 120) age = 120;
-
-            return age;
-        }
-
-        #endregion
-
-        #region Load / Save
-
+        // ===== Load / Save =====
         public async Task LoadAsync()
         {
             if (IsBusy) return;
 
             IsBusy = true;
-            ErrorMessage = string.Empty;
+            ErrorMessage = "";
 
             try
             {
@@ -474,6 +477,7 @@ namespace AmoraApp.ViewModels
                 }
 
                 CurrentUserId = uid;
+                IsAdmin = AdminAccessService.IsAdmin(uid);
 
                 var profile = await _dbService.GetUserProfileAsync(uid);
 
@@ -483,61 +487,54 @@ namespace AmoraApp.ViewModels
                     profile = new UserProfile
                     {
                         Id = uid,
-                        DisplayName = authUser?.Info.DisplayName ?? string.Empty,
-                        Email = authUser?.Info.Email ?? string.Empty,
+                        DisplayName = authUser?.Info.DisplayName ?? "",
+                        Email = authUser?.Info.Email ?? "",
                         Age = 18
                     };
 
                     await _dbService.SaveUserProfileAsync(profile);
                 }
 
-                DisplayName = profile.DisplayName;
-                Email = profile.Email;
-                Bio = profile.Bio;
-                JobTitle = profile.JobTitle;
-                EducationLevel = profile.EducationLevel;
-                EducationInstitution = profile.EducationInstitution;
-                City = profile.City;
-                PhoneNumber = profile.PhoneNumber;
-                Gender = profile.Gender;
-                SexualOrientation = profile.SexualOrientation;
-                Religion = profile.Religion;
-                PhotoUrl = profile.PhotoUrl;
+                Profile = profile;
 
-                Plan = string.IsNullOrWhiteSpace(profile.Plan) ? "Free" : profile.Plan;
+                // garantir defaults
+                if (string.IsNullOrWhiteSpace(Profile.Plan)) Profile.Plan = "Free";
+                Profile.VerificationStatus = NormalizeStatus(Profile.VerificationStatus);
 
-                Latitude = profile.Latitude;
-                Longitude = profile.Longitude;
-                CurrentLocationText = string.IsNullOrWhiteSpace(profile.CurrentLocationText)
-                    ? "Localização ainda não capturada"
-                    : profile.CurrentLocationText;
-
-                DateTime? birth = null;
-                if (profile.BirthDateUtc > 0)
-                {
-                    birth = DateTimeOffset
-                        .FromUnixTimeMilliseconds(profile.BirthDateUtc)
-                        .UtcDateTime
-                        .Date;
-                }
-                else if (profile.Age > 0)
-                {
-                    birth = DateTime.UtcNow.AddYears(-profile.Age).Date;
-                }
-
-                BirthDate = birth;
-
-                var photos = (profile.Photos != null && profile.Photos.Count > 0)
-                    ? profile.Photos
-                    : (profile.Gallery ?? new List<string>());
+                // aplicar slots/listas do próprio model
+                var photos = (Profile.Photos != null && Profile.Photos.Count > 0)
+                    ? Profile.Photos
+                    : (Profile.Gallery ?? new List<string>());
 
                 ApplyPhotosToSlots(photos);
 
-                var videos = profile.Videos ?? new List<string>();
-                ApplyVideosToSlots(videos);
+                ApplyVideosToSlots(Profile.Videos ?? new List<string>());
 
-                InitInterests(profile.Interests ?? new List<string>());
-                InitRelationshipGoals(profile.LookingFor ?? new List<string>());
+                InitInterests(Profile.Interests ?? new List<string>());
+                InitRelationshipGoals(Profile.LookingFor ?? new List<string>());
+
+                // notificar bindings do “wrapper”
+                OnPropertyChanged(nameof(DisplayName));
+                OnPropertyChanged(nameof(Email));
+                OnPropertyChanged(nameof(Bio));
+                OnPropertyChanged(nameof(JobTitle));
+                OnPropertyChanged(nameof(EducationLevel));
+                OnPropertyChanged(nameof(EducationInstitution));
+                OnPropertyChanged(nameof(City));
+                OnPropertyChanged(nameof(PhoneNumber));
+                OnPropertyChanged(nameof(Gender));
+                OnPropertyChanged(nameof(SexualOrientation));
+                OnPropertyChanged(nameof(Religion));
+                OnPropertyChanged(nameof(PhotoUrl));
+                OnPropertyChanged(nameof(Plan));
+                OnPropertyChanged(nameof(Latitude));
+                OnPropertyChanged(nameof(Longitude));
+                OnPropertyChanged(nameof(CurrentLocationText));
+                OnPropertyChanged(nameof(IsVerified));
+                OnPropertyChanged(nameof(VerificationStatus));
+                RaiseVerificationComputed();
+                OnPropertyChanged(nameof(PhotoLimit));
+                OnPropertyChanged(nameof(PhotosSectionTitle));
             }
             catch (Exception ex)
             {
@@ -549,13 +546,12 @@ namespace AmoraApp.ViewModels
             }
         }
 
-        [RelayCommand]
         public async Task SaveAsync()
         {
             if (IsBusy) return;
 
             IsBusy = true;
-            ErrorMessage = string.Empty;
+            ErrorMessage = "";
 
             try
             {
@@ -568,57 +564,26 @@ namespace AmoraApp.ViewModels
                         ErrorMessage = "Usuário não autenticado.";
                         return;
                     }
-
                     CurrentUserId = uid;
                 }
 
-                int ageYears = 0;
-                long birthUtc = 0;
-
-                if (BirthDate.HasValue)
-                {
-                    var b = BirthDate.Value.Date;
-                    ageYears = CalculateAgeFromDate(b);
-
-                    var bUtc = DateTime.SpecifyKind(b, DateTimeKind.Utc);
-                    birthUtc = new DateTimeOffset(bUtc).ToUnixTimeMilliseconds();
-                }
-
+                // sincroniza slots -> Profile
                 var photos = BuildPhotosFromSlots();
                 var videos = BuildVideosFromSlots();
 
-                var existing = await _dbService.GetUserProfileAsync(uid) ?? new UserProfile { Id = uid };
+                Profile.Id = uid;
 
-                existing.DisplayName = DisplayName ?? "";
-                existing.Email = Email ?? "";
-                existing.Bio = Bio ?? "";
-                existing.JobTitle = JobTitle ?? "";
-                existing.EducationLevel = EducationLevel ?? "";
-                existing.EducationInstitution = EducationInstitution ?? "";
-                existing.City = City ?? "";
-                existing.PhoneNumber = PhoneNumber ?? "";
-                existing.Gender = Gender ?? "";
-                existing.SexualOrientation = SexualOrientation ?? "";
-                existing.Religion = Religion ?? "";
-                existing.PhotoUrl = PhotoUrl ?? "";
+                Profile.Photos = photos;
+                Profile.Gallery = photos; // legado
+                Profile.Videos = videos;
 
-                existing.Age = ageYears;
-                existing.BirthDateUtc = birthUtc;
+                Profile.Interests = GetSelectedInterests();
+                Profile.LookingFor = GetSelectedRelationshipGoals();
 
-                existing.Photos = photos;
-                existing.Videos = videos;
-                existing.Gallery = photos;
+                if (string.IsNullOrWhiteSpace(Profile.Plan)) Profile.Plan = "Free";
+                Profile.VerificationStatus = NormalizeStatus(Profile.VerificationStatus);
 
-                existing.Interests = GetSelectedInterests();
-                existing.LookingFor = GetSelectedRelationshipGoals();
-
-                existing.Latitude = Latitude;
-                existing.Longitude = Longitude;
-                existing.CurrentLocationText = CurrentLocationText ?? "";
-
-                existing.Plan = string.IsNullOrWhiteSpace(Plan) ? existing.Plan : Plan;
-
-                await _dbService.SaveUserProfileAsync(existing);
+                await _dbService.SaveUserProfileAsync(Profile);
             }
             catch (Exception ex)
             {
@@ -632,17 +597,12 @@ namespace AmoraApp.ViewModels
 
         public async Task RefreshAsync() => await LoadAsync();
 
-        #endregion
-
-        #region Localização (UpdateLocationAsync)
-
         public async Task UpdateLocationAsync()
         {
             try
             {
                 var result = await LocationService.Instance.GetCurrentLocationAsync();
-                if (result == null)
-                    return;
+                if (result == null) return;
 
                 Latitude = result.Latitude;
                 Longitude = result.Longitude;
@@ -657,7 +617,5 @@ namespace AmoraApp.ViewModels
                 ErrorMessage = ex.Message;
             }
         }
-
-        #endregion
     }
 }

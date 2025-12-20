@@ -26,5 +26,16 @@ namespace AmoraApp.Models
         public long CreatedAtUtcMs { get; set; } = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
         public string AppArea { get; set; } = "feed";
         public string ExtraDetails { get; set; } = string.Empty;
+
+        // ===== ADMIN / MODERAÇÃO =====
+        // "open" | "ignored" | "accepted"
+        public string Status { get; set; } = "open";
+
+        // "none" | "delete_post" | "suspend_user" | "delete_user"
+        public string AdminAction { get; set; } = "none";
+
+        public string ReviewedByAdminUid { get; set; } = string.Empty;
+        public long ReviewedAtUtcMs { get; set; } = 0;
+        public string AdminNote { get; set; } = string.Empty;
     }
 }
