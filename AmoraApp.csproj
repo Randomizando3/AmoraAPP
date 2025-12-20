@@ -187,6 +187,12 @@
                 <PackageReference Include="System.Runtime.InteropServices" Version="4.3.0" />
         </ItemGroup>
 
+        <ItemGroup Condition="$(TargetFramework.Contains('android'))">
+                <PackageReference Include="Xamarin.Firebase.Messaging" Version="123.1.1" />
+                <PackageReference Include="Xamarin.GooglePlayServices.Basement" Version="118.2.0" />
+                <PackageReference Include="Xamarin.GooglePlayServices.Tasks" Version="118.0.2" />
+        </ItemGroup>
+
 	<ItemGroup>
 	  <MauiXaml Update="Views\Admin\AdminHomePage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
