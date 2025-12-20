@@ -186,6 +186,7 @@
                                 WidthRequest="80"
                                 RowDefinitions="Auto,Auto">
 
+                                <!-- Área do avatar: deixa transparente para clique ir para o CollectionView -->
                                 <Grid Grid.Row="0" HorizontalOptions="Center">
                                     <!-- Avatar circular -->
                                     <Frame
@@ -194,8 +195,10 @@
                                         CornerRadius="26"
                                         Padding="0"
                                         HasShadow="False"
-                                        BackgroundColor="White">
+                                        BackgroundColor="White"
+                                        InputTransparent="True">
                                         <Image
+                                            InputTransparent="True"
                                             Source="{Binding PhotoUrl, Converter={StaticResource AvatarSourceConverter}}"
                                             Aspect="AspectFill"
                                             WidthRequest="52"
@@ -211,6 +214,7 @@
 
                                     <!-- Coração de match -->
                                     <Frame
+                                        InputTransparent="True"
                                         WidthRequest="18"
                                         HeightRequest="18"
                                         CornerRadius="9"
@@ -220,6 +224,7 @@
                                         VerticalOptions="End"
                                         Margin="0,0,2,2">
                                         <Label
+                                            InputTransparent="True"
                                             Text="♥"
                                             FontSize="11"
                                             TextColor="White"
@@ -229,6 +234,7 @@
 
                                     <!-- Estrela de favorito -->
                                     <Frame
+                                        InputTransparent="True"
                                         WidthRequest="18"
                                         HeightRequest="18"
                                         CornerRadius="9"
@@ -239,12 +245,21 @@
                                         Margin="0,2,2,0"
                                         IsVisible="{Binding IsFavorite}">
                                         <Label
+                                            InputTransparent="True"
                                             Text="★"
                                             FontSize="11"
                                             TextColor="#5D4037"
                                             HorizontalOptions="Center"
                                             VerticalOptions="Center" />
                                     </Frame>
+
+                                    <!-- Retângulo transparente “por cima” (garante toque no item) -->
+                                    <BoxView
+                                        BackgroundColor="Transparent"
+                                        WidthRequest="52"
+                                        HeightRequest="52"
+                                        HorizontalOptions="Center"
+                                        VerticalOptions="Center" />
                                 </Grid>
 
                                 <Label
@@ -286,6 +301,7 @@
                                 WidthRequest="80"
                                 RowDefinitions="Auto,Auto">
 
+                                <!-- Área do avatar: deixa transparente para clique ir para o CollectionView -->
                                 <Grid Grid.Row="0" HorizontalOptions="Center">
                                     <!-- Avatar circular -->
                                     <Frame
@@ -294,8 +310,10 @@
                                         CornerRadius="26"
                                         Padding="0"
                                         HasShadow="False"
-                                        BackgroundColor="White">
+                                        BackgroundColor="White"
+                                        InputTransparent="True">
                                         <Image
+                                            InputTransparent="True"
                                             Source="{Binding PhotoUrl, Converter={StaticResource AvatarSourceConverter}}"
                                             Aspect="AspectFill"
                                             WidthRequest="52"
@@ -311,6 +329,7 @@
 
                                     <!-- Estrela de favorito -->
                                     <Frame
+                                        InputTransparent="True"
                                         WidthRequest="18"
                                         HeightRequest="18"
                                         CornerRadius="9"
@@ -321,12 +340,21 @@
                                         Margin="0,2,2,0"
                                         IsVisible="{Binding IsFavorite}">
                                         <Label
+                                            InputTransparent="True"
                                             Text="★"
                                             FontSize="11"
                                             TextColor="#5D4037"
                                             HorizontalOptions="Center"
                                             VerticalOptions="Center" />
                                     </Frame>
+
+                                    <!-- Retângulo transparente “por cima” (garante toque no item) -->
+                                    <BoxView
+                                        BackgroundColor="Transparent"
+                                        WidthRequest="52"
+                                        HeightRequest="52"
+                                        HorizontalOptions="Center"
+                                        VerticalOptions="Center" />
                                 </Grid>
 
                                 <Label

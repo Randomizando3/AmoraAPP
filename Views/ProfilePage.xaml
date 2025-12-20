@@ -633,6 +633,17 @@
                         FontAttributes="Bold"
                         Clicked="OnSaveClicked" />
 
+                    <!-- NOVO: SUPORTE (abaixo de Salvar e acima de Sair) -->
+                    <Button
+                        Margin="0,8,0,0"
+                        Text="Suporte"
+                        HeightRequest="46"
+                        CornerRadius="23"
+                        BackgroundColor="{StaticResource AccentDark}"
+                        TextColor="White"
+                        FontAttributes="Bold"
+                        Clicked="OnSupportClicked" />
+
                     <Button
                         Margin="0,0,0,0"
                         Text="Sair da conta"

@@ -21,7 +21,7 @@ namespace AmoraApp.Views
         {
             var name = NameEntry.Text?.Trim() ?? "";
             var email = EmailEntry.Text?.Trim() ?? "";
-            var phone = PhoneEntry.Text?.Trim() ?? "";
+            //var phone = PhoneEntry.Text?.Trim() ?? "";
             var msg = MessageEditor.Text?.Trim() ?? "";
 
             if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(msg))
@@ -41,7 +41,7 @@ namespace AmoraApp.Views
                     UserId = uid,
                     Name = name,
                     Email = email,
-                    Phone = phone,
+                    //Phone = phone,
                     Message = msg,
                     Status = "open"
                 };

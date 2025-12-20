@@ -48,9 +48,9 @@
                     <Entry x:Name="EmailEntry" Placeholder="Seu e-mail" Keyboard="Email" BackgroundColor="Transparent" TextColor="#111827" />
                 </Frame>
 
-                <Frame HasShadow="False" CornerRadius="12" Padding="10,6" BackgroundColor="#E5E7EB" BorderColor="#D1D5DB">
+                <!-- <Frame HasShadow="False" CornerRadius="12" Padding="10,6" BackgroundColor="#E5E7EB" BorderColor="#D1D5DB">
                     <Entry x:Name="PhoneEntry" Placeholder="Telefone" Keyboard="Telephone" BackgroundColor="Transparent" TextColor="#111827" />
-                </Frame>
+                </Frame> -->
 
                 <Frame HasShadow="False" CornerRadius="12" Padding="10,8" BackgroundColor="#E5E7EB" BorderColor="#D1D5DB" HeightRequest="130">
                     <Editor x:Name="MessageEditor"

@@ -455,5 +455,21 @@ namespace AmoraApp.Views
         {
             await Shell.Current.GoToAsync(nameof(VerificationPage));
         }
+
+        private async void OnSupportClicked(object sender, EventArgs e)
+        {
+            try
+            {
+                // Sua rota já existe no AppShell:
+                // Routing.RegisterRoute(nameof(SupportPage), typeof(SupportPage));
+                await Shell.Current.GoToAsync(nameof(SupportPage));
+            }
+            catch (Exception ex)
+            {
+                await DisplayAlert("Erro", "Não foi possível abrir o suporte.\n" + ex.Message, "OK");
+            }
+        }
+
+
     }
 }

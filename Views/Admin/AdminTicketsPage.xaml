@@ -38,9 +38,9 @@
                     <SwipeView>
                         <SwipeView.RightItems>
                             <SwipeItems Mode="Reveal">
-                                <SwipeItem Text="Responder" BackgroundColor="#5d259c"
+                                <!--  <SwipeItem Text="Responder" BackgroundColor="#5d259c"
                                            Command="{Binding BindingContext.AnswerCommand, Source={x:Reference Root}}"
-                                           CommandParameter="{Binding .}"/>
+                                           CommandParameter="{Binding .}"/> -->
                                 <SwipeItem Text="Fechar" BackgroundColor="#111827"
                                            Command="{Binding BindingContext.CloseCommand, Source={x:Reference Root}}"
                                            CommandParameter="{Binding .}"/>
