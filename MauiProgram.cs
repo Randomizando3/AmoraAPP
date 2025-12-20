@@ -7,6 +7,7 @@ using Microsoft.Maui.Controls.Hosting;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
 using Plugin.Maui.Audio;
+using Plugin.FirebasePushNotification;
 
 #if WINDOWS
 using Microsoft.UI.Windowing;          // AppWindow, OverlappedPresenter
@@ -82,6 +83,7 @@ namespace AmoraApp
             // ---------------------------
             builder.Services.AddSingleton<FirebaseAuthService>(_ => FirebaseAuthService.Instance);
             builder.Services.AddSingleton<FirebaseDatabaseService>(_ => FirebaseDatabaseService.Instance);
+            builder.Services.AddSingleton<PushNotificationService>();
 
             // ---------------------------
             // VIEWMODELS
@@ -110,6 +112,24 @@ namespace AmoraApp
 
             var app = builder.Build();
             ServiceProvider = app.Services;
+
+            var pushNotificationService = app.Services.GetRequiredService<PushNotificationService>();
+
+            CrossFirebasePushNotification.Current.OnTokenRefresh += (s, p) =>
+            {
+                pushNotificationService.UpdateToken(p.Token);
+                System.Diagnostics.Debug.WriteLine($"Push token refreshed: {p.Token}");
+            };
+
+            CrossFirebasePushNotification.Current.OnNotificationReceived += (s, p) =>
+            {
+                pushNotificationService.HandleNotification(p.Data);
+            };
+
+            CrossFirebasePushNotification.Current.OnNotificationOpened += (s, p) =>
+            {
+                pushNotificationService.HandleNotification(p.Data);
+            };
 
             return app;
         }
