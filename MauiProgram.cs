@@ -123,12 +123,12 @@ namespace AmoraApp
 
             CrossFirebasePushNotification.Current.OnNotificationReceived += (s, p) =>
             {
-                pushNotificationService.HandleNotification(p);
+                pushNotificationService.HandleNotification(p.Data);
             };
 
             CrossFirebasePushNotification.Current.OnNotificationOpened += (s, p) =>
             {
-                pushNotificationService.HandleNotification(p);
+                pushNotificationService.HandleNotification(p.Data);
             };
 
             return app;

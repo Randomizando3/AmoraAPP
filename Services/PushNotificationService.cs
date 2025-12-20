@@ -1,5 +1,5 @@
+using System.Collections.Generic;
 using Microsoft.Maui.Storage;
-using Plugin.FirebasePushNotification.Abstractions;
 
 namespace AmoraApp.Services;
 
@@ -20,12 +20,12 @@ public class PushNotificationService
         Preferences.Set(TokenKey, token);
     }
 
-    public void HandleNotification(FirebasePushNotificationDataEventArgs notification)
+    public void HandleNotification(IDictionary<string, object> data)
     {
         // Extend here to route notification data to the UI or analytics
-        if (notification.Data?.ContainsKey("message") == true)
+        if (data?.ContainsKey("message") == true)
         {
-            var message = notification.Data["message"];
+            var message = data["message"];
             System.Diagnostics.Debug.WriteLine($"Push message: {message}");
         }
     }
