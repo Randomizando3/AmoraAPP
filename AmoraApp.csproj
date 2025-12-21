@@ -198,6 +198,15 @@
                 <AndroidManifest Include="Platforms/Android/AndroidManifest.Debug.xml" />
         </ItemGroup>
 
+        <!-- Garante que as builds Debug Android sejam implantadas em modo totalmente depurável
+             (sem linkagem agressiva e com runtime compartilhado), evitando erros de anexo do
+             depurador como Mono.Debugger.Soft.VMNotSuspendedException. -->
+        <PropertyGroup Condition="'$(Configuration)' == 'Debug' AND $(TargetFramework.Contains('android'))">
+                <AndroidUseSharedRuntime>true</AndroidUseSharedRuntime>
+                <AndroidLinkMode>None</AndroidLinkMode>
+                <AndroidEnableDebugger>true</AndroidEnableDebugger>
+        </PropertyGroup>
+
 	<ItemGroup>
 	  <MauiXaml Update="Views\Admin\AdminHomePage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
