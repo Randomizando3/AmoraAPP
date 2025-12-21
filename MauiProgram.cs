@@ -1,17 +1,20 @@
 ﻿using AmoraApp.Services;
 using AmoraApp.ViewModels;
 using AmoraApp.Views;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls.Hosting;
 using Microsoft.Maui.Hosting;
-using Microsoft.Maui.LifecycleEvents;
 using Plugin.Maui.Audio;
+using Plugin.FirebasePushNotifications;
+using Microsoft.Maui.LifecycleEvents;
+
 
 #if WINDOWS
-using Microsoft.UI.Windowing;          // AppWindow, OverlappedPresenter
-using Windows.Graphics;                // SizeInt32
-using WinRT.Interop;                   // WindowNative.GetWindowHandle
+using Microsoft.UI.Windowing;
+using Windows.Graphics;
+using WinRT.Interop;
 #endif
 
 namespace AmoraApp
@@ -26,6 +29,7 @@ namespace AmoraApp
 
             builder
                 .UseMauiApp<App>()
+                .UseFirebasePushNotifications()
                 .ConfigureFonts(fonts =>
                 {
                     fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
@@ -35,12 +39,33 @@ namespace AmoraApp
             // Plugin.Maui.Audio
             builder.Services.AddSingleton(AudioManager.Current);
 
-            // ---------------------------
-            // CONFIGURAÇÃO DE JANELA FIXA NO WINDOWS
-            // ---------------------------
+            // SERVICES SINGLETONS
+            builder.Services.AddSingleton<FirebaseAuthService>(_ => FirebaseAuthService.Instance);
+            builder.Services.AddSingleton<FirebaseDatabaseService>(_ => FirebaseDatabaseService.Instance);
+
+            // VIEWMODELS
+            builder.Services.AddTransient<AuthViewModel>();
+            builder.Services.AddTransient<FeedViewModel>();
+            builder.Services.AddTransient<DiscoverViewModel>();
+            builder.Services.AddTransient<MessagesViewModel>();
+            builder.Services.AddTransient<ChatViewModel>();
+            builder.Services.AddTransient<ProfileViewModel>();
+            builder.Services.AddTransient<LikesViewModel>();
+
+            // PAGES
+            builder.Services.AddTransient<WelcomePage>(); // IMPORTANTE
+
+            builder.Services.AddTransient<LoginPage>();
+            builder.Services.AddTransient<FeedPage>();
+            builder.Services.AddTransient<DiscoverPage>();
+            builder.Services.AddTransient<MessagesPage>();
+            builder.Services.AddTransient<ChatPage>();
+            builder.Services.AddTransient<ProfilePage>();
+            builder.Services.AddTransient<LikesReceivedPage>();
+
+#if WINDOWS
             builder.ConfigureLifecycleEvents(events =>
             {
-#if WINDOWS
                 events.AddWindows(w =>
                 {
                     w.OnWindowCreated(window =>
@@ -51,7 +76,6 @@ namespace AmoraApp
                         try
                         {
                             var winuiWindow = (Microsoft.UI.Xaml.Window)window;
-
                             var hWnd = WindowNative.GetWindowHandle(winuiWindow);
                             var windowId = Microsoft.UI.Win32Interop.GetWindowIdFromWindow(hWnd);
                             var appWindow = AppWindow.GetFromWindowId(windowId);
@@ -74,42 +98,18 @@ namespace AmoraApp
                         }
                     });
                 });
-#endif
             });
+#endif
 
-            // ---------------------------
-            // SERVICES SINGLETONS
-            // ---------------------------
-            builder.Services.AddSingleton<FirebaseAuthService>(_ => FirebaseAuthService.Instance);
-            builder.Services.AddSingleton<FirebaseDatabaseService>(_ => FirebaseDatabaseService.Instance);
-
-            // ---------------------------
-            // VIEWMODELS
-            // ---------------------------
-            builder.Services.AddTransient<AuthViewModel>();
-            builder.Services.AddTransient<FeedViewModel>();
-            builder.Services.AddTransient<DiscoverViewModel>();
-            builder.Services.AddTransient<MessagesViewModel>();
-            builder.Services.AddTransient<ProfileViewModel>();
-
-            // ---------------------------
-            // VIEWS
-            // ---------------------------
-            builder.Services.AddTransient<LoginPage>();
-            builder.Services.AddTransient<RegisterPage>();
-            builder.Services.AddTransient<WelcomePage>();
-            builder.Services.AddTransient<DiscoverPage>();
-            builder.Services.AddTransient<FeedPage>();
-            builder.Services.AddTransient<ChatListPage>();
-            builder.Services.AddTransient<ChatPage>();
-            builder.Services.AddTransient<ProfilePage>();
-            builder.Services.AddTransient<FiltersPage>();
-            builder.Services.AddTransient<PhotoGalleryPage>();
-            builder.Services.AddTransient<UpgradePage>();
-
+#if DEBUG
+            builder.Logging.AddDebug();
+#endif
 
             var app = builder.Build();
             ServiceProvider = app.Services;
+
+            // Opcional: inicializa bootstrapper cedo (não trava se falhar)
+            _ = PushNotificationBootstrapper.InitializeAsync();
 
             return app;
         }

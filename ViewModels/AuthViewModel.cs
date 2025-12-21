@@ -243,6 +243,7 @@ namespace AmoraApp.ViewModels
                 }
 
                 await PresenceService.Instance.SetOnlineAsync(uid);
+                await PushNotificationBootstrapper.BindCurrentUserAsync(uid);
 
                 Application.Current.MainPage = new AppShell();
             }
@@ -628,6 +629,7 @@ namespace AmoraApp.ViewModels
             {
                 IsBusy = false;
             }
+
         }
 
         // =========================================================
@@ -638,6 +640,7 @@ namespace AmoraApp.ViewModels
         {
             if (Application.Current.MainPage is NavigationPage nav)
                 await nav.PushAsync(new Views.RegisterPage());
+
         }
 
         [RelayCommand]

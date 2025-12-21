@@ -12,12 +12,13 @@
 	<uses-permission android:name="android.permission.CAMERA" />
 	<uses-permission android:name="android.permission.RECORD_AUDIO" />
 
-	<!-- Diz que a câmera é opcional (app continua instalando em dispositivos sem câmera) -->
-	<uses-feature
-		android:name="android.hardware.camera"
-		android:required="false" />
+	<!-- ANDROID 13+ -->
+	<uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
-	<!-- ANDROID 11+ : VISIBILIDADE DE PACOTES (necessário para abrir a câmera) -->
+	<!-- Diz que a câmera é opcional -->
+	<uses-feature android:name="android.hardware.camera" android:required="false" />
+
+	<!-- ANDROID 11+ : VISIBILIDADE DE PACOTES -->
 	<queries>
 		<intent>
 			<action android:name="android.media.action.IMAGE_CAPTURE" />
@@ -30,5 +31,12 @@
 	<application
 		android:allowBackup="true"
 		android:icon="@mipmap/appicon"
-		android:supportsRtl="true" />
+		android:supportsRtl="true">
+
+		<!-- Canal padrão do FCM (precisa ficar DENTRO do application) -->
+		<meta-data
+			android:name="com.google.firebase.messaging.default_notification_channel_id"
+			android:value="amora_default" />
+
+	</application>
 </manifest>

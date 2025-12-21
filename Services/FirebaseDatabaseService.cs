@@ -1074,5 +1074,177 @@ namespace AmoraApp.Services
             // ainda suspenso
             return (true, rec.UntilUtcMs);
         }
+
+
+        // ============================================================
+        // PUSH TOKENS (FCM)
+        // ============================================================
+
+        public sealed class PushTokenRecord
+        {
+            public string Token { get; set; } = string.Empty;
+            public long UpdatedAtUtcMs { get; set; }
+            public string Platform { get; set; } = string.Empty;
+        }
+
+        public async Task SavePushTokenAsync(string uid, string platform, string token)
+        {
+            if (string.IsNullOrWhiteSpace(uid) || string.IsNullOrWhiteSpace(platform) || string.IsNullOrWhiteSpace(token))
+                return;
+
+            var idToken = await FirebaseAuthService.Instance.GetIdTokenAsync();
+            if (string.IsNullOrWhiteSpace(idToken))
+                return;
+
+            var u = Uri.EscapeDataString(uid);
+            var p = Uri.EscapeDataString(platform.ToLowerInvariant());
+
+            var rec = new PushTokenRecord
+            {
+                Token = token,
+                UpdatedAtUtcMs = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
+                Platform = platform.ToLowerInvariant()
+            };
+
+            // PUT é mais “determinístico” aqui (não depende de PATCH)
+            var url = WithAuth($"{BaseUrl}/pushTokens/{u}/{p}.json", idToken);
+            var json = JsonSerializer.Serialize(rec, _jsonOptions);
+            using var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            var resp = await _httpClient.PutAsync(url, content);
+            await EnsureSuccessAsync(resp);
+        }
+
+        public async Task RemovePushTokenAsync(string uid, string platform)
+        {
+            if (string.IsNullOrWhiteSpace(uid) || string.IsNullOrWhiteSpace(platform))
+                return;
+
+            var idToken = await FirebaseAuthService.Instance.GetIdTokenAsync();
+            if (string.IsNullOrWhiteSpace(idToken))
+                return;
+
+            var u = Uri.EscapeDataString(uid);
+            var p = Uri.EscapeDataString(platform.ToLowerInvariant());
+
+            var url = WithAuth($"{BaseUrl}/pushTokens/{u}/{p}.json", idToken);
+            var resp = await _httpClient.DeleteAsync(url);
+            await EnsureSuccessAsync(resp);
+        }
+
+        /// <summary>
+        /// Lê tokens do RTDB em /pushTokens/{uid}
+        /// Suporta:
+        /// A) pushTokens/{uid}/{platform} = "TOKEN"
+        /// B) pushTokens/{uid}/{platform}/{token} = true
+        /// C) pushTokens/{uid}/{platform} = { token, updatedAtUtcMs, platform }
+        /// </summary>
+        public async Task<IList<PushTokenRecord>> GetPushTokensAsync(string uid)
+        {
+            var list = new List<PushTokenRecord>();
+
+            if (string.IsNullOrWhiteSpace(uid))
+                return list;
+
+            var idToken = await FirebaseAuthService.Instance.GetIdTokenAsync();
+            if (string.IsNullOrWhiteSpace(idToken))
+                return list;
+
+            var u = Uri.EscapeDataString(uid);
+            var url = WithAuth($"{BaseUrl}/pushTokens/{u}.json", idToken);
+
+            var resp = await _httpClient.GetAsync(url);
+            if (!resp.IsSuccessStatusCode)
+                return list;
+
+            var json = await resp.Content.ReadAsStringAsync();
+            if (string.IsNullOrWhiteSpace(json) || json == "null")
+                return list;
+
+            using var doc = JsonDocument.Parse(json);
+            if (doc.RootElement.ValueKind != JsonValueKind.Object)
+                return list;
+
+            foreach (var platformProp in doc.RootElement.EnumerateObject())
+            {
+                var platform = platformProp.Name;
+                var pVal = platformProp.Value;
+
+                // A) string token
+                if (pVal.ValueKind == JsonValueKind.String)
+                {
+                    var tok = (pVal.GetString() ?? "").Trim();
+                    if (!string.IsNullOrWhiteSpace(tok))
+                    {
+                        list.Add(new PushTokenRecord { Platform = platform, Token = tok, UpdatedAtUtcMs = 0 });
+                    }
+                    continue;
+                }
+
+                if (pVal.ValueKind != JsonValueKind.Object)
+                    continue;
+
+                // C) objeto com campo "token"
+                if (pVal.TryGetProperty("token", out var tokenProp) && tokenProp.ValueKind == JsonValueKind.String)
+                {
+                    var tok = (tokenProp.GetString() ?? "").Trim();
+                    if (!string.IsNullOrWhiteSpace(tok))
+                    {
+                        long updated = 0;
+                        if (pVal.TryGetProperty("updatedAtUtcMs", out var up) && up.ValueKind == JsonValueKind.Number)
+                            updated = up.GetInt64();
+
+                        list.Add(new PushTokenRecord { Platform = platform, Token = tok, UpdatedAtUtcMs = updated });
+                    }
+                    continue;
+                }
+
+                // B) tokens como chaves
+                foreach (var tokenKey in pVal.EnumerateObject())
+                {
+                    var key = (tokenKey.Name ?? "").Trim();
+                    if (key.Length <= 20)
+                        continue;
+
+                    // token como chave => true/obj
+                    list.Add(new PushTokenRecord
+                    {
+                        Platform = platform,
+                        Token = key,
+                        UpdatedAtUtcMs = 0
+                    });
+                }
+            }
+
+            // dedup
+            var dedup = new Dictionary<string, PushTokenRecord>(StringComparer.Ordinal);
+            foreach (var r in list)
+            {
+                if (string.IsNullOrWhiteSpace(r.Token)) continue;
+                if (!dedup.ContainsKey(r.Token))
+                    dedup[r.Token] = r;
+            }
+
+            return new List<PushTokenRecord>(dedup.Values);
+        }
+
+        /// <summary>
+        /// Helper: retorna apenas strings (tokens), deduplicadas.
+        /// </summary>
+        public async Task<IList<string>> GetPushTokenStringsAsync(string uid)
+        {
+            var recs = await GetPushTokensAsync(uid);
+            var set = new HashSet<string>(StringComparer.Ordinal);
+
+            foreach (var r in recs)
+                if (!string.IsNullOrWhiteSpace(r.Token))
+                    set.Add(r.Token.Trim());
+
+            return new List<string>(set);
+        }
+
+
+
     }
+
 }

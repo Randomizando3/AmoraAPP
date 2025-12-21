@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "349766870580",
+    "firebase_url": "https://amora-app-dev-default-rtdb.firebaseio.com",
+    "project_id": "amora-app-dev",
+    "storage_bucket": "amora-app-dev.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:349766870580:android:14eea07afec35129b58c61",
+        "android_client_info": {
+          "package_name": "com.companyname.amoraapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "349766870580-ihqrflnadok5o920vg13uhrfkum2c6hn.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA3RSnqBCocRi6QLkYiiwNlhaSK6wHyN9w"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "349766870580-ihqrflnadok5o920vg13uhrfkum2c6hn.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

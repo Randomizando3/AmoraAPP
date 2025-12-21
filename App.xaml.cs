@@ -18,6 +18,8 @@ namespace AmoraApp
             {
                 // Usuário já está autenticado (Firebase persiste a sessão)
                 MainPage = new AppShell();
+                // garante token vinculado mesmo quando pula o Welcome
+                _ = PushNotificationBootstrapper.BindCurrentUserAsync(auth.CurrentUserUid);
             }
             else
             {
