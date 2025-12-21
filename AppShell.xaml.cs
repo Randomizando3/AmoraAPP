@@ -10,8 +10,6 @@ namespace AmoraApp
         {
             InitializeComponent();
 
-
-
             // Rotas gerais
             Routing.RegisterRoute(nameof(VerificationPage), typeof(VerificationPage));
             Routing.RegisterRoute(nameof(SupportPage), typeof(SupportPage));
