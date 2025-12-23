@@ -5,7 +5,9 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     x:Name="RootPage"
     BackgroundColor="#000000"
-    Shell.NavBarIsVisible="False">
+    Shell.NavBarIsVisible="False"
+    NavigationPage.HasNavigationBar="False"
+    NavigationPage.HasBackButton="False">
 
     <!-- GRID RAIZ: background (imagem) + conteúdo -->
     <Grid>

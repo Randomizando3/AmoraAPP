@@ -102,47 +102,97 @@ namespace AmoraApp.Views
 
         private async void OnChangePhotoClicked(object sender, EventArgs e)
         {
-            if (string.IsNullOrEmpty(_vm.CurrentUserId))
+            try
             {
-                var uid = FirebaseAuthService.Instance.CurrentUserUid;
+                // Garantir UID (sessão real)
+                var user = FirebaseAuthService.Instance.GetCurrentUser();
+                var uid = user?.Uid;
+
                 if (string.IsNullOrEmpty(uid))
                 {
-                    await DisplayAlert("Erro", "Usuário não autenticado.", "OK");
+                    await DisplayAlert("Erro", "Sessão expirada. Faça login novamente.", "OK");
                     return;
                 }
+
                 _vm.CurrentUserId = uid;
-            }
 
-            var action = await DisplayActionSheet(
-                "Foto de perfil",
-                "Cancelar",
-                null,
-                "Galeria",
-                "Câmera");
+                var hasPhoto = !string.IsNullOrWhiteSpace(_vm.PhotoUrl);
 
-            if (action == "Galeria")
-            {
-                var url = await PickFromGalleryAndUploadAsync(
-                    $"users/{_vm.CurrentUserId}/profile_{Guid.NewGuid():N}.jpg");
-
-                if (!string.IsNullOrEmpty(url))
+                string? action;
+                if (!hasPhoto)
                 {
-                    _vm.PhotoUrl = url;
-                    await _vm.SaveAsync();
+                    action = await DisplayActionSheet(
+                        "Foto de perfil",
+                        "Cancelar",
+                        null,
+                        "Galeria",
+                        "Câmera");
                 }
-            }
-            else if (action == "Câmera")
-            {
-                var url = await CaptureFromCameraAndUploadAsync(
-                    $"users/{_vm.CurrentUserId}/profile_{Guid.NewGuid():N}.jpg");
-
-                if (!string.IsNullOrEmpty(url))
+                else
                 {
-                    _vm.PhotoUrl = url;
-                    await _vm.SaveAsync();
+                    action = await DisplayActionSheet(
+                        "Foto de perfil",
+                        "Cancelar",
+                        "Remover",
+                        "Ver",
+                        "Substituir pela galeria",
+                        "Substituir pela câmera");
                 }
+
+                if (string.IsNullOrWhiteSpace(action) || action == "Cancelar")
+                    return;
+
+                if (action == "Ver")
+                {
+                    await Navigation.PushModalAsync(new PhotoPreviewPage(_vm.PhotoUrl));
+                    return;
+                }
+
+                if (action == "Remover")
+                {
+                    _vm.PhotoUrl = "";
+                    await _vm.SaveAsync();
+
+                    if (!string.IsNullOrEmpty(_vm.ErrorMessage))
+                        await DisplayAlert("Erro", _vm.ErrorMessage, "OK");
+
+                    return;
+                }
+
+                // Substituir / adicionar
+                if (action == "Galeria" || action == "Substituir pela galeria")
+                {
+                    var url = await PickFromGalleryAndUploadAsync(
+                        $"users/{_vm.CurrentUserId}/profile_{Guid.NewGuid():N}.jpg");
+
+                    if (!string.IsNullOrEmpty(url))
+                    {
+                        _vm.PhotoUrl = url;
+                        await _vm.SaveAsync();
+                    }
+                }
+                else if (action == "Câmera" || action == "Substituir pela câmera")
+                {
+                    var url = await CaptureFromCameraAndUploadAsync(
+                        $"users/{_vm.CurrentUserId}/profile_{Guid.NewGuid():N}.jpg");
+
+                    if (!string.IsNullOrEmpty(url))
+                    {
+                        _vm.PhotoUrl = url;
+                        await _vm.SaveAsync();
+                    }
+                }
+
+                if (!string.IsNullOrEmpty(_vm.ErrorMessage))
+                    await DisplayAlert("Erro", _vm.ErrorMessage, "OK");
+            }
+            catch (Exception ex)
+            {
+                await DisplayAlert("Erro", ex.Message, "OK");
             }
         }
+
+
 
         private async void OnExtraPhotoSlotTapped(object sender, TappedEventArgs e)
         {

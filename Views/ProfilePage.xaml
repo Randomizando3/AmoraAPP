@@ -107,8 +107,9 @@
                                     BackgroundColor="{StaticResource CardBackground}"
                                     IsClippedToBounds="True">
 
-                                    <Grid>
-                                        <Image Aspect="AspectFill" Source="{Binding PhotoUrl}">
+                                    <!-- IMPORTANTE: InputTransparent para não "engolir" o clique -->
+                                    <Grid InputTransparent="True">
+                                        <Image Aspect="AspectFill" Source="{Binding PhotoUrl}" InputTransparent="True">
                                             <Image.Triggers>
                                                 <DataTrigger TargetType="Image" Binding="{Binding PhotoUrl}" Value="">
                                                     <Setter Property="IsVisible" Value="False" />
@@ -125,7 +126,8 @@
                                             TextColor="{StaticResource AccentPink}"
                                             HorizontalOptions="Center"
                                             VerticalOptions="Center"
-                                            IsVisible="False">
+                                            IsVisible="False"
+                                            InputTransparent="True">
                                             <Label.Triggers>
                                                 <DataTrigger TargetType="Label" Binding="{Binding PhotoUrl}" Value="">
                                                     <Setter Property="IsVisible" Value="True" />
@@ -140,9 +142,18 @@
                                 </Frame>
                             </Frame>
 
-                            <Grid.GestureRecognizers>
-                                <TapGestureRecognizer Tapped="OnChangePhotoClicked" />
-                            </Grid.GestureRecognizers>
+                            <!-- Camada clicável (garante que SEMPRE dispara e abre o menu) -->
+                            <Button
+                                BackgroundColor="Transparent"
+                                BorderWidth="0"
+                                Text=""
+                                Clicked="OnChangePhotoClicked"
+                                HeightRequest="96"
+                                WidthRequest="96"
+                                CornerRadius="48"
+                                Padding="0"
+                                HorizontalOptions="Start"
+                                VerticalOptions="Start" />
                         </Grid>
 
                         <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="6">

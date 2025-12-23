@@ -5,7 +5,9 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     BackgroundColor="#000000"
     Shell.NavBarIsVisible="False"
-    Shell.BackgroundColor="#fcfcfc">
+    Shell.BackgroundColor="#fcfcfc"
+    NavigationPage.HasNavigationBar="False"
+    NavigationPage.HasBackButton="False">
 
     <!-- GRID RAIZ: background (imagem) + conteúdo + overlay de autenticação -->
     <Grid>

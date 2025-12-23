@@ -2,7 +2,6 @@
 using Firebase.Auth;
 using Firebase.Auth.Providers;
 using System.Threading.Tasks;
-using Microsoft.Maui.Storage;
 
 namespace AmoraApp.Services
 {
@@ -12,8 +11,6 @@ namespace AmoraApp.Services
 
         private readonly FirebaseAuthClient _client;
 
-        private const string AuthUidKey = "auth_uid";
-
         private FirebaseAuthService()
         {
             var config = new FirebaseAuthConfig
@@ -22,7 +19,6 @@ namespace AmoraApp.Services
                 AuthDomain = FirebaseSettings.AuthDomain,
                 Providers = new FirebaseAuthProvider[]
                 {
-                    // Habilita Google + Email/senha
                     new GoogleProvider().AddScopes("email"),
                     new EmailProvider()
                 }
@@ -33,24 +29,10 @@ namespace AmoraApp.Services
 
         public FirebaseAuthClient Client => _client;
 
-        public string? CurrentUserUid
-        {
-            get
-            {
-                if (_client?.User != null)
-                    return _client.User.Uid;
+        // UID somente se houver sessão real
+        public string? CurrentUserUid => _client?.User?.Uid;
 
-                if (Preferences.ContainsKey(AuthUidKey))
-                    return Preferences.Get(AuthUidKey, null);
-
-                return null;
-            }
-        }
-
-        public User? GetCurrentUser()
-        {
-            return _client?.User;
-        }
+        public User? GetCurrentUser() => _client?.User;
 
         public async Task<string?> GetIdTokenAsync()
         {
@@ -61,49 +43,18 @@ namespace AmoraApp.Services
             return await user.GetIdTokenAsync();
         }
 
-        public async Task<UserCredential> RegisterWithEmailPasswordAsync(
-            string email,
-            string password,
-            string displayName)
-        {
-            var userCredential = await _client.CreateUserWithEmailAndPasswordAsync(
-                email, password, displayName);
+        public Task<UserCredential> RegisterWithEmailPasswordAsync(string email, string password, string displayName)
+            => _client.CreateUserWithEmailAndPasswordAsync(email, password, displayName);
 
-            if (userCredential?.User != null)
-                Preferences.Set(AuthUidKey, userCredential.User.Uid);
-
-            return userCredential;
-        }
-
-        public async Task<UserCredential> LoginWithEmailPasswordAsync(
-            string email,
-            string password)
-        {
-            var userCredential = await _client.SignInWithEmailAndPasswordAsync(email, password);
-
-            if (userCredential?.User != null)
-                Preferences.Set(AuthUidKey, userCredential.User.Uid);
-
-            return userCredential;
-        }
+        public Task<UserCredential> LoginWithEmailPasswordAsync(string email, string password)
+            => _client.SignInWithEmailAndPasswordAsync(email, password);
 
         public void Logout()
         {
-            // remove o UID salvo sempre
-            Preferences.Remove(AuthUidKey);
-
-            // SE não houver usuário, não chamar SignOut (pois dá NullReference)
             if (_client?.User == null)
                 return;
 
-            try
-            {
-                _client.SignOut();
-            }
-            catch
-            {
-                // Se der erro, ignoramos — o logout externo já foi feito
-            }
+            try { _client.SignOut(); } catch { }
         }
     }
 }

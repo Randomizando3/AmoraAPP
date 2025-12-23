@@ -469,15 +469,17 @@ namespace AmoraApp.ViewModels
 
             try
             {
-                var uid = _authService.CurrentUserUid;
-                if (string.IsNullOrEmpty(uid))
+                var user = _authService.GetCurrentUser();
+                if (user == null)
                 {
-                    ErrorMessage = "Usuário não autenticado.";
+                    ErrorMessage = "Sessão expirada. Faça login novamente.";
                     return;
                 }
 
+                var uid = user.Uid;
                 CurrentUserId = uid;
                 IsAdmin = AdminAccessService.IsAdmin(uid);
+
 
                 var profile = await _dbService.GetUserProfileAsync(uid);
 

@@ -12,7 +12,7 @@
         // UID(s) que podem acessar o painel admin
         public static readonly HashSet<string> AdminUids = new HashSet<string>
         {
-            "Ep59iQaDLRffCqQ0Ft7jwE7KEfF2"
+            "KQthqzhcHeVVeAOCdWUFvEwrAfA2"
         };
     }
 }
