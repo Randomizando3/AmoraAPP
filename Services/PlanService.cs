@@ -21,6 +21,15 @@ namespace AmoraApp.Services
     }
 
     /// <summary>
+    /// NOVO: retorno simples para UI (plano + dias restantes)
+    /// </summary>
+    public class PlanStatusInfo
+    {
+        public PlanType Plan { get; set; } = PlanType.Free;
+        public int RemainingDays { get; set; } = 0;
+    }
+
+    /// <summary>
     /// Registro completo que fica em /plans/{uid}.
     /// </summary>
     public class UserPlanRecord
@@ -140,8 +149,48 @@ namespace AmoraApp.Services
         }
 
         // =========================================================
-        // PLANO ATUAL DO USUÁRIO
+        // PLANO ATUAL DO USUÁRIO (COM DIAS RESTANTES)
         // =========================================================
+
+        /// <summary>
+        /// NOVO: retorna plano + dias restantes (decrescente) e faz downgrade se expirou.
+        /// </summary>
+        public async Task<PlanStatusInfo> GetUserPlanStatusAsync(string uid)
+        {
+            if (string.IsNullOrWhiteSpace(uid))
+                return new PlanStatusInfo { Plan = PlanType.Free, RemainingDays = 0 };
+
+            try
+            {
+                var record = await GetPlanRecordAsync(uid);
+                if (record == null || record.ExpiresAtUtc <= 0)
+                    return new PlanStatusInfo { Plan = PlanType.Free, RemainingDays = 0 };
+
+                var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+                var secondsLeft = record.ExpiresAtUtc - now;
+
+                if (secondsLeft <= 0)
+                {
+                    // expirou -> volta para Free
+                    await DowngradeToFreeAsync(uid);
+                    return new PlanStatusInfo { Plan = PlanType.Free, RemainingDays = 0 };
+                }
+
+                // Dias restantes: 30..2..1, e quando expirar vira Free
+                var daysLeft = (int)Math.Ceiling(secondsLeft / 86400.0);
+                if (daysLeft < 0) daysLeft = 0;
+
+                return new PlanStatusInfo
+                {
+                    Plan = ParsePlanFromString(record.PlanType),
+                    RemainingDays = daysLeft
+                };
+            }
+            catch
+            {
+                return new PlanStatusInfo { Plan = PlanType.Free, RemainingDays = 0 };
+            }
+        }
 
         /// <summary>
         /// Lê o plano atual do usuário considerando expiração.

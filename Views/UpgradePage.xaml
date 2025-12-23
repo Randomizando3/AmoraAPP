@@ -25,6 +25,13 @@
                        Text="Seu plano atual é: Grátis"
                        FontSize="13"
                        TextColor="#7C7C7C" />
+
+                <!-- NOVO: dias restantes do plano -->
+                <Label x:Name="RemainingDaysLabel"
+                       Text=""
+                       FontSize="12"
+                       TextColor="#7C7C7C"
+                       IsVisible="False" />
             </StackLayout>
         </Grid>
 

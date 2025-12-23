@@ -30,7 +30,7 @@
             Route="discover"
             Icon="home.png"
             ContentTemplate="{DataTemplate views:DiscoverPage}"
-            Title="{OnPlatform Android='Discover', iOS='Discover', WinUI=''}" />
+            Title="{OnPlatform Android='Descubra', iOS='Descubra', WinUI=''}" />
 
         <!-- Feed -->
         <ShellContent

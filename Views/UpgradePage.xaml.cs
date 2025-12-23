@@ -42,14 +42,28 @@ namespace AmoraApp.Views
                 if (string.IsNullOrWhiteSpace(CurrentUserId))
                 {
                     CurrentPlanLabel.Text = "Faça login para ver seu plano.";
+                    RemainingDaysLabel.IsVisible = false;
                     return;
                 }
 
-                var plan = await PlanService.Instance.GetUserPlanAsync(CurrentUserId);
+                // NOVO: pega plano + dias restantes (e faz downgrade se expirou)
+                var info = await PlanService.Instance.GetUserPlanStatusAsync(CurrentUserId);
+
+                var plan = info.Plan;
                 var planName = PlanService.Instance.GetPlanDisplayName(plan);
 
-                // Trecho explícito: "Seu plano atual é tal..."
                 CurrentPlanLabel.Text = $"Seu plano atual é: {planName}";
+
+                // Exibe dias restantes apenas se não for Free
+                if (plan != PlanType.Free && info.RemainingDays > 0)
+                {
+                    RemainingDaysLabel.Text = $"Restam {info.RemainingDays} dia(s)";
+                    RemainingDaysLabel.IsVisible = true;
+                }
+                else
+                {
+                    RemainingDaysLabel.IsVisible = false;
+                }
 
                 // Deixa o botão do plano atual desabilitado / marcado
                 FreePlanButton.IsEnabled = plan != PlanType.Free;
@@ -79,6 +93,7 @@ namespace AmoraApp.Views
             {
                 Console.WriteLine($"[UpgradePage] Erro ao carregar plano: {ex}");
                 CurrentPlanLabel.Text = "Não foi possível carregar seu plano.";
+                RemainingDaysLabel.IsVisible = false;
             }
         }
 
