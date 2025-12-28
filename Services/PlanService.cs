@@ -1,5 +1,6 @@
 ﻿using AmoraApp.Config;
 using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
@@ -21,26 +22,41 @@ namespace AmoraApp.Services
     }
 
     /// <summary>
-    /// NOVO: retorno simples para UI (plano + dias restantes)
-    /// </summary>
-    public class PlanStatusInfo
-    {
-        public PlanType Plan { get; set; } = PlanType.Free;
-        public int RemainingDays { get; set; } = 0;
-    }
-
-    /// <summary>
     /// Registro completo que fica em /plans/{uid}.
     /// </summary>
     public class UserPlanRecord
     {
         public string PlanType { get; set; } = "Free";   // "Free", "Plus", "Premium"
-        public string Period { get; set; } = "monthly";  // "monthly", "yearly"
+        public string Period { get; set; } = "monthly";  // "monthly", "yearly", "coupon"
         public long StartedAtUtc { get; set; } = 0;      // Unix seconds
         public long ExpiresAtUtc { get; set; } = 0;      // Unix seconds
 
         public int BoostsAvailable { get; set; } = 0;
         public long LastBoostGrantUtc { get; set; } = 0;
+    }
+
+    // =========================
+    // NOVO: CUPONS
+    // =========================
+    public class CouponRecord
+    {
+        public string Code { get; set; } = "";
+        public string Plan { get; set; } = ""; // "Plus", "Premium", "Boosts"
+        public int Days { get; set; } = 0;     // Ex.: 90
+        public int Boosts { get; set; } = 0;   // Ex.: 10 (quando Plan="Boosts")
+
+        // melhor formato no RTDB (evita duplicados e PATCH fácil):
+        // users: { "uid1": true, "uid2": true }
+        public Dictionary<string, bool> Users { get; set; } = new Dictionary<string, bool>();
+
+        // true = cupom ativo (válido)
+        public bool Activated { get; set; } = true;
+    }
+
+    public class CouponRedeemResult
+    {
+        public bool Success { get; set; }
+        public string Message { get; set; } = "";
     }
 
     public class PlanService
@@ -66,9 +82,6 @@ namespace AmoraApp.Services
         // HELPERS GERAIS
         // =========================================================
 
-        /// <summary>
-        /// Nome bonitinho do plano para exibir na UI.
-        /// </summary>
         public string GetPlanDisplayName(PlanType plan) =>
             plan switch
             {
@@ -77,9 +90,6 @@ namespace AmoraApp.Services
                 _ => "Grátis"
             };
 
-        /// <summary>
-        /// Converte string de banco para enum.
-        /// </summary>
         public PlanType ParsePlanFromString(string? plan)
         {
             if (string.IsNullOrWhiteSpace(plan))
@@ -95,18 +105,6 @@ namespace AmoraApp.Services
 
         private string PeriodToString(PlanPeriod period) =>
             period == PlanPeriod.Yearly ? "yearly" : "monthly";
-
-        private PlanPeriod ParsePeriodFromString(string? period)
-        {
-            if (string.IsNullOrWhiteSpace(period))
-                return PlanPeriod.Monthly;
-
-            return period.ToLowerInvariant() switch
-            {
-                "yearly" => PlanPeriod.Yearly,
-                _ => PlanPeriod.Monthly
-            };
-        }
 
         // =========================================================
         // ACESSO AO REGISTRO COMPLETO /plans/{uid}
@@ -149,53 +147,9 @@ namespace AmoraApp.Services
         }
 
         // =========================================================
-        // PLANO ATUAL DO USUÁRIO (COM DIAS RESTANTES)
+        // PLANO ATUAL DO USUÁRIO
         // =========================================================
 
-        /// <summary>
-        /// NOVO: retorna plano + dias restantes (decrescente) e faz downgrade se expirou.
-        /// </summary>
-        public async Task<PlanStatusInfo> GetUserPlanStatusAsync(string uid)
-        {
-            if (string.IsNullOrWhiteSpace(uid))
-                return new PlanStatusInfo { Plan = PlanType.Free, RemainingDays = 0 };
-
-            try
-            {
-                var record = await GetPlanRecordAsync(uid);
-                if (record == null || record.ExpiresAtUtc <= 0)
-                    return new PlanStatusInfo { Plan = PlanType.Free, RemainingDays = 0 };
-
-                var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-                var secondsLeft = record.ExpiresAtUtc - now;
-
-                if (secondsLeft <= 0)
-                {
-                    // expirou -> volta para Free
-                    await DowngradeToFreeAsync(uid);
-                    return new PlanStatusInfo { Plan = PlanType.Free, RemainingDays = 0 };
-                }
-
-                // Dias restantes: 30..2..1, e quando expirar vira Free
-                var daysLeft = (int)Math.Ceiling(secondsLeft / 86400.0);
-                if (daysLeft < 0) daysLeft = 0;
-
-                return new PlanStatusInfo
-                {
-                    Plan = ParsePlanFromString(record.PlanType),
-                    RemainingDays = daysLeft
-                };
-            }
-            catch
-            {
-                return new PlanStatusInfo { Plan = PlanType.Free, RemainingDays = 0 };
-            }
-        }
-
-        /// <summary>
-        /// Lê o plano atual do usuário considerando expiração.
-        /// Se expirou ou não tiver registro válido, retorna Free.
-        /// </summary>
         public async Task<PlanType> GetUserPlanAsync(string uid)
         {
             if (string.IsNullOrWhiteSpace(uid))
@@ -207,14 +161,12 @@ namespace AmoraApp.Services
                 if (record == null)
                     return PlanType.Free;
 
-                // Se não tiver expiração definida, trata como plano inválido → Free
                 if (record.ExpiresAtUtc <= 0)
                     return PlanType.Free;
 
                 var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
                 if (now >= record.ExpiresAtUtc)
                 {
-                    // Plano expirado → volta para Free
                     await DowngradeToFreeAsync(uid);
                     return PlanType.Free;
                 }
@@ -227,9 +179,6 @@ namespace AmoraApp.Services
             }
         }
 
-        /// <summary>
-        /// Para compatibilidade: em vez de só setar planType, já ativa o plano como mensal.
-        /// </summary>
         public async Task SetUserPlanAsync(string uid, PlanType plan)
         {
             if (string.IsNullOrWhiteSpace(uid))
@@ -238,9 +187,6 @@ namespace AmoraApp.Services
             await ActivatePlanAsync(uid, plan, PlanPeriod.Monthly);
         }
 
-        /// <summary>
-        /// Força downgrade para Free (usado quando expira).
-        /// </summary>
         public async Task DowngradeToFreeAsync(string uid)
         {
             if (string.IsNullOrWhiteSpace(uid))
@@ -259,10 +205,6 @@ namespace AmoraApp.Services
             await SavePlanRecordAsync(uid, record);
         }
 
-        /// <summary>
-        /// Ativa um plano (Plus/Premium) com período mensal ou anual.
-        /// Calcula startedAt / expiresAt e credita boosts incluídos.
-        /// </summary>
         public async Task ActivatePlanAsync(string uid, PlanType plan, PlanPeriod period)
         {
             if (string.IsNullOrWhiteSpace(uid))
@@ -273,9 +215,9 @@ namespace AmoraApp.Services
 
             DateTimeOffset expiresDate;
             if (period == PlanPeriod.Monthly)
-                expiresDate = now.AddDays(30); // 30 dias fictícios
+                expiresDate = now.AddDays(30);
             else
-                expiresDate = now.AddYears(1); // 1 ano fictício
+                expiresDate = now.AddYears(1);
 
             var expires = expiresDate.ToUnixTimeSeconds();
 
@@ -294,11 +236,136 @@ namespace AmoraApp.Services
             record.StartedAtUtc = started;
             record.ExpiresAtUtc = expires;
 
-            // soma boosts incluídos no saldo (se já tinha compras avulsas, mantém)
             record.BoostsAvailable += includedBoosts;
             record.LastBoostGrantUtc = started;
 
             await SavePlanRecordAsync(uid, record);
+        }
+
+        // =========================
+        // NOVO: ATIVAR PLANO POR DIAS (CUPOM)
+        // =========================
+        public async Task ActivatePlanForDaysAsync(string uid, PlanType plan, int days)
+        {
+            if (string.IsNullOrWhiteSpace(uid))
+                return;
+
+            if (days <= 0)
+                days = 30;
+
+            var now = DateTimeOffset.UtcNow;
+            var started = now.ToUnixTimeSeconds();
+            var expires = now.AddDays(days).ToUnixTimeSeconds();
+
+            var includedBoosts = GetIncludedBoosts(plan);
+
+            var record = await GetPlanRecordAsync(uid) ?? new UserPlanRecord();
+
+            record.PlanType = plan switch
+            {
+                PlanType.Plus => "Plus",
+                PlanType.Premium => "Premium",
+                _ => "Free"
+            };
+
+            record.Period = "coupon";
+            record.StartedAtUtc = started;
+            record.ExpiresAtUtc = expires;
+
+            record.BoostsAvailable += includedBoosts;
+            record.LastBoostGrantUtc = started;
+
+            await SavePlanRecordAsync(uid, record);
+        }
+
+        // =========================================================
+        // CUPONS
+        // =========================================================
+        private async Task<CouponRecord?> GetCouponAsync(string code)
+        {
+            if (string.IsNullOrWhiteSpace(code))
+                return null;
+
+            try
+            {
+                var safe = code.Trim();
+                var url = $"{_baseUrl}/coupons/{safe}.json";
+                var res = await _http.GetAsync(url);
+                var json = await res.Content.ReadAsStringAsync();
+
+                if (!res.IsSuccessStatusCode)
+                    return null;
+
+                if (string.IsNullOrWhiteSpace(json) || json == "null")
+                    return null;
+
+                return JsonSerializer.Deserialize<CouponRecord>(json, _opts);
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        private async Task MarkCouponUsedByUserAsync(string code, string uid)
+        {
+            // PATCH “barato”: escreve users/{uid} = true
+            var safe = code.Trim();
+            var path = $"{_baseUrl}/coupons/{safe}/users/{uid}.json";
+            await _http.PutAsync(path, new StringContent("true", Encoding.UTF8, "application/json"));
+        }
+
+        public async Task<CouponRedeemResult> RedeemCouponAsync(string uid, string code)
+        {
+            if (string.IsNullOrWhiteSpace(uid))
+                return new CouponRedeemResult { Success = false, Message = "Login necessário." };
+
+            code = (code ?? "").Trim();
+            if (string.IsNullOrWhiteSpace(code))
+                return new CouponRedeemResult { Success = false, Message = "Cupom inválido." };
+
+            var coupon = await GetCouponAsync(code);
+            if (coupon == null)
+                return new CouponRedeemResult { Success = false, Message = "Cupom não encontrado ou oferta inválida." };
+
+            if (!coupon.Activated)
+                return new CouponRedeemResult { Success = false, Message = "Oferta inválida ou expirada." };
+
+            if (coupon.Users != null && coupon.Users.ContainsKey(uid))
+                return new CouponRedeemResult { Success = false, Message = "Você já ativou este cupom." };
+
+            var planStr = (coupon.Plan ?? "").Trim().ToLowerInvariant();
+
+            if (planStr == "plus" || planStr == "premium")
+            {
+                var plan = planStr == "premium" ? PlanType.Premium : PlanType.Plus;
+                var days = coupon.Days <= 0 ? 90 : coupon.Days;
+
+                await ActivatePlanForDaysAsync(uid, plan, days);
+                await MarkCouponUsedByUserAsync(code, uid);
+
+                return new CouponRedeemResult
+                {
+                    Success = true,
+                    Message = $"Cupom ativado! Plano {GetPlanDisplayName(plan)} liberado por {days} dias."
+                };
+            }
+
+            if (planStr == "boosts" || planStr == "boosters" || planStr == "boost")
+            {
+                var qty = coupon.Boosts <= 0 ? 10 : coupon.Boosts;
+
+                await AddUserBoostsAsync(uid, qty);
+                await MarkCouponUsedByUserAsync(code, uid);
+
+                return new CouponRedeemResult
+                {
+                    Success = true,
+                    Message = $"Cupom ativado! Você recebeu {qty} boost(s)."
+                };
+            }
+
+            return new CouponRedeemResult { Success = false, Message = "Cupom inválido." };
         }
 
         // =========================================================
@@ -338,9 +405,6 @@ namespace AmoraApp.Services
         private string TodayKeyUtc() =>
             DateTime.UtcNow.ToString("yyyyMMdd");
 
-        /// <summary>
-        /// Verifica se usuário ainda pode dar like hoje.
-        /// </summary>
         public async Task<bool> CanUseLikeAsync(string uid)
         {
             var plan = await GetUserPlanAsync(uid);
@@ -359,9 +423,6 @@ namespace AmoraApp.Services
             return count < FreeDailyLikeLimit;
         }
 
-        /// <summary>
-        /// Registra que o usuário usou 1 like hoje (somente plano grátis).
-        /// </summary>
         public async Task RegisterLikeAsync(string uid)
         {
             var plan = await GetUserPlanAsync(uid);
@@ -385,12 +446,9 @@ namespace AmoraApp.Services
         }
 
         // =========================================================
-        // BOOSTS (SALDOS AVULSOS + INCLUÍDOS)
+        // BOOSTS
         // =========================================================
 
-        /// <summary>
-        /// Lê quantos boosts o usuário tem disponíveis em /plans/{uid}/boostsAvailable.
-        /// </summary>
         public async Task<int> GetUserBoostsAsync(string uid)
         {
             if (string.IsNullOrWhiteSpace(uid))
@@ -415,9 +473,6 @@ namespace AmoraApp.Services
             }
         }
 
-        /// <summary>
-        /// Soma boosts ao saldo do usuário (usado para planos ou compras avulsas).
-        /// </summary>
         public async Task AddUserBoostsAsync(string uid, int quantity)
         {
             if (string.IsNullOrWhiteSpace(uid) || quantity <= 0)
@@ -432,9 +487,50 @@ namespace AmoraApp.Services
                 new StringContent(newValue.ToString(), Encoding.UTF8, "application/json"));
         }
 
-        /// <summary>
-        /// Consome 1 boost se houver saldo. Retorna true se conseguiu usar.
-        /// </summary>
+        public class PlanStatusInfo
+        {
+            public PlanType Plan { get; set; } = PlanType.Free;
+            public int RemainingDays { get; set; } = 0;
+        }
+
+        public async Task<PlanStatusInfo> GetUserPlanStatusAsync(string uid)
+        {
+            if (string.IsNullOrWhiteSpace(uid))
+                return new PlanStatusInfo { Plan = PlanType.Free, RemainingDays = 0 };
+
+            try
+            {
+                var record = await GetPlanRecordAsync(uid);
+                if (record == null || record.ExpiresAtUtc <= 0)
+                    return new PlanStatusInfo { Plan = PlanType.Free, RemainingDays = 0 };
+
+                var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+                var secondsLeft = record.ExpiresAtUtc - now;
+
+                if (secondsLeft <= 0)
+                {
+                    // expirou -> volta para Free
+                    await DowngradeToFreeAsync(uid);
+                    return new PlanStatusInfo { Plan = PlanType.Free, RemainingDays = 0 };
+                }
+
+                // Dias restantes (decrescente)
+                var daysLeft = (int)Math.Ceiling(secondsLeft / 86400.0);
+                if (daysLeft < 0) daysLeft = 0;
+
+                return new PlanStatusInfo
+                {
+                    Plan = ParsePlanFromString(record.PlanType),
+                    RemainingDays = daysLeft
+                };
+            }
+            catch
+            {
+                return new PlanStatusInfo { Plan = PlanType.Free, RemainingDays = 0 };
+            }
+        }
+
+
         public async Task<bool> ConsumeBoostAsync(string uid)
         {
             if (string.IsNullOrWhiteSpace(uid))

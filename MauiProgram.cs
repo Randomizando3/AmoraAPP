@@ -10,11 +10,15 @@ using Plugin.Maui.Audio;
 using Plugin.FirebasePushNotifications;
 using Microsoft.Maui.LifecycleEvents;
 
-
 #if WINDOWS
 using Microsoft.UI.Windowing;
 using Windows.Graphics;
 using WinRT.Interop;
+#endif
+
+#if ANDROID
+using Android.Webkit;
+using Microsoft.Maui.Handlers;
 #endif
 
 namespace AmoraApp
@@ -22,6 +26,46 @@ namespace AmoraApp
     public static class MauiProgram
     {
         public static IServiceProvider ServiceProvider { get; private set; }
+
+#if ANDROID
+        // Handler customizado para liberar autoplay e file:// no Android WebView
+        private sealed class CustomWebViewHandler : WebViewHandler
+        {
+            protected override void ConnectHandler(Android.Webkit.WebView platformView)
+            {
+                base.ConnectHandler(platformView);
+
+                try
+                {
+                    var s = platformView.Settings;
+
+                    s.JavaScriptEnabled = true;
+
+                    // PERMITE autoplay sem toque (resolve o "triângulo de play")
+                    s.MediaPlaybackRequiresUserGesture = false;
+
+                    // Permite carregar file:// no <video> source
+                    s.AllowFileAccess = true;
+                    s.AllowContentAccess = true;
+
+                    // Permite file:// acessar file:// e outras origens (precisa para alguns devices)
+                    s.AllowFileAccessFromFileURLs = true;
+                    s.AllowUniversalAccessFromFileURLs = true;
+
+                    // Evita bloqueio por mixed content (mais “permissivo”)
+                    s.MixedContentMode = MixedContentHandling.AlwaysAllow;
+
+                    // Mantém playback inline
+                    // (Android WebView já tende a usar inline; isso ajuda em alguns aparelhos)
+                    platformView.SetWebChromeClient(new WebChromeClient());
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine("[CustomWebViewHandler] erro: " + ex);
+                }
+            }
+        }
+#endif
 
         public static MauiApp CreateMauiApp()
         {
@@ -35,6 +79,14 @@ namespace AmoraApp
                     fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
                     fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
                 });
+
+#if ANDROID
+            // Aplica handler custom no Android
+            builder.ConfigureMauiHandlers(handlers =>
+            {
+                handlers.AddHandler(typeof(Microsoft.Maui.Controls.WebView), typeof(CustomWebViewHandler));
+            });
+#endif
 
             // Plugin.Maui.Audio
             builder.Services.AddSingleton(AudioManager.Current);
@@ -53,9 +105,10 @@ namespace AmoraApp
             builder.Services.AddTransient<LikesViewModel>();
 
             // PAGES
-            builder.Services.AddTransient<WelcomePage>(); // IMPORTANTE
-
+            builder.Services.AddTransient<WelcomePage>();
             builder.Services.AddTransient<LoginPage>();
+            builder.Services.AddTransient<RegisterPage>();
+
             builder.Services.AddTransient<FeedPage>();
             builder.Services.AddTransient<DiscoverPage>();
             builder.Services.AddTransient<MessagesPage>();
@@ -108,7 +161,6 @@ namespace AmoraApp
             var app = builder.Build();
             ServiceProvider = app.Services;
 
-            // Opcional: inicializa bootstrapper cedo (não trava se falhar)
             _ = PushNotificationBootstrapper.InitializeAsync();
 
             return app;

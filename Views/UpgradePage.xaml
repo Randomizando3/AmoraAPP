@@ -25,19 +25,54 @@
                        Text="Seu plano atual é: Grátis"
                        FontSize="13"
                        TextColor="#7C7C7C" />
-
-                <!-- NOVO: dias restantes do plano -->
                 <Label x:Name="RemainingDaysLabel"
-                       Text=""
-                       FontSize="12"
-                       TextColor="#7C7C7C"
-                       IsVisible="False" />
+           Text=""
+           FontSize="12"
+           TextColor="#7C7C7C"
+           IsVisible="False" />
             </StackLayout>
         </Grid>
 
         <!-- CONTEÚDO -->
         <ScrollView Grid.Row="1">
             <VerticalStackLayout Spacing="18">
+
+                <!-- NOVO: CUPOM (NO TOPO) -->
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="Oferta via cupom"
+                           FontSize="16"
+                           FontAttributes="Bold"
+                           TextColor="#222222" />
+
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                        <Frame BackgroundColor="White"
+                               CornerRadius="14"
+                               HasShadow="False"
+                               Padding="12,8">
+                            <Entry x:Name="CouponEntry"
+                                   Placeholder="Digite seu cupom"
+                                   BackgroundColor="Transparent"
+                                   TextColor="#222222"
+                                   PlaceholderColor="#9CA3AF"
+                                   FontSize="14" />
+                        </Frame>
+
+                        <Button x:Name="ApplyCouponButton"
+                                Grid.Column="1"
+                                Text="Ativar"
+                                HeightRequest="44"
+                                CornerRadius="12"
+                                Padding="14,0"
+                                BackgroundColor="#5d259c"
+                                TextColor="White"
+                                FontAttributes="Bold"
+                                Clicked="OnApplyCouponClicked" />
+                    </Grid>
+
+                    <Label Text="O cupom só pode ser usado uma vez por conta."
+                           FontSize="11"
+                           TextColor="#888888" />
+                </VerticalStackLayout>
 
                 <!-- Aviso rápido -->
                 <Frame BackgroundColor="#FFEDE7F6"

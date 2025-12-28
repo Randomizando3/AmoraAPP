@@ -3,73 +3,79 @@
     x:Class="AmoraApp.Views.WelcomePage"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    BackgroundColor="#FFF5F9"
-    Shell.NavBarIsVisible="False">
+    BackgroundColor="Black"
+    Shell.NavBarIsVisible="False"
+    NavigationPage.HasNavigationBar="False"
+    NavigationPage.HasBackButton="False">
 
-    <Grid RowDefinitions="*,Auto" Padding="24">
+    <Grid>
 
-        <!-- Top - imagem + texto -->
-        <VerticalStackLayout
-            Grid.Row="0"
-            Spacing="24"
-            VerticalOptions="CenterAndExpand">
+        <!-- FUNDO: Vídeo via WebView (HTML5 video local) -->
+        <WebView
+            x:Name="BgWeb"
+            HorizontalOptions="FillAndExpand"
+            VerticalOptions="FillAndExpand" />
 
-            <!-- Círculo / logo -->
-            <Grid HeightRequest="180" HorizontalOptions="Center">
-                <Grid.Background>
-                    <RadialGradientBrush>
-                        <GradientStop Color="#FF8BBF" Offset="0.0" />
-                        <GradientStop Color="#FFF5F9" Offset="1.0" />
-                    </RadialGradientBrush>
-                </Grid.Background>
+        <!-- Overlay para contraste -->
+        <BoxView Opacity="0.35" BackgroundColor="Black" />
+
+        <!-- CONTEÚDO -->
+        <Grid RowDefinitions="*,Auto" Padding="24">
+
+            <VerticalStackLayout
+                Grid.Row="0"
+                Spacing="16"
+                VerticalOptions="CenterAndExpand">
+
+                <!-- LOGO (branco) -->
+                <Image
+                    Source="logowhite.png"
+                    HeightRequest="230"
+                    HorizontalOptions="Center"
+                    Aspect="AspectFit"
+                    Margin="0,0,0,6" />
 
                 <Label
-                    Text="💗"
-                    FontSize="72"
-                    HorizontalOptions="Center"
-                    VerticalOptions="Center" />
-            </Grid>
+                    Text="Encontros que florescem de verdade."
+                    FontSize="16"
+                    HorizontalTextAlignment="Center"
+                    TextColor="#F3F4F6"
+                    Margin="10,0" />
 
-            <Label
-                Text="Discover Your Dream Partner"
-                FontSize="26"
-                FontAttributes="Bold"
-                HorizontalTextAlignment="Center"
-                TextColor="#262626" />
+                <Label
+                    Text="Descubra pessoas, faça conexões e crie momentos com segurança e leveza. Um passo de cada vez."
+                    FontSize="13"
+                    HorizontalTextAlignment="Center"
+                    TextColor="#E5E7EB"
+                    Margin="18,0" />
+            </VerticalStackLayout>
 
-            <Label
-                Text="Swipe right to like someone, and if you both like each other, it's a match!"
-                FontSize="14"
-                HorizontalTextAlignment="Center"
-                TextColor="#777777"
-                Margin="12,0" />
-        </VerticalStackLayout>
+            <VerticalStackLayout Grid.Row="1" Spacing="12">
+                <Button
+                    Text="Entrar"
+                    Clicked="OnLoginClicked"
+                    CornerRadius="22"
+                    HeightRequest="48"
+                    TextColor="White">
+                    <Button.Background>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                            <GradientStop Color="#5d259c" Offset="0.0" />
+                            <GradientStop Color="#5d25c0" Offset="1.0" />
+                        </LinearGradientBrush>
+                    </Button.Background>
+                </Button>
 
-        <!-- Bottom - botões -->
-        <VerticalStackLayout Grid.Row="1" Spacing="12">
-            <Button
-                Text="Login"
-                Clicked="OnLoginClicked"
-                CornerRadius="22"
-                HeightRequest="48"
-                TextColor="White">
-                <Button.Background>
-                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
-                        <GradientStop Color="#5d259c" Offset="0.0" />
-                        <GradientStop Color="#5d25c0" Offset="1.0" />
-                    </LinearGradientBrush>
-                </Button.Background>
-            </Button>
+                <Button
+                    Text="Criar conta"
+                    Clicked="OnRegisterClicked"
+                    CornerRadius="22"
+                    HeightRequest="48"
+                    BackgroundColor="White"
+                    TextColor="#5d259c"
+                    BorderColor="#5d259c"
+                    BorderWidth="1" />
+            </VerticalStackLayout>
 
-            <Button
-                Text="Register"
-                Clicked="OnRegisterClicked"
-                CornerRadius="22"
-                HeightRequest="48"
-                BackgroundColor="White"
-                TextColor="#5d259c"
-                BorderColor="#5d259c"
-                BorderWidth="1" />
-        </VerticalStackLayout>
+        </Grid>
     </Grid>
 </ContentPage>

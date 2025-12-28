@@ -35,6 +35,58 @@ namespace AmoraApp.Views
             await LoadBoostsAsync();
         }
 
+        // =========================
+        // NOVO: ATIVAR CUPOM
+        // =========================
+        private async void OnApplyCouponClicked(object sender, EventArgs e)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(CurrentUserId))
+                {
+                    await DisplayAlert("Login necessário",
+                        "Entre na sua conta para ativar um cupom.",
+                        "OK");
+                    return;
+                }
+
+                var code = CouponEntry?.Text?.Trim() ?? "";
+                if (string.IsNullOrWhiteSpace(code))
+                {
+                    await DisplayAlert("Cupom",
+                        "Digite um cupom para ativar.",
+                        "OK");
+                    return;
+                }
+
+                ApplyCouponButton.IsEnabled = false;
+
+                var result = await PlanService.Instance.RedeemCouponAsync(CurrentUserId, code);
+
+                if (!result.Success)
+                {
+                    await DisplayAlert("Cupom", result.Message, "OK");
+                    return;
+                }
+
+                CouponEntry.Text = "";
+                await DisplayAlert("Cupom", result.Message, "OK");
+
+                // Atualiza UI
+                await LoadPlanAsync();
+                await LoadBoostsAsync();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[UpgradePage] Erro ao aplicar cupom: {ex}");
+                await DisplayAlert("Cupom", "Não foi possível ativar o cupom agora.", "OK");
+            }
+            finally
+            {
+                ApplyCouponButton.IsEnabled = true;
+            }
+        }
+
         private async Task LoadPlanAsync()
         {
             try
@@ -46,7 +98,7 @@ namespace AmoraApp.Views
                     return;
                 }
 
-                // NOVO: pega plano + dias restantes (e faz downgrade se expirou)
+                // NOVO: pega plano + dias restantes (já faz downgrade se expirou)
                 var info = await PlanService.Instance.GetUserPlanStatusAsync(CurrentUserId);
 
                 var plan = info.Plan;
@@ -97,6 +149,7 @@ namespace AmoraApp.Views
             }
         }
 
+
         private async Task LoadBoostsAsync()
         {
             try
@@ -136,10 +189,6 @@ namespace AmoraApp.Views
             await HandleUpgradeAsync(PlanType.Premium);
         }
 
-        /// <summary>
-        /// Lida com o fluxo de upgrade.
-        /// Na simulação: depois do OK no alerta, já troca o plano e atualiza UI.
-        /// </summary>
         private async Task HandleUpgradeAsync(PlanType targetPlan)
         {
             if (string.IsNullOrWhiteSpace(CurrentUserId))
@@ -161,16 +210,13 @@ namespace AmoraApp.Views
             if (!confirm)
                 return;
 
-            // SIMULAÇÃO – aqui ainda não tem gateway de pagamento
             await DisplayAlert(
                 "Simulação",
                 "Integração de pagamento ainda não implementada. Nesta simulação, o plano será ativado agora.",
                 "OK");
 
-            // >>> AQUI já ativamos o plano de verdade na simulação <<<
             await PlanService.Instance.ActivatePlanAsync(CurrentUserId, targetPlan, _selectedPeriod);
 
-            // Atualiza UI (badge + botões + boosts incluídos)
             await LoadPlanAsync();
             await LoadBoostsAsync();
         }
@@ -204,20 +250,14 @@ namespace AmoraApp.Views
             if (!confirm)
                 return;
 
-            // Simulação de compra
             await DisplayAlert(
                 "Simulação",
                 "Integração de pagamento ainda não está ativa. Nesta simulação, os boosts serão adicionados agora.",
                 "OK");
 
-            // Adiciona os boosts fictícios imediatamente
             await PlanService.Instance.AddUserBoostsAsync(CurrentUserId, quantity);
             await LoadBoostsAsync();
         }
-
-        // =========================================================
-        // UI – Alternar Mensal / Anual
-        // =========================================================
 
         private void OnMonthlyTapped(object sender, EventArgs e)
         {
