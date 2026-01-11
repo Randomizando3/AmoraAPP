@@ -27,6 +27,73 @@ namespace AmoraApp.Services
             };
         }
 
+        // =========================================================
+        // Helpers (suporta /friendRequests = true OU {status, ts})
+        // =========================================================
+
+        private static bool IsActiveRequestNode(JsonElement node, bool onlyPending)
+        {
+            // formato antigo:
+            //   true
+            if (node.ValueKind == JsonValueKind.True) return true;
+            if (node.ValueKind == JsonValueKind.False || node.ValueKind == JsonValueKind.Null) return false;
+
+            // formato novo:
+            //   { "status": "pending", "ts": 123 }
+            if (node.ValueKind == JsonValueKind.Object)
+            {
+                string status = "";
+
+                if (node.TryGetProperty("status", out var st))
+                {
+                    if (st.ValueKind == JsonValueKind.String)
+                        status = (st.GetString() ?? "").Trim();
+                }
+
+                // Se não tem status, considera como "ativo" (compatibilidade)
+                if (string.IsNullOrWhiteSpace(status))
+                    return !onlyPending; // para lista de pendentes, exige status; para checks, aceita
+
+                // Normaliza
+                status = status.Trim().ToLowerInvariant();
+
+                if (!onlyPending)
+                {
+                    // Para "existe request?"
+                    // aceitamos qualquer status não-vazio, mas você pode restringir se quiser
+                    return status != "rejected" && status != "canceled";
+                }
+
+                // Para listar incoming: só pendentes
+                return status == "pending";
+            }
+
+            // formato estranho (string / number) -> tenta ser tolerante
+            if (node.ValueKind == JsonValueKind.String)
+            {
+                var s = (node.GetString() ?? "").Trim().ToLowerInvariant();
+                if (s == "true") return true;
+                if (onlyPending) return s == "pending";
+                return s != "" && s != "null" && s != "false";
+            }
+
+            return false;
+        }
+
+        private static bool TryParseJson(string json, out JsonDocument doc)
+        {
+            doc = null;
+            try
+            {
+                doc = JsonDocument.Parse(json);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
         // =========================================
         // AMIGOS
         // /friends/{uid}/{friendId} = true
@@ -116,11 +183,14 @@ namespace AmoraApp.Services
         // =========================================
         // SOLICITAÇÕES DE AMIZADE
         // /friendRequests/{targetUserId}/{fromUserId} = true
+        // OU = {status, ts}
         // =========================================
 
         /// <summary>
         /// Solicitações recebidas por mim (quem pediu é a chave).
-        /// /friendRequests/{meId}/{otherId} = true
+        /// Lê:
+        ///   /friendRequests/{meId}/{otherId} = true
+        ///   OU /friendRequests/{meId}/{otherId} = { status, ts }
         /// </summary>
         public async Task<List<string>> GetIncomingRequestsAsync(string meId)
         {
@@ -139,13 +209,27 @@ namespace AmoraApp.Services
             if (string.IsNullOrWhiteSpace(json) || json == "null")
                 return result;
 
-            var dict = JsonSerializer.Deserialize<Dictionary<string, bool>>(json, _jsonOptions)
-                       ?? new Dictionary<string, bool>();
+            // >>> Aqui é onde estava quebrando: Dictionary<string,bool>
+            // Agora suportamos bool OU objeto.
+            if (!TryParseJson(json, out var doc) || doc == null)
+                return result;
 
-            foreach (var kv in dict)
+            using (doc)
             {
-                if (kv.Value)
-                    result.Add(kv.Key);
+                var root = doc.RootElement;
+
+                if (root.ValueKind != JsonValueKind.Object)
+                    return result;
+
+                foreach (var prop in root.EnumerateObject())
+                {
+                    var otherId = prop.Name;
+                    var node = prop.Value;
+
+                    // Lista apenas pendentes
+                    if (IsActiveRequestNode(node, onlyPending: true))
+                        result.Add(otherId);
+                }
             }
 
             return result;
@@ -165,7 +249,16 @@ namespace AmoraApp.Services
                 return false;
 
             var json = await response.Content.ReadAsStringAsync();
-            return !string.IsNullOrWhiteSpace(json) && json != "null" && json.Contains("true", StringComparison.OrdinalIgnoreCase);
+            if (string.IsNullOrWhiteSpace(json) || json == "null")
+                return false;
+
+            if (!TryParseJson(json, out var doc) || doc == null)
+                return json.Contains("true", StringComparison.OrdinalIgnoreCase); // fallback
+
+            using (doc)
+            {
+                return IsActiveRequestNode(doc.RootElement, onlyPending: false);
+            }
         }
 
         /// <summary>
@@ -183,12 +276,22 @@ namespace AmoraApp.Services
                 return false;
 
             var json = await response.Content.ReadAsStringAsync();
-            return !string.IsNullOrWhiteSpace(json) && json != "null" && json.Contains("true", StringComparison.OrdinalIgnoreCase);
+            if (string.IsNullOrWhiteSpace(json) || json == "null")
+                return false;
+
+            if (!TryParseJson(json, out var doc) || doc == null)
+                return json.Contains("true", StringComparison.OrdinalIgnoreCase); // fallback
+
+            using (doc)
+            {
+                return IsActiveRequestNode(doc.RootElement, onlyPending: false);
+            }
         }
 
         /// <summary>
         /// Cria uma nova solicitação: fromId → toId.
-        /// /friendRequests/{toId}/{fromId} = true
+        /// Recomendo gravar no padrão do web:
+        ///   /friendRequests/{toId}/{fromId} = { status:"pending", ts: unix }
         /// </summary>
         public async Task CreateFriendRequestAsync(string fromId, string toId)
         {
@@ -201,7 +304,15 @@ namespace AmoraApp.Services
             var path = $"/friendRequests/{toId}/{fromId}.json";
             var url = $"{BaseUrl}{path}";
 
-            var content = new StringContent("true", Encoding.UTF8, "application/json");
+            var payload = new
+            {
+                status = "pending",
+                ts = DateTimeOffset.UtcNow.ToUnixTimeSeconds()
+            };
+
+            var json = JsonSerializer.Serialize(payload, _jsonOptions);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
             var response = await _httpClient.PutAsync(url, content);
             response.EnsureSuccessStatusCode();
         }
@@ -218,9 +329,7 @@ namespace AmoraApp.Services
 
             await AddFriendAsync(meId, otherId);
 
-            // remove request other → me
             var url1 = $"{BaseUrl}/friendRequests/{meId}/{otherId}.json";
-            // remove request me → other (se existir)
             var url2 = $"{BaseUrl}/friendRequests/{otherId}/{meId}.json";
 
             await _httpClient.DeleteAsync(url1);
@@ -239,9 +348,8 @@ namespace AmoraApp.Services
             await _httpClient.DeleteAsync(url);
         }
 
-
         // =========================================
-        // BLOQUEIO (bem simples, por enquanto)
+        // BLOQUEIO
         // /blocked/{meId}/{otherId} = true
         // =========================================
 
@@ -256,6 +364,5 @@ namespace AmoraApp.Services
             var content = new StringContent("true", Encoding.UTF8, "application/json");
             await _httpClient.PutAsync(url, content);
         }
-
     }
 }
