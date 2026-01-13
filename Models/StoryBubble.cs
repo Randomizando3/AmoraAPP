@@ -17,7 +17,6 @@ namespace AmoraApp.Models
         // Indica se o usuário é um match seu (usado para mostrar o coraçãozinho)
         public bool IsMatch { get; set; }
 
-
         public bool HasStory => !string.IsNullOrWhiteSpace(PreviewImageUrl);
 
         // O que será exibido no círculo do feed
@@ -27,5 +26,3 @@ namespace AmoraApp.Models
                 : PhotoUrl;
     }
 }
-
-

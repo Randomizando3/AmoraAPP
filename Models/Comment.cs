@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Text.Json.Serialization;
 
 namespace AmoraApp.Models
@@ -10,6 +10,9 @@ namespace AmoraApp.Models
         public string UserId { get; set; } = string.Empty;
         public string UserName { get; set; } = string.Empty;
         public string Text { get; set; } = string.Empty;
+
+        // ✅ FIX: usa o converter já existente no projeto (não redefinir aqui)
+        [JsonConverter(typeof(FlexibleDateTimeConverter))]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         // Texto resumido para aparecer embaixo do post
