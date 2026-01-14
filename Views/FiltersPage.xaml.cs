@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using AmoraApp.ViewModels;
 using Microsoft.Maui.Controls;
 
@@ -20,6 +21,9 @@ namespace AmoraApp.Views
             InitializeComponent();
             _discoverVm = discoverVm;
             BindingContext = _discoverVm;
+
+            // ===== NOVO: define filtro inicial pelo gênero do usuário (se ainda estiver "Both") =====
+            SetDefaultGenderFilterFromUserGender();
 
             UpdateGenderButtons();
 
@@ -71,24 +75,55 @@ namespace AmoraApp.Views
         }
 
         // ======================
+        //  FILTRO INICIAL POR GÊNERO
+        // ======================
+
+        private void SetDefaultGenderFilterFromUserGender()
+        {
+            if (_discoverVm == null) return;
+
+            // Só aplica o "default inteligente" se ainda estiver no padrão "Both"
+            if (!string.Equals(_discoverVm.GenderFilter, "Both", StringComparison.OrdinalIgnoreCase))
+                return;
+
+            // Opção A: DiscoverViewModel expõe o gênero do usuário logado
+            var myGender = (_discoverVm.CurrentUserGender ?? string.Empty).Trim();
+            if (string.IsNullOrWhiteSpace(myGender))
+            {
+                _discoverVm.GenderFilter = "Both";
+                return;
+            }
+
+            var g = myGender.ToLowerInvariant();
+
+            // Feminino -> busca Homens | Masculino -> busca Mulheres | outros -> Todos
+            if (g.Contains("femin"))
+                _discoverVm.GenderFilter = "Boys";
+            else if (g.Contains("mascul"))
+                _discoverVm.GenderFilter = "Girls";
+            else
+                _discoverVm.GenderFilter = "Both";
+        }
+
+        // ======================
         //     GÊNERO
         // ======================
 
-        private void OnGirlsClicked(object sender, System.EventArgs e)
+        private void OnGirlsClicked(object sender, EventArgs e)
         {
             if (_discoverVm == null) return;
             _discoverVm.GenderFilter = "Girls";
             UpdateGenderButtons();
         }
 
-        private void OnBoysClicked(object sender, System.EventArgs e)
+        private void OnBoysClicked(object sender, EventArgs e)
         {
             if (_discoverVm == null) return;
             _discoverVm.GenderFilter = "Boys";
             UpdateGenderButtons();
         }
 
-        private void OnBothClicked(object sender, System.EventArgs e)
+        private void OnBothClicked(object sender, EventArgs e)
         {
             if (_discoverVm == null) return;
             _discoverVm.GenderFilter = "Both";
@@ -198,7 +233,7 @@ namespace AmoraApp.Views
         //  RESETAR FILTROS
         // ======================
 
-        private void OnResetClicked(object sender, System.EventArgs e)
+        private void OnResetClicked(object sender, EventArgs e)
         {
             if (_discoverVm == null) return;
 
@@ -232,7 +267,7 @@ namespace AmoraApp.Views
         //  APLICAR FILTROS
         // ======================
 
-        private async void OnApplyFilterClicked(object sender, System.EventArgs e)
+        private async void OnApplyFilterClicked(object sender, EventArgs e)
         {
             if (_discoverVm == null) return;
 
@@ -279,7 +314,7 @@ namespace AmoraApp.Views
         //  FECHAR
         // ======================
 
-        private async void OnCloseTapped(object sender, System.EventArgs e)
+        private async void OnCloseTapped(object sender, EventArgs e)
         {
             await Navigation.PopAsync();
         }

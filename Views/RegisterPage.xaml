@@ -287,9 +287,14 @@
                                 HorizontalOptions="FillAndExpand"
                                 HeightRequest="44">
                                 <Picker.Items>
-                                    <x:String>Masculino</x:String>
                                     <x:String>Feminino</x:String>
+                                    <x:String>Masculino</x:String>
                                     <x:String>Não-binário</x:String>
+                                    <x:String>Transgênero</x:String>
+                                    <x:String>Transfeminino</x:String>
+                                    <x:String>Transmasculino</x:String>
+                                    <x:String>Agênero</x:String>
+                                    <x:String>Gênero fluido</x:String>
                                     <x:String>Outro</x:String>
                                     <x:String>Prefiro não dizer</x:String>
                                 </Picker.Items>

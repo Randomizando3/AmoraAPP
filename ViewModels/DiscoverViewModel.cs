@@ -51,6 +51,10 @@ namespace AmoraApp.ViewModels
         // Meu perfil (para boost, tokens, contadores…)
         private UserProfile? _myProfile;
 
+        // ====== ADICIONADO (Opção A): gênero do usuário logado para default do filtro ======
+        [ObservableProperty]
+        private string? currentUserGender;
+
         // ====== Propriedades observáveis ======
 
         [ObservableProperty]
@@ -321,6 +325,9 @@ namespace AmoraApp.ViewModels
             // Meu perfil (para boost, tokens e contadores)
             _myProfile = await _dbService.GetUserProfileAsync(uid);
 
+            // ====== ADICIONADO: expõe gênero do usuário logado ======
+            CurrentUserGender = _myProfile?.Gender;
+
             // Plano atual (sempre pelo PlanService, e não pelo campo Plan do perfil)
             _myPlan = await _planService.GetUserPlanAsync(uid);
 
@@ -363,6 +370,8 @@ namespace AmoraApp.ViewModels
                 OnlineText = string.Empty;
                 DistanceText = string.Empty;
             }
+
+            UpdateCanRewind();
         }
 
         private bool PassesFilters(UserProfile u)
@@ -769,6 +778,8 @@ namespace AmoraApp.ViewModels
                 Users.Remove(cur);
 
             CurrentUser = Users.FirstOrDefault();
+
+            UpdateCanRewind();
         }
 
         // ================ DISTÂNCIA / PRESENÇA ================
@@ -889,6 +900,5 @@ namespace AmoraApp.ViewModels
             bool isPaid = _myPlan == PlanType.Plus || _myPlan == PlanType.Premium;
             CanRewind = !string.IsNullOrWhiteSpace(me) && hasHistory && isPaid;
         }
-
     }
 }

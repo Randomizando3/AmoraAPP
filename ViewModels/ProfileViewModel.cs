@@ -96,10 +96,120 @@ namespace AmoraApp.ViewModels
                 item.IsSelected = !item.IsSelected;
             });
 
+            // ===== ADICIONADO: inicializa as opções dos Pickers =====
+            InitPickerOptions();
+
             InitPhotoSlots();
             InitVideoSlots();
             InitInterests(null);
             InitRelationshipGoals(null);
+
+            // ===== ADICIONADO: default do BirthDate (evita DatePicker “zerado”) =====
+            _birthDate = DateTime.Today.AddYears(-18);
+        }
+
+        // =====================================================================
+        // ===== ADICIONADO: Options para os Pickers (ItemsSource) ==============
+        // =====================================================================
+        public ObservableCollection<string> EducationLevelOptions { get; private set; } = new();
+        public ObservableCollection<string> GenderOptions { get; private set; } = new();
+        public ObservableCollection<string> SexualOrientationOptions { get; private set; } = new();
+
+        private void InitPickerOptions()
+        {
+            EducationLevelOptions = new ObservableCollection<string>(new[]
+            {
+                "Ensino Fundamental",
+                "Ensino Médio",
+                "Técnico",
+                "Superior (Graduação)",
+                "Pós-graduação",
+                "Mestrado",
+                "Doutorado",
+                "Prefiro não informar"
+            });
+
+            GenderOptions = new ObservableCollection<string>(new[]
+            {
+                "Feminino",
+                "Masculino",
+                "Não-binário",
+                "Transgênero",
+                "Transfeminino",
+                "Transmasculino",
+                "Agênero",
+                "Gênero fluido",
+                "Outro",
+                "Prefiro não informar"
+            });
+
+            SexualOrientationOptions = new ObservableCollection<string>(new[]
+            {
+                "Heterossexual",
+                "Homossexual",
+                "Bissexual",
+                "Pansexual",
+                "Assexual",
+                "Outro",
+                "Prefiro não informar"
+            });
+
+            OnPropertyChanged(nameof(EducationLevelOptions));
+            OnPropertyChanged(nameof(GenderOptions));
+            OnPropertyChanged(nameof(SexualOrientationOptions));
+        }
+
+        // =====================================================================
+        // ===== ADICIONADO: BirthDate + AgeDisplay (bindings do XAML) ==========
+        // =====================================================================
+        private DateTime _birthDate;
+        public DateTime BirthDate
+        {
+            get => _birthDate;
+            set
+            {
+                if (SetProperty(ref _birthDate, value))
+                {
+                    // persiste no model (unix ms UTC)
+                    Profile.BirthDateUtc = ToUnixMsUtc(_birthDate);
+
+                    // mantém Age coerente
+                    Profile.Age = CalculateAge(_birthDate);
+
+                    // atualiza o label no XAML
+                    OnPropertyChanged(nameof(AgeDisplay));
+                }
+            }
+        }
+
+        public string AgeDisplay => $"Idade: {CalculateAge(BirthDate)} anos";
+
+        private static int CalculateAge(DateTime birthDate)
+        {
+            var today = DateTime.Today;
+            var age = today.Year - birthDate.Year;
+            if (birthDate.Date > today.AddYears(-age)) age--;
+            return Math.Max(0, age);
+        }
+
+        private static long ToUnixMsUtc(DateTime date)
+        {
+            // DatePicker entrega DateTime "Kind=Unspecified" normalmente.
+            // A forma mais segura é tratar como "data local" e converter para UTC.
+            var local = DateTime.SpecifyKind(date.Date, DateTimeKind.Local);
+            return new DateTimeOffset(local).ToUniversalTime().ToUnixTimeMilliseconds();
+        }
+
+        private static DateTime FromUnixMsUtc(long unixMs)
+        {
+            if (unixMs <= 0) return DateTime.Today.AddYears(-18);
+            return DateTimeOffset.FromUnixTimeMilliseconds(unixMs).ToLocalTime().DateTime.Date;
+        }
+
+        private static DateTime GuessBirthDateFromAge(int age)
+        {
+            age = Math.Max(0, age);
+            return DateTime.Today.AddYears(-age);
         }
 
         // ===== Backing profile (fonte única) =====
@@ -480,7 +590,6 @@ namespace AmoraApp.ViewModels
                 CurrentUserId = uid;
                 IsAdmin = AdminAccessService.IsAdmin(uid);
 
-
                 var profile = await _dbService.GetUserProfileAsync(uid);
 
                 if (profile == null)
@@ -491,7 +600,8 @@ namespace AmoraApp.ViewModels
                         Id = uid,
                         DisplayName = authUser?.Info.DisplayName ?? "",
                         Email = authUser?.Info.Email ?? "",
-                        Age = 18
+                        Age = 18,
+                        BirthDateUtc = ToUnixMsUtc(DateTime.Today.AddYears(-18))
                     };
 
                     await _dbService.SaveUserProfileAsync(profile);
@@ -502,6 +612,19 @@ namespace AmoraApp.ViewModels
                 // garantir defaults
                 if (string.IsNullOrWhiteSpace(Profile.Plan)) Profile.Plan = "Free";
                 Profile.VerificationStatus = NormalizeStatus(Profile.VerificationStatus);
+
+                // ===== ADICIONADO: sincroniza BirthDate (DatePicker) com o model =====
+                if (Profile.BirthDateUtc > 0)
+                {
+                    _birthDate = FromUnixMsUtc(Profile.BirthDateUtc);
+                }
+                else
+                {
+                    _birthDate = GuessBirthDateFromAge(Profile.Age <= 0 ? 18 : Profile.Age);
+                    Profile.BirthDateUtc = ToUnixMsUtc(_birthDate);
+                }
+                OnPropertyChanged(nameof(BirthDate));
+                OnPropertyChanged(nameof(AgeDisplay));
 
                 // aplicar slots/listas do próprio model
                 var photos = (Profile.Photos != null && Profile.Photos.Count > 0)
@@ -514,6 +637,14 @@ namespace AmoraApp.ViewModels
 
                 InitInterests(Profile.Interests ?? new List<string>());
                 InitRelationshipGoals(Profile.LookingFor ?? new List<string>());
+
+                // ===== ADICIONADO: garantir que as opções existam (caso de hot reload / reinicialização) =====
+                if (EducationLevelOptions == null || EducationLevelOptions.Count == 0 ||
+                    GenderOptions == null || GenderOptions.Count == 0 ||
+                    SexualOrientationOptions == null || SexualOrientationOptions.Count == 0)
+                {
+                    InitPickerOptions();
+                }
 
                 // notificar bindings do “wrapper”
                 OnPropertyChanged(nameof(DisplayName));
@@ -537,6 +668,11 @@ namespace AmoraApp.ViewModels
                 RaiseVerificationComputed();
                 OnPropertyChanged(nameof(PhotoLimit));
                 OnPropertyChanged(nameof(PhotosSectionTitle));
+
+                // ===== ADICIONADO: bindings dos Pickers (ItemsSource) =====
+                OnPropertyChanged(nameof(EducationLevelOptions));
+                OnPropertyChanged(nameof(GenderOptions));
+                OnPropertyChanged(nameof(SexualOrientationOptions));
             }
             catch (Exception ex)
             {
@@ -584,6 +720,12 @@ namespace AmoraApp.ViewModels
 
                 if (string.IsNullOrWhiteSpace(Profile.Plan)) Profile.Plan = "Free";
                 Profile.VerificationStatus = NormalizeStatus(Profile.VerificationStatus);
+
+                // ===== ADICIONADO: garantir persistência de BirthDateUtc e Age =====
+                if (Profile.BirthDateUtc <= 0)
+                    Profile.BirthDateUtc = ToUnixMsUtc(BirthDate);
+
+                Profile.Age = CalculateAge(FromUnixMsUtc(Profile.BirthDateUtc));
 
                 await _dbService.SaveUserProfileAsync(Profile);
             }
