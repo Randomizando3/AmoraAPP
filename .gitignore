@@ -23,6 +23,7 @@ obj/
 *.db
 *.pdb
 *.mdb
+*.jks
 
 # Outras pastas do Visual Studio
 .vscode/
