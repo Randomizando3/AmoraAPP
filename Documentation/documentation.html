@@ -1,0 +1,498 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Amora • Documentação Principal</title>
+  <meta name="description" content="Hub principal da documentação do Amora: fluxos, pontos de edição por camada (Views, ViewModels, Services, Models) e links." />
+
+  <style>
+    :root{
+      --text:#1f2937;
+      --muted:#6b7280;
+      --stroke:#e5e7eb;
+      --bg:#f5f6f8;
+      --card:#ffffff;
+      --purple:#7a5cff;
+      --purple2:#6347ff;
+      --soft: rgba(122,92,255,.12);
+      --radius:14px;
+      --max:880px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+      background:var(--bg);
+      color:var(--text);
+    }
+    a{ color:var(--purple2); text-decoration:none; }
+    a:hover{ text-decoration:underline; }
+    .wrap{
+      max-width:var(--max);
+      margin:0 auto;
+      padding:22px 14px 60px;
+    }
+    header{
+      background:linear-gradient(135deg,var(--purple),var(--purple2));
+      color:#fff;
+      padding:22px;
+      border-radius:20px;
+    }
+    header h1{ margin:0 0 6px; font-size:22px; }
+    header p{ margin:0; font-size:14px; opacity:.95; line-height:1.35; }
+
+    .row{ display:flex; flex-wrap:wrap; gap:10px; margin-top:12px; }
+    .pill{
+      display:inline-flex; align-items:center; gap:8px;
+      font-size:12px;
+      padding:8px 10px;
+      border-radius:999px;
+      background:rgba(255,255,255,.16);
+      border:1px solid rgba(255,255,255,.18);
+    }
+
+    .card{
+      background:var(--card);
+      border:1px solid var(--stroke);
+      border-radius:var(--radius);
+      padding:16px;
+      margin-top:16px;
+    }
+    h2{ font-size:18px; margin:0 0 8px; color:var(--purple2); }
+    h3{ font-size:14px; margin:12px 0 6px; }
+    p{ font-size:13.5px; line-height:1.5; margin:0 0 10px; }
+    ul{ padding-left:18px; margin:0; font-size:13.5px; }
+    li{ margin:6px 0; }
+    .muted{ color:var(--muted); }
+    .note{
+      background:var(--soft);
+      border:1px solid rgba(122,92,255,.25);
+      border-radius:12px;
+      padding:10px;
+      font-size:13.5px;
+    }
+    .mono{
+      font-family:var(--mono);
+      font-size:12px;
+      background:#0b1020;
+      color:#e6eaff;
+      padding:10px;
+      border-radius:12px;
+      overflow:auto;
+    }
+    .grid{
+      display:grid;
+      grid-template-columns:1fr;
+      gap:12px;
+    }
+    @media (min-width: 920px){
+      .grid{ grid-template-columns:1fr 1fr; }
+    }
+    table{
+      width:100%;
+      border-collapse:separate;
+      border-spacing:0;
+      border-radius:12px;
+      overflow:hidden;
+      border:1px solid var(--stroke);
+      margin-top:10px;
+      background:#fff;
+    }
+    th,td{
+      text-align:left;
+      padding:10px;
+      font-size:13px;
+      vertical-align:top;
+      border-bottom:1px solid var(--stroke);
+    }
+    th{ background:#fafafa; font-weight:600; }
+    tr:last-child td{ border-bottom:none; }
+
+    .tag{
+      display:inline-block;
+      font-size:11px;
+      padding:3px 8px;
+      border-radius:999px;
+      background:#ede9fe;
+      color:#5b21b6;
+      margin-right:6px;
+      border:1px solid rgba(122,92,255,.20);
+    }
+
+    .footer{
+      margin-top:28px;
+      text-align:center;
+      font-size:12px;
+      color:var(--muted);
+    }
+  </style>
+</head>
+
+<body>
+<div class="wrap">
+
+  <header>
+    <h1>Amora • Documentação Principal</h1>
+    <p>Hub de manutenção: fluxos do app + “onde editar” (Views, ViewModels, Services e Models).</p>
+    <div class="row">
+      <span class="pill">Boost: 3 horas (topo da pilha)</span>
+      <span class="pill">Stories: 24 horas</span>
+      <span class="pill">Stack: .NET MAUI + Firebase + Play Billing</span>
+    </div>
+  </header>
+
+  <!-- LINKS -->
+  <section class="card" id="links">
+    <h2>Links rápidos</h2>
+    <p class="muted">Documentos que você já salvou na pasta <b>Documentation</b>:</p>
+    <ul>
+      <li><a href="./documentationmodels.html">documentationmodels.html</a> — Models</li>
+      <li><a href="./documentationservices.html">documentationservices.html</a> — Services</li>
+      <li><a href="./documentationviewmodels.html">documentationviewmodels.html</a> — ViewModels</li>
+      <li><a href="./documentationpages.html">documentationpages.html</a> — Views/Pages</li>
+    </ul>
+
+    <div class="note" style="margin-top:12px;">
+      <b>Como usar este hub:</b> escolha um fluxo abaixo e veja exatamente quais arquivos/camadas você altera.
+    </div>
+  </section>
+
+  <!-- MAPA RÁPIDO POR TELA -->
+  <section class="card" id="mapa-telas">
+    <h2>Mapa rápido por tela (onde mexer)</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Tela (View)</th>
+          <th>ViewModel</th>
+          <th>Services principais</th>
+          <th>Models principais</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><b>WelcomePage</b><br><span class="muted">WelcomePage.xaml / .xaml.cs</span></td>
+          <td>AuthViewModel (fluxo inicial)</td>
+          <td>FirebaseAuthService</td>
+          <td>UserProfile</td>
+        </tr>
+        <tr>
+          <td><b>LoginPage</b><br><span class="muted">LoginPage.xaml / .xaml.cs</span></td>
+          <td>AuthViewModel</td>
+          <td>FirebaseAuthService, FirebaseDatabaseService</td>
+          <td>UserProfile</td>
+        </tr>
+        <tr>
+          <td><b>RegisterPage</b><br><span class="muted">RegisterPage.xaml / .xaml.cs</span></td>
+          <td>AuthViewModel</td>
+          <td>FirebaseAuthService, FirebaseDatabaseService, FirebaseStorageService</td>
+          <td>UserProfile</td>
+        </tr>
+        <tr>
+          <td><b>DiscoverPage</b><br><span class="muted">DiscoverPage.xaml / .xaml.cs</span></td>
+          <td>DiscoverViewModel</td>
+          <td>MatchService, FriendService, PlanService, LocationService</td>
+          <td>UserProfile (+ estados de plano/boost)</td>
+        </tr>
+        <tr>
+          <td><b>FiltersPage</b><br><span class="muted">FiltersPage.xaml / .xaml.cs</span></td>
+          <td>DiscoverViewModel</td>
+          <td>LocationService, (MatchService para query/ranking)</td>
+          <td>UserProfile (preferências/filtros se persistidos)</td>
+        </tr>
+        <tr>
+          <td><b>FeedPage</b><br><span class="muted">FeedPage.xaml / .xaml.cs</span></td>
+          <td>FeedViewModel</td>
+          <td>StoryService, FirebaseDatabaseService, FirebaseStorageService, ReportService</td>
+          <td>Post, Comment, StoryItem, StoryBubble, ReportItem</td>
+        </tr>
+        <tr>
+          <td><b>CommentsPage</b><br><span class="muted">CommentsPage.xaml / .xaml.cs</span></td>
+          <td>FeedViewModel (ou vm local de comentários)</td>
+          <td>FirebaseDatabaseService</td>
+          <td>Comment, Post</td>
+        </tr>
+        <tr>
+          <td><b>StoryViewerPage</b><br><span class="muted">StoryViewerPage.xaml / .xaml.cs</span></td>
+          <td>FeedViewModel (ou vm local)</td>
+          <td>StoryService</td>
+          <td>StoryItem</td>
+        </tr>
+        <tr>
+          <td><b>LikesReceivedPage</b><br><span class="muted">LikesReceivedPage.xaml / .xaml.cs</span></td>
+          <td>LikesViewModel</td>
+          <td>MatchService, PlanService</td>
+          <td>UserProfile</td>
+        </tr>
+        <tr>
+          <td><b>FriendsPage</b><br><span class="muted">FriendsPage.xaml / .xaml.cs</span></td>
+          <td>(vm de amigos / ou reaproveita)</td>
+          <td>FriendService</td>
+          <td>UserProfile</td>
+        </tr>
+        <tr>
+          <td><b>FriendRequestsPage</b><br><span class="muted">FriendRequestsPage.xaml / .xaml.cs</span></td>
+          <td>(vm de solicitações)</td>
+          <td>FriendService</td>
+          <td>UserProfile</td>
+        </tr>
+        <tr>
+          <td><b>ChatListPage</b><br><span class="muted">ChatListPage.xaml / .xaml.cs</span></td>
+          <td>MessagesViewModel</td>
+          <td>ChatService, PresenceService, FcmTokenService</td>
+          <td>ChatItem, ChatSummary</td>
+        </tr>
+        <tr>
+          <td><b>MessagesPage</b><br><span class="muted">MessagesPage.xaml / .xaml.cs</span></td>
+          <td>MessagesViewModel</td>
+          <td>ChatService</td>
+          <td>ChatSummary</td>
+        </tr>
+        <tr>
+          <td><b>ChatPage</b><br><span class="muted">ChatPage.xaml / .xaml.cs</span></td>
+          <td>ChatViewModel</td>
+          <td>ChatService, MessageService, PresenceService, FirebaseStorageService</td>
+          <td>ChatMessage, ChatBubble</td>
+        </tr>
+        <tr>
+          <td><b>ProfilePage</b><br><span class="muted">ProfilePage.xaml / .xaml.cs</span></td>
+          <td>ProfileViewModel</td>
+          <td>FirebaseDatabaseService, FirebaseStorageService, PlanService</td>
+          <td>UserProfile</td>
+        </tr>
+        <tr>
+          <td><b>PhotoGalleryPage</b><br><span class="muted">PhotoGalleryPage.xaml / .xaml.cs</span></td>
+          <td>ProfileViewModel</td>
+          <td>FirebaseStorageService</td>
+          <td>UserProfile</td>
+        </tr>
+        <tr>
+          <td><b>PhotoPreviewPage</b><br><span class="muted">PhotoPreviewPage.xaml / .xaml.cs</span></td>
+          <td>(vm local / binding simples)</td>
+          <td>(nenhum, só UI)</td>
+          <td>(nenhum)</td>
+        </tr>
+        <tr>
+          <td><b>SupportPage</b><br><span class="muted">SupportPage.xaml / .xaml.cs</span></td>
+          <td>(vm de suporte / ou local)</td>
+          <td>FirebaseDatabaseService, EmailService</td>
+          <td>SupportTicket</td>
+        </tr>
+        <tr>
+          <td><b>VerificationPage</b><br><span class="muted">VerificationPage.xaml / .xaml.cs</span></td>
+          <td>(vm de verificação / ou ProfileViewModel)</td>
+          <td>FirebaseStorageService, FirebaseDatabaseService, AdminAccessService</td>
+          <td>VerificationRequest, UserProfile</td>
+        </tr>
+        <tr>
+          <td><b>UpgradePage</b><br><span class="muted">UpgradePage.xaml / .xaml.cs</span></td>
+          <td>(vm de planos / ou ProfileViewModel)</td>
+          <td>PlanService, GooglePlayBillingService</td>
+          <td>UserProfile</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- FLUXOS -->
+  <section class="card" id="fluxos">
+    <h2>Fluxos do sistema (direto: onde editar)</h2>
+    <p class="muted">Cada fluxo abaixo descreve “o que mexer” para alterar comportamento/visual/regra.</p>
+
+    <div class="grid">
+
+      <!-- AUTH -->
+      <div class="card" style="margin-top:0;">
+        <h3><span class="tag">Fluxo</span> Autenticação e Cadastro</h3>
+        <ul>
+          <li><b>Views:</b> WelcomePage, LoginPage, RegisterPage</li>
+          <li><b>ViewModel:</b> AuthViewModel</li>
+          <li><b>Services:</b> FirebaseAuthService (login/registro/token), FirebaseDatabaseService (criar/ler perfil), FirebaseStorageService (foto inicial)</li>
+          <li><b>Models:</b> UserProfile</li>
+        </ul>
+        <div class="note" style="margin-top:10px;">
+          <b>Para editar o cadastro:</b> UI em <u>RegisterPage</u> + regras/validações em <u>AuthViewModel</u> + persistência em <u>FirebaseAuthService/FirebaseDatabaseService</u>.
+        </div>
+      </div>
+
+      <!-- DISCOVER -->
+      <div class="card" style="margin-top:0;">
+        <h3><span class="tag">Fluxo</span> Discover (swipe, match, boost)</h3>
+        <ul>
+          <li><b>Views:</b> DiscoverPage + FiltersPage</li>
+          <li><b>ViewModel:</b> DiscoverViewModel</li>
+          <li><b>Services:</b> MatchService (like/dislike/match), FriendService (solicitação), PlanService (permissões/boost), LocationService (distância)</li>
+          <li><b>Models:</b> UserProfile (plano, boost, preferências/filtros se persistidos)</li>
+        </ul>
+        <div class="note" style="margin-top:10px;">
+          <b>Boost:</b> duração <b>3 horas</b> e perfil fica no <b>topo da pilha</b> enquanto ativo. (Regra central fica no <u>PlanService</u> e/ou ranking do <u>MatchService</u>.)
+        </div>
+      </div>
+
+      <!-- FEED -->
+      <div class="card" style="margin-top:0;">
+        <h3><span class="tag">Fluxo</span> Feed (posts, comentários, denúncias)</h3>
+        <ul>
+          <li><b>Views:</b> FeedPage, CommentsPage</li>
+          <li><b>ViewModel:</b> FeedViewModel</li>
+          <li><b>Services:</b> FirebaseDatabaseService (posts/comentários), FirebaseStorageService (imagem do post), ReportService (denúncia)</li>
+          <li><b>Models:</b> Post, Comment, ReportItem</li>
+        </ul>
+        <div class="note" style="margin-top:10px;">
+          <b>Para editar posts:</b> UI no <u>FeedPage</u> + estado/coleções no <u>FeedViewModel</u> + leitura/gravação no <u>FirebaseDatabaseService</u> + formato em <u>Post/Comment</u>.
+        </div>
+      </div>
+
+      <!-- STORIES -->
+      <div class="card" style="margin-top:0;">
+        <h3><span class="tag">Fluxo</span> Stories (bolhas + visualização)</h3>
+        <ul>
+          <li><b>Views:</b> FeedPage (bolhas), StoryViewerPage (viewer)</li>
+          <li><b>ViewModel:</b> FeedViewModel (ou lógica local)</li>
+          <li><b>Services:</b> StoryService (criar/listar/filtrar expirados)</li>
+          <li><b>Models:</b> StoryItem, StoryBubble</li>
+        </ul>
+        <div class="note" style="margin-top:10px;">
+          <b>Stories:</b> duração <b>24 horas</b>. Para mudar regra de expiração/filtragem: <u>StoryService</u> + campos <u>ExpiresAt</u> em StoryItem.
+        </div>
+      </div>
+
+      <!-- LIKES RECEIVED -->
+      <div class="card" style="margin-top:0;">
+        <h3><span class="tag">Fluxo</span> Curtidas recebidas (paywall)</h3>
+        <ul>
+          <li><b>Views:</b> LikesReceivedPage</li>
+          <li><b>ViewModel:</b> LikesViewModel</li>
+          <li><b>Services:</b> MatchService (carregar quem curtiu), PlanService (bloqueio por plano)</li>
+          <li><b>Models:</b> UserProfile</li>
+        </ul>
+        <div class="note" style="margin-top:10px;">
+          <b>Para editar paywall:</b> UI no <u>LikesReceivedPage</u> + checagem de plano no <u>PlanService</u> + lista no <u>LikesViewModel</u>.
+        </div>
+      </div>
+
+      <!-- FRIENDS -->
+      <div class="card" style="margin-top:0;">
+        <h3><span class="tag">Fluxo</span> Amigos (lista + solicitações)</h3>
+        <ul>
+          <li><b>Views:</b> FriendsPage, FriendRequestsPage</li>
+          <li><b>ViewModel:</b> (vm dedicado ou lógica local)</li>
+          <li><b>Services:</b> FriendService (request/accept/deny/list)</li>
+          <li><b>Models:</b> UserProfile (como alvo/identidade), (estrutura de request no DB)</li>
+        </ul>
+        <div class="note" style="margin-top:10px;">
+          <b>Para mudar regra de amizade:</b> altere o <u>FriendService</u> (persistência e estados) e reflita na UI dessas páginas.
+        </div>
+      </div>
+
+      <!-- CHAT -->
+      <div class="card" style="margin-top:0;">
+        <h3><span class="tag">Fluxo</span> Chat (lista + conversa + presença)</h3>
+        <ul>
+          <li><b>Views:</b> ChatListPage / MessagesPage (lista), ChatPage (conversa)</li>
+          <li><b>ViewModels:</b> MessagesViewModel (lista), ChatViewModel (conversa)</li>
+          <li><b>Services:</b> ChatService (salas/sumários), MessageService (wrapper), PresenceService (online/last seen), FirebaseStorageService (mídia), FcmTokenService (push)</li>
+          <li><b>Models:</b> ChatSummary, ChatItem, ChatMessage, ChatBubble</li>
+        </ul>
+        <div class="note" style="margin-top:10px;">
+          <b>Para editar comportamento do chat:</b> UI no <u>ChatPage</u> + bindings/estado no <u>ChatViewModel</u> + persistência/summary no <u>ChatService</u>.
+        </div>
+      </div>
+
+      <!-- PROFILE -->
+      <div class="card" style="margin-top:0;">
+        <h3><span class="tag">Fluxo</span> Perfil (dados + fotos)</h3>
+        <ul>
+          <li><b>Views:</b> ProfilePage, PhotoGalleryPage, PhotoPreviewPage</li>
+          <li><b>ViewModel:</b> ProfileViewModel</li>
+          <li><b>Services:</b> FirebaseDatabaseService (salvar perfil), FirebaseStorageService (fotos/vídeos), PlanService (limites e recursos)</li>
+          <li><b>Models:</b> UserProfile</li>
+        </ul>
+        <div class="note" style="margin-top:10px;">
+          <b>Para mexer em fotos:</b> fluxo principal fica em <u>ProfileViewModel</u> + upload em <u>FirebaseStorageService</u> + persistência de URLs em <u>UserProfile</u>.
+        </div>
+      </div>
+
+      <!-- SUPPORT -->
+      <div class="card" style="margin-top:0;">
+        <h3><span class="tag">Fluxo</span> Suporte (ticket)</h3>
+        <ul>
+          <li><b>Views:</b> SupportPage</li>
+          <li><b>ViewModel:</b> (local ou dedicado)</li>
+          <li><b>Services:</b> FirebaseDatabaseService (salvar ticket), EmailService (opcional: notificar)</li>
+          <li><b>Models:</b> SupportTicket</li>
+        </ul>
+      </div>
+
+      <!-- VERIFICATION -->
+      <div class="card" style="margin-top:0;">
+        <h3><span class="tag">Fluxo</span> Verificação (selfie/documento)</h3>
+        <ul>
+          <li><b>Views:</b> VerificationPage</li>
+          <li><b>ViewModel:</b> (dedicado ou ProfileViewModel)</li>
+          <li><b>Services:</b> FirebaseStorageService (uploads), FirebaseDatabaseService (request), AdminAccessService (validação admin no backoffice)</li>
+          <li><b>Models:</b> VerificationRequest, UserProfile</li>
+        </ul>
+      </div>
+
+      <!-- UPGRADE / PLANS -->
+      <div class="card" style="margin-top:0;">
+        <h3><span class="tag">Fluxo</span> Upgrade / Planos / Billing</h3>
+        <ul>
+          <li><b>Views:</b> UpgradePage</li>
+          <li><b>ViewModel:</b> (dedicado ou ProfileViewModel)</li>
+          <li><b>Services:</b> GooglePlayBillingService (compra/assinatura), PlanService (aplicar plano e perks no perfil)</li>
+          <li><b>Models:</b> UserProfile</li>
+        </ul>
+        <div class="note" style="margin-top:10px;">
+          <b>Para alterar benefícios do plano:</b> ajuste no <u>PlanService</u> e reflita bloqueios/CTAs no <u>UpgradePage</u> e telas pagas (ex.: LikesReceived).
+        </div>
+      </div>
+
+      <!-- REPORT -->
+      <div class="card" style="margin-top:0;">
+        <h3><span class="tag">Fluxo</span> Denúncias / Moderação</h3>
+        <ul>
+          <li><b>Views:</b> normalmente acionado a partir do Feed/Perfil/Chat (botões/menus)</li>
+          <li><b>ViewModel:</b> do contexto (FeedViewModel, ProfileViewModel, ChatViewModel)</li>
+          <li><b>Services:</b> ReportService (criar report), AdminAccessService (revisão no admin)</li>
+          <li><b>Models:</b> ReportItem</li>
+        </ul>
+      </div>
+
+      <!-- NOTIFICATIONS -->
+      <div class="card" style="margin-top:0;">
+        <h3><span class="tag">Fluxo</span> Notificações Push (FCM)</h3>
+        <ul>
+          <li><b>Views:</b> (sem view direta; efeito aparece em Chat/Feed/Discover)</li>
+          <li><b>ViewModels:</b> MessagesViewModel / ChatViewModel (refletir UI)</li>
+          <li><b>Services:</b> PushNotificationBootstrapper (setup), FcmTokenService (token), ChatService (evento de nova mensagem)</li>
+          <li><b>Models:</b> (tokens no DB; mensagens via ChatMessage)</li>
+        </ul>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- COMO EDITAR RÁPIDO -->
+  <section class="card" id="como-editar">
+    <h2>Como editar rápido (receita padrão)</h2>
+    <p>Para qualquer funcionalidade nova ou ajuste, o padrão é sempre o mesmo:</p>
+    <div class="mono">
+1) UI: edite a View (XAML) e o code-behind (.xaml.cs) se tiver handlers.
+2) Estado/Regras de tela: edite o ViewModel (Properties, Commands, validações).
+3) Regra de negócio / persistência / integrações: edite o Service (Firebase, Billing, etc.).
+4) Estrutura de dados: ajuste o Model (campos, defaults, conversões).
+5) Se for dado no Firebase: revise paths e consistência (contadores, summaries, timestamps).
+    </div>
+  </section>
+
+  <div class="footer">
+    Amora • documentation.html (hub) — Models / Services / ViewModels / Views
+  </div>
+
+</div>
+</body>
+</html>

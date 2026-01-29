@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Amora • Documentação de ViewModels</title>
+
+  <style>
+    :root{
+      --text:#1f2937;
+      --muted:#6b7280;
+      --stroke:#e5e7eb;
+      --bg:#f5f6f8;
+      --card:#ffffff;
+      --purple:#7a5cff;
+      --radius:14px;
+      --max:760px;
+    }
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+      background:var(--bg);
+      color:var(--text);
+    }
+    .wrap{
+      max-width:var(--max);
+      margin:0 auto;
+      padding:22px 14px 60px;
+    }
+    header{
+      background:linear-gradient(135deg,#7a5cff,#6347ff);
+      color:#fff;
+      padding:22px;
+      border-radius:20px;
+    }
+    header h1{ margin:0 0 6px; font-size:22px; }
+    header p{ margin:0; font-size:14px; opacity:.95; }
+
+    .card{
+      background:var(--card);
+      border:1px solid var(--stroke);
+      border-radius:var(--radius);
+      padding:16px;
+      margin-top:16px;
+    }
+    h2{ font-size:18px; margin:0 0 6px; }
+    h3{ font-size:14px; margin:12px 0 6px; }
+    p{ font-size:13.5px; line-height:1.45; margin:0 0 10px; }
+    ul{ padding-left:18px; margin:0; font-size:13.5px; }
+    li{ margin:6px 0; }
+    .muted{ color:var(--muted); }
+    .sep{ height:1px; background:var(--stroke); margin:12px 0; }
+    .tag{
+      display:inline-block;
+      padding:2px 8px;
+      font-size:11px;
+      border-radius:999px;
+      background:#ede9fe;
+      color:#5b21b6;
+      margin-right:6px;
+    }
+  </style>
+</head>
+
+<body>
+<div class="wrap">
+
+<header>
+  <h1>ViewModels • Amora App</h1>
+  <p>Documentação técnica dos ViewModels (responsabilidades, fluxos e comandos).</p>
+</header>
+
+<!-- ================= AUTH ================= -->
+
+<div class="card">
+  <h2>AuthViewModel</h2>
+  <span class="tag">Autenticação</span><span class="tag">Registro</span>
+
+  <p><strong>Responsabilidade:</strong> Gerenciar login, registro e onboarding do usuário.</p>
+
+  <h3>Fluxos controlados</h3>
+  <ul>
+    <li>Login por e-mail e senha</li>
+    <li>Login social (Google)</li>
+    <li>Registro em múltiplas etapas</li>
+    <li>Verificação por código enviado por e-mail</li>
+    <li>Criação do perfil inicial</li>
+    <li>Bloqueio de contas suspensas</li>
+  </ul>
+
+  <h3>Principais estados</h3>
+  <ul>
+    <li>IsStepName / Email / Code / Profile (wizard de cadastro)</li>
+    <li>IsBusy / ErrorMessage / HasError</li>
+    <li>Dados mínimos de perfil (nome, idade, cidade, gênero etc.)</li>
+  </ul>
+
+  <h3>Comandos</h3>
+  <ul>
+    <li>LoginAsync</li>
+    <li>NextStepAsync</li>
+    <li>RegisterAsync</li>
+    <li>ChangePhotoAsync</li>
+    <li>LoginWithGoogleAsync</li>
+  </ul>
+</div>
+
+<!-- ================= DISCOVER ================= -->
+
+<div class="card">
+  <h2>DiscoverViewModel</h2>
+  <span class="tag">Discover</span><span class="tag">Matching</span>
+
+  <p><strong>Responsabilidade:</strong> Controlar a tela de descoberta de perfis.</p>
+
+  <h3>Funcionalidades</h3>
+  <ul>
+    <li>Carregamento e ordenação de usuários</li>
+    <li>Aplicação de filtros (idade, distância, interesses, orientação, etc.)</li>
+    <li>Like, Dislike, Match e Friend Request</li>
+    <li>Rewind (exclusivo Plus/Premium)</li>
+    <li>Boost de perfil</li>
+  </ul>
+
+  <h3>Regras importantes</h3>
+  <ul>
+    <li>Boost Plus/Premium: <strong>3 horas</strong> no topo da pilha</li>
+    <li>Boost Free: somente com tokens (15 min)</li>
+    <li>Ordenação leva em conta plano + boost ativo</li>
+    <li>Rewind apenas para planos pagos</li>
+  </ul>
+
+  <h3>Comandos</h3>
+  <ul>
+    <li>LikeAsync / DislikeAsync</li>
+    <li>AddFriendAsync</li>
+    <li>RewindAsync</li>
+    <li>BoostAsync</li>
+    <li>ApplyFilters</li>
+  </ul>
+</div>
+
+<!-- ================= FEED ================= -->
+
+<div class="card">
+  <h2>FeedViewModel</h2>
+  <span class="tag">Feed</span><span class="tag">Stories</span>
+
+  <p><strong>Responsabilidade:</strong> Gerenciar feed social e stories.</p>
+
+  <h3>Funcionalidades</h3>
+  <ul>
+    <li>Carregamento de posts (usuário + amigos)</li>
+    <li>Publicação de novos posts</li>
+    <li>Like em posts</li>
+    <li>Preview de comentários</li>
+    <li>Stories (bolhas)</li>
+  </ul>
+
+  <h3>Regras</h3>
+  <ul>
+    <li>Stories têm duração de <strong>24 horas</strong></li>
+    <li>Apenas amigos e matches aparecem no feed</li>
+    <li>Posts novos entram no topo</li>
+  </ul>
+
+  <h3>Comandos</h3>
+  <ul>
+    <li>LoadFeedAsync</li>
+    <li>PublishPostAsync</li>
+    <li>LikePostAsync</li>
+  </ul>
+</div>
+
+<!-- ================= CHAT ================= -->
+
+<div class="card">
+  <h2>ChatViewModel</h2>
+  <span class="tag">Chat</span>
+
+  <p><strong>Responsabilidade:</strong> Controlar um chat individual.</p>
+
+  <h3>Funcionalidades</h3>
+  <ul>
+    <li>Carregar mensagens do chat</li>
+    <li>Enviar mensagens</li>
+    <li>Identificar mensagens próprias</li>
+    <li>Conversão de timestamp para horário local</li>
+  </ul>
+
+  <h3>Comandos</h3>
+  <ul>
+    <li>LoadMessagesCommand</li>
+    <li>SendMessageCommand</li>
+  </ul>
+</div>
+
+<!-- ================= MESSAGES ================= -->
+
+<div class="card">
+  <h2>MessagesViewModel</h2>
+  <span class="tag">Chat</span><span class="tag">Lista</span>
+
+  <p><strong>Responsabilidade:</strong> Gerenciar a lista de conversas do usuário.</p>
+
+  <ul>
+    <li>Carrega chats ativos</li>
+    <li>Atualiza último texto, horário e status</li>
+    <li>Baseado em ChatSummary</li>
+  </ul>
+</div>
+
+<!-- ================= LIKES ================= -->
+
+<div class="card">
+  <h2>LikesViewModel</h2>
+  <span class="tag">Curtidas</span>
+
+  <p><strong>Responsabilidade:</strong> Tela "Quem me curtiu".</p>
+
+  <h3>Funcionalidades</h3>
+  <ul>
+    <li>Listar usuários que curtiram o perfil</li>
+    <li>Curtir de volta (gera match)</li>
+    <li>Adicionar como amigo</li>
+  </ul>
+
+  <h3>Estados</h3>
+  <ul>
+    <li>HasItems / HasNoItems</li>
+    <li>IsBusy</li>
+  </ul>
+</div>
+
+<!-- ================= PROFILE ================= -->
+
+<div class="card">
+  <h2>ProfileViewModel</h2>
+  <span class="tag">Perfil</span>
+
+  <p><strong>Responsabilidade:</strong> Gerenciar edição e visualização do perfil.</p>
+
+  <ul>
+    <li>Atualização de dados pessoais</li>
+    <li>Gerenciamento de fotos</li>
+    <li>Persistência no Firebase</li>
+    <li>Integração com Storage</li>
+  </ul>
+</div>
+
+</div>
+</body>
+</html>

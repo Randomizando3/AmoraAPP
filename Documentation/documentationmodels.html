@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Documentação • Models • Amora</title>
+  <meta name="description" content="Documentação técnica direta dos Models do sistema Amora." />
+
+  <style>
+    :root{
+      --text:#1f2430; --muted:#6b7280; --stroke:#e6e8ef; --bg:#f5f6f8; --card:#ffffff;
+      --purple:#7a5cff; --purple2:#6347ff; --soft: rgba(122,92,255,.12);
+      --max: 760px; --radius: 16px; --shadow: 0 10px 30px rgba(16,24,40,.10);
+      --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+    *{ box-sizing:border-box; }
+    body{ margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,Helvetica,sans-serif; background:var(--bg); color:var(--text); }
+    .wrap{ max-width:var(--max); margin:0 auto; padding:18px 14px 44px; }
+    header{
+      background:linear-gradient(135deg,var(--purple),var(--purple2));
+      color:#fff; padding:22px 18px; border-radius:22px; box-shadow:var(--shadow);
+    }
+    header h1{ margin:0 0 6px; font-size:20px; }
+    header p{ margin:0; font-size:13px; opacity:.95; }
+
+    .card{
+      background:var(--card); border:1px solid var(--stroke); border-radius:var(--radius);
+      box-shadow:0 6px 18px rgba(16,24,40,.06); padding:14px; margin-top:12px;
+    }
+
+    h2{ font-size:15px; margin:0 0 8px; }
+    h3{ font-size:13px; margin:12px 0 6px; }
+    p{ font-size:13px; line-height:1.45; margin:0 0 10px; }
+    ul{ padding-left:18px; margin:0; font-size:13px; line-height:1.45; }
+    li{ margin:6px 0; }
+    .muted{ color:var(--muted); }
+
+    table{ width:100%; border-collapse:separate; border-spacing:0; border-radius:12px; overflow:hidden; border:1px solid var(--stroke); margin-top:6px; }
+    th,td{ text-align:left; padding:9px; font-size:12.5px; vertical-align:top; border-bottom:1px solid var(--stroke); }
+    th{ background:#fafafa; }
+    tr:last-child td{ border-bottom:none; }
+
+    .tag{ display:inline-block; font-size:11px; padding:4px 8px; border-radius:999px;
+      border:1px solid rgba(122,92,255,.25); background:var(--soft); color:var(--purple2); }
+
+    .footer{ margin-top:18px; text-align:center; font-size:12px; color:var(--muted); }
+  </style>
+</head>
+
+<body>
+<div class="wrap">
+
+<header>
+  <h1>Documentação dos Models • Amora</h1>
+  <p>Índice técnico dos arquivos de modelo e sua função no sistema.</p>
+</header>
+
+<!-- USER PROFILE -->
+<section class="card">
+  <h2>UserProfile.cs <span class="tag">Perfil / Plano / Boost</span></h2>
+  <p>Modelo central do usuário. Controla identidade, plano, verificação e estados globais.</p>
+
+  <table>
+    <tr><th>Campo</th><th>Função</th></tr>
+    <tr><td>Plan</td><td>Plano do usuário (Free / Plus / Premium).</td></tr>
+    <tr><td>IsBoostActive</td><td>Indica se o boost está ativo.</td></tr>
+    <tr><td>BoostExpiresUtc</td><td>Timestamp de expiração do boost (3h).</td></tr>
+    <tr><td>BoostUsesToday</td><td>Controle de uso diário de boost.</td></tr>
+    <tr><td>IsVerified</td><td>Badge de perfil verificado.</td></tr>
+    <tr><td>VerificationStatus</td><td>Status da verificação (none/pending/approved/rejected).</td></tr>
+  </table>
+</section>
+
+<!-- STORIES -->
+<section class="card">
+  <h2>StoryItem.cs <span class="tag">Stories</span></h2>
+  <p>Representa um story individual (conteúdo efêmero).</p>
+
+  <table>
+    <tr><th>Campo</th><th>Função</th></tr>
+    <tr><td>ImageUrl</td><td>Imagem do story.</td></tr>
+    <tr><td>CreatedAt</td><td>Data de criação.</td></tr>
+    <tr><td>ExpiresAt</td><td>Data de expiração (24h).</td></tr>
+    <tr><td>Likes</td><td>Quantidade de curtidas.</td></tr>
+  </table>
+</section>
+
+<section class="card">
+  <h2>StoryBubble.cs <span class="tag">Stories UI</span></h2>
+  <p>Modelo de exibição da bolha de stories (agrupa StoryItems).</p>
+
+  <table>
+    <tr><th>Campo</th><th>Função</th></tr>
+    <tr><td>DisplayName</td><td>Nome exibido na bolha.</td></tr>
+    <tr><td>DisplayImageUrl</td><td>Preview do último story ou foto do perfil.</td></tr>
+    <tr><td>IsMe</td><td>Indica se é o próprio usuário.</td></tr>
+    <tr><td>IsMatch</td><td>Indica se é match.</td></tr>
+  </table>
+</section>
+
+<!-- FEED -->
+<section class="card">
+  <h2>Post.cs <span class="tag">Feed</span></h2>
+  <p>Postagem do feed com texto, imagem e interações.</p>
+
+  <table>
+    <tr><th>Campo</th><th>Função</th></tr>
+    <tr><td>Id</td><td>Identificador do post.</td></tr>
+    <tr><td>UserId</td><td>Autor do post.</td></tr>
+    <tr><td>Text</td><td>Texto do post.</td></tr>
+    <tr><td>ImageUrl</td><td>Imagem opcional.</td></tr>
+    <tr><td>CreatedAtUtcMs</td><td>Timestamp (ms) para ordenação.</td></tr>
+    <tr><td>Likes</td><td>Total de curtidas.</td></tr>
+    <tr><td>CommentsCount</td><td>Total de comentários.</td></tr>
+  </table>
+</section>
+
+<section class="card">
+  <h2>Comment.cs <span class="tag">Feed</span></h2>
+  <p>Comentário vinculado a um post.</p>
+
+  <table>
+    <tr><th>Campo</th><th>Função</th></tr>
+    <tr><td>Text</td><td>Conteúdo do comentário.</td></tr>
+    <tr><td>UserId</td><td>Autor.</td></tr>
+    <tr><td>CreatedAt</td><td>Data de criação.</td></tr>
+    <tr><td>ShortText</td><td>Preview curto para UI.</td></tr>
+  </table>
+</section>
+
+<!-- CHAT -->
+<section class="card">
+  <h2>ChatMessage.cs <span class="tag">Chat</span></h2>
+  <p>Mensagem individual dentro de uma conversa.</p>
+
+  <table>
+    <tr><th>Campo</th><th>Função</th></tr>
+    <tr><td>ChatId</td><td>Sala do chat.</td></tr>
+    <tr><td>SenderId</td><td>Quem enviou.</td></tr>
+    <tr><td>Text</td><td>Mensagem de texto.</td></tr>
+    <tr><td>ImageBase64</td><td>Imagem opcional.</td></tr>
+    <tr><td>AudioUrl</td><td>Áudio opcional.</td></tr>
+    <tr><td>CreatedAt</td><td>Timestamp da mensagem.</td></tr>
+    <tr><td>IsRead</td><td>Status de leitura.</td></tr>
+  </table>
+</section>
+
+<section class="card">
+  <h2>ChatBubble.cs <span class="tag">Chat UI</span></h2>
+  <p>Modelo visual de balão de mensagem.</p>
+
+  <table>
+    <tr><th>Campo</th><th>Função</th></tr>
+    <tr><td>Text</td><td>Texto exibido.</td></tr>
+    <tr><td>IsMine</td><td>Mensagem do usuário logado.</td></tr>
+    <tr><td>CreatedAt</td><td>Data da mensagem.</td></tr>
+  </table>
+
+  <p class="muted">Usado exclusivamente para renderização.</p> :contentReference[oaicite:0]{index=0}
+</section>
+
+<section class="card">
+  <h2>ChatItem.cs <span class="tag">Lista de Chats</span></h2>
+  <p>Item da lista de conversas (1x1 ou grupos).</p>
+
+  <table>
+    <tr><th>Campo</th><th>Função</th></tr>
+    <tr><td>ChatId</td><td>Identificador da conversa.</td></tr>
+    <tr><td>UserId</td><td>Outro usuário (1x1).</td></tr>
+    <tr><td>DisplayName</td><td>Nome exibido.</td></tr>
+    <tr><td>IsMatch</td><td>Indica match.</td></tr>
+    <tr><td>IsFriend</td><td>Indica amizade.</td></tr>
+    <tr><td>UnreadCount</td><td>Mensagens não lidas.</td></tr>
+    <tr><td>IsGroup</td><td>Indica chat em grupo.</td></tr>
+    <tr><td>IsGroupAdmin</td><td>Admin do grupo.</td></tr>
+  </table>
+</section>
+
+<!-- SUPPORT -->
+<section class="card">
+  <h2>SupportTicket.cs <span class="tag">Suporte</span></h2>
+  <p>Registro de chamados de suporte.</p>
+
+  <table>
+    <tr><th>Campo</th><th>Função</th></tr>
+    <tr><td>Status</td><td>open / answered / closed</td></tr>
+    <tr><td>Message</td><td>Mensagem do usuário.</td></tr>
+    <tr><td>Answer</td><td>Resposta do admin.</td></tr>
+    <tr><td>AnsweredByAdminUid</td><td>Auditoria.</td></tr>
+    <tr><td>AnsweredAtUtcMs</td><td>Data da resposta.</td></tr>
+  </table>
+</section>
+
+<!-- REPORT -->
+<section class="card">
+  <h2>ReportItem.cs <span class="tag">Denúncias</span></h2>
+  <p>Registro de denúncias de perfil ou conteúdo.</p>
+
+  <table>
+    <tr><th>Campo</th><th>Função</th></tr>
+    <tr><td>Type</td><td>post ou profile</td></tr>
+    <tr><td>Status</td><td>open / ignored / accepted</td></tr>
+    <tr><td>AdminAction</td><td>Ação aplicada (delete/suspend).</td></tr>
+    <tr><td>AdminNote</td><td>Justificativa administrativa.</td></tr>
+  </table>
+</section>
+
+<!-- VERIFICATION -->
+<section class="card">
+  <h2>VerificationRequest.cs <span class="tag">Verificação</span></h2>
+  <p>Solicitação de verificação de perfil.</p>
+
+  <table>
+    <tr><th>Campo</th><th>Função</th></tr>
+    <tr><td>Status</td><td>pending / approved / rejected</td></tr>
+    <tr><td>SelfieUrl</td><td>Imagem selfie.</td></tr>
+    <tr><td>DocumentUrl</td><td>Documento enviado.</td></tr>
+    <tr><td>ReviewedByAdminUid</td><td>Admin responsável.</td></tr>
+    <tr><td>ReviewedAtUtcMs</td><td>Data da revisão.</td></tr>
+  </table>
+</section>
+
+<div class="footer">
+  Documentação dos Models • Amora
+</div>
+
+</div>
+</body>
+</html>

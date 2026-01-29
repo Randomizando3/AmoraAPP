@@ -73,7 +73,6 @@ namespace AmoraApp.ViewModels
 
         private bool _syncingBirthText;
 
-        // Atualiza idade quando muda BirthDate (AGORA SEM "clamp" para 18)
         partial void OnBirthDateChanged(DateTime oldValue, DateTime newValue)
         {
             var today = DateTime.Today;
@@ -83,41 +82,80 @@ namespace AmoraApp.ViewModels
 
             Age = calcAge;
 
-            // Mantém texto em sincronia (sem loop)
-            if (_syncingBirthText) return;
-            _syncingBirthText = true;
+            // Com DatePicker, o texto é sempre espelho da data escolhida
             BirthDateText = newValue.ToString("dd/MM/yyyy");
-            _syncingBirthText = false;
         }
+
 
         // Quando o usuário digita, tenta interpretar.
-        partial void OnBirthDateTextChanged(string oldValue, string newValue)
-        {
-            if (_syncingBirthText) return;
-            if (string.IsNullOrWhiteSpace(newValue)) return;
+        //partial void OnBirthDateTextChanged(string oldValue, string newValue)
+        //{
+        //    if (_syncingBirthText) return;
 
-            // Se vier só números com 8 dígitos, formata automaticamente (ddMMyyyy -> dd/MM/yyyy)
-            var digits = new string(newValue.Where(char.IsDigit).ToArray());
-            if (digits.Length == 8 && !newValue.Contains("/"))
-            {
-                var formatted = $"{digits.Substring(0, 2)}/{digits.Substring(2, 2)}/{digits.Substring(4, 4)}";
-                _syncingBirthText = true;
-                BirthDateText = formatted;
-                _syncingBirthText = false;
+        //    try
+        //    {
+        //        if (string.IsNullOrWhiteSpace(newValue))
+        //            return;
 
-                newValue = formatted;
-            }
+        //        // Normaliza removendo tudo que não é dígito
+        //        var digits = new string(newValue.Where(char.IsDigit).ToArray());
 
-            // Só tenta parse quando parece completo (10 chars dd/MM/yyyy)
-            if (newValue.Length < 10) return;
+        //        // Limita no máximo 8 dígitos (ddMMyyyy) para evitar estados estranhos
+        //        if (digits.Length > 8)
+        //            digits = digits.Substring(0, 8);
 
-            if (TryParseBirthDate(newValue, out var parsed))
-            {
-                _syncingBirthText = true;
-                BirthDate = parsed.Date;
-                _syncingBirthText = false;
-            }
-        }
+        //        // Enquanto não tiver 8 dígitos, só mantém o texto "formatado" e NÃO tenta parsear
+        //        if (digits.Length < 8)
+        //        {
+        //            var partial = FormatAsPartialDate(digits); // dd/MM/aaaa parcial
+        //            if (partial != newValue)
+        //            {
+        //                _syncingBirthText = true;
+        //                BirthDateText = partial;
+        //                _syncingBirthText = false;
+        //            }
+        //            return;
+        //        }
+
+        //        // Aqui tem exatamente 8 dígitos: formata dd/MM/yyyy e parseia
+        //        var formatted = $"{digits.Substring(0, 2)}/{digits.Substring(2, 2)}/{digits.Substring(4, 4)}";
+
+        //        if (formatted != newValue)
+        //        {
+        //            _syncingBirthText = true;
+        //            BirthDateText = formatted;
+        //            _syncingBirthText = false;
+        //        }
+
+        //        // Só agora tenta converter para DateTime
+        //        if (TryParseBirthDate(formatted, out var parsed))
+        //        {
+        //            _syncingBirthText = true;
+        //            BirthDate = parsed.Date;
+        //            _syncingBirthText = false;
+        //        }
+        //    }
+        //    catch
+        //    {
+        //        // Nunca derrube o app por causa de digitação.
+        //        // Se quiser, você pode logar em Debug/Console aqui.
+        //    }
+        //}
+
+        //private static string FormatAsPartialDate(string digits)
+        //{
+        //    // Ex.: "1" -> "1"
+        //    // "12" -> "12"
+        //    // "123" -> "12/3"
+        //    // "1234" -> "12/34"
+        //    // "12345" -> "12/34/5" ...
+        //    if (string.IsNullOrEmpty(digits)) return string.Empty;
+
+        //    if (digits.Length <= 2) return digits;
+        //    if (digits.Length <= 4) return $"{digits.Substring(0, 2)}/{digits.Substring(2)}";
+        //    return $"{digits.Substring(0, 2)}/{digits.Substring(2, 2)}/{digits.Substring(4)}";
+        //}
+
 
         partial void OnAgeChanged(int oldValue, int newValue)
         {
@@ -282,21 +320,16 @@ namespace AmoraApp.ViewModels
                     return;
                 }
 
-                if (!TryParseBirthDate(BirthDateText, out var parsedBirth))
-                {
-                    ErrorMessage = "Informe sua data de nascimento (dd/MM/aaaa).";
-                    return;
-                }
-
-                var computedAge = CalculateAge(parsedBirth.Date);
+                // agora a fonte da verdade é BirthDate (DatePicker)
+                var computedAge = CalculateAge(BirthDate.Date);
                 if (computedAge < 18)
                 {
                     ErrorMessage = "O app é apenas para maiores de 18 anos.";
                     return;
                 }
 
-                // Mantém consistência interna e mostra idade corretamente
-                BirthDate = parsedBirth.Date;
+                // Mantém o texto coerente (caso ainda não tenha sido setado)
+                BirthDateText = BirthDate.ToString("dd/MM/yyyy");
 
                 IsStepName = false;
                 IsStepEmail = true;
@@ -305,6 +338,7 @@ namespace AmoraApp.ViewModels
                 PrimaryButtonText = "Avançar";
                 return;
             }
+
 
             // Etapa 2: E-mail + senha + confirmação
             if (IsStepEmail)
@@ -490,21 +524,17 @@ namespace AmoraApp.ViewModels
 
             try
             {
-                // Revalida data (segurança extra)
-                if (!TryParseBirthDate(BirthDateText, out var parsedBirth))
-                {
-                    ErrorMessage = "Informe uma data de nascimento válida (dd/MM/aaaa).";
-                    return;
-                }
-
-                var computedAge = CalculateAge(parsedBirth.Date);
+                // Revalida data (segurança extra) - agora via DatePicker
+                var computedAge = CalculateAge(BirthDate.Date);
                 if (computedAge < 18)
                 {
                     ErrorMessage = "O app é apenas para maiores de 18 anos.";
                     return;
                 }
 
-                BirthDate = parsedBirth.Date;
+                // mantém texto coerente
+                BirthDateText = BirthDate.ToString("dd/MM/yyyy");
+
 
                 if (string.IsNullOrWhiteSpace(City))
                 {

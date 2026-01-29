@@ -24,11 +24,11 @@
 		<ApplicationTitle>AmoraApp</ApplicationTitle>
 
 		<!-- App Identifier -->
-		<ApplicationId>com.izzihub.amoraapp</ApplicationId>
+		<ApplicationId>com.companyname.amoraapp</ApplicationId>
 
 		<!-- Versions -->
-		<ApplicationDisplayVersion>1.1</ApplicationDisplayVersion>
-		<ApplicationVersion>3</ApplicationVersion>
+		<ApplicationDisplayVersion>1.14</ApplicationDisplayVersion>
+		<ApplicationVersion>5</ApplicationVersion>
 
 		<!-- To develop, package, and publish an app to the Microsoft Store, see: https://aka.ms/MauiTemplateUnpackaged -->
 		<WindowsPackageType>None</WindowsPackageType>
@@ -84,9 +84,7 @@
 		<!-- <MauiIcon Include="Resources\AppIcon\appicon.png" /> -->
 
 		<!-- Splash Screen -->
-		<MauiSplashScreen Include="Resources\Splash\splash.png"
-                  Color="#E8D9D9"
-                  BaseSize="400,400" />
+		<MauiSplashScreen Include="Resources\Splash\splash.png" Color="#E8D9D9" BaseSize="400,400" />
 
 		<!-- Images -->
 		<MauiImage Include="Resources\Images\*" />
@@ -321,6 +319,12 @@
 
 	<ItemGroup Condition="$(TargetFramework.Contains('-ios'))">
 		<BundleResource Include="Platforms\iOS\GoogleService-Info.plist" Link="GoogleService-Info.plist" />
+	</ItemGroup>
+
+	<ItemGroup Condition="'$(TargetFramework)' == 'net9.0-android'">
+	  <PackageReference Include="Xamarin.Android.Google.BillingClient">
+	    <Version>6.2.1</Version>
+	  </PackageReference>
 	</ItemGroup>
 
 

@@ -3,6 +3,7 @@
     x:Class="AmoraApp.Views.RegisterPage"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:sys="clr-namespace:System;assembly=System.Runtime"
     x:Name="RootPage"
     BackgroundColor="#000000"
     Shell.NavBarIsVisible="False"
@@ -54,17 +55,21 @@
                            TextColor="#555"
                            Margin="2,6,0,0" />
 
+                    <!-- ✅ DATEPICKER SIMPLES (SEM OVERLAY / SEM CÓDIGO-BEHIND) -->
                     <Frame BackgroundColor="#FFFFFF"
                            BorderColor="#D1D5DB"
                            CornerRadius="10"
-                           Padding="10,6">
-                        <Entry
-                            Text="{Binding BirthDateText}"
-                            Placeholder="dd/MM/aaaa"
-                            Keyboard="Numeric"
-                            MaxLength="10"
+                           Padding="6">
+
+                        <DatePicker
+                            Date="{Binding BirthDate}"
+                            Format="dd/MM/yyyy"
+                            MaximumDate="{x:Static sys:DateTime.Today}"
+                            BackgroundColor="White"
                             TextColor="#222"
-                            PlaceholderColor="#BBBBBB" />
+                            HeightRequest="44"
+                            HorizontalOptions="Fill"
+                            VerticalOptions="Center" />
                     </Frame>
 
                     <Label Text="{Binding AgeDisplay}"
@@ -113,7 +118,7 @@
                                IsPassword="True" />
                     </Frame>
 
-                    <!-- Confirmar senha (NOVO) -->
+                    <!-- Confirmar senha -->
                     <Frame BackgroundColor="#F3F4F6"
                            BorderColor="#D1D5DB"
                            CornerRadius="10"
@@ -147,9 +152,7 @@
                     </Frame>
                 </VerticalStackLayout>
 
-                <!-- =========================
-                     Etapa 4: Perfil completo
-                ========================== -->
+                <!-- Etapa 4: Perfil completo -->
                 <ScrollView IsVisible="{Binding IsStepProfile}">
                     <VerticalStackLayout Spacing="18" Padding="0,0,0,20">
 
@@ -325,7 +328,7 @@
                             </Picker>
                         </Frame>
 
-                        <!-- O QUE BUSCA (pílulas) -->
+                        <!-- O QUE BUSCA -->
                         <Label Text="O que você busca?"
                                FontAttributes="Bold"
                                FontSize="14"
@@ -422,7 +425,7 @@
                                    Placeholder="(11) 99999-9999"/>
                         </Frame>
 
-                        <!-- (Opcional) mantém a idade visível aqui também -->
+                        <!-- Idade -->
                         <Label Text="Idade"
                                FontAttributes="Bold"
                                FontSize="14"
@@ -436,7 +439,7 @@
                                    TextColor="#333"/>
                         </Frame>
 
-                        <!-- INTERESSES (pílulas) -->
+                        <!-- INTERESSES -->
                         <Label Text="Interesses"
                                FontAttributes="Bold"
                                FontSize="14"

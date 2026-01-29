@@ -1,0 +1,312 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Amora • Documentação de Services</title>
+
+  <style>
+    :root{
+      --text:#1f2937;
+      --muted:#6b7280;
+      --stroke:#e5e7eb;
+      --bg:#f5f6f8;
+      --card:#ffffff;
+      --purple:#7a5cff;
+      --radius:14px;
+      --max:760px;
+    }
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+      background:var(--bg);
+      color:var(--text);
+    }
+    .wrap{
+      max-width:var(--max);
+      margin:0 auto;
+      padding:20px 14px 60px;
+    }
+    header{
+      background:linear-gradient(135deg,#7a5cff,#6347ff);
+      color:#fff;
+      padding:22px;
+      border-radius:20px;
+    }
+    header h1{ margin:0 0 6px; font-size:22px; }
+    header p{ margin:0; font-size:14px; opacity:.95; }
+
+    .card{
+      background:var(--card);
+      border:1px solid var(--stroke);
+      border-radius:var(--radius);
+      padding:16px;
+      margin-top:14px;
+    }
+    h2{
+      margin:0 0 6px;
+      font-size:18px;
+      color:var(--purple);
+    }
+    .tag{
+      display:inline-block;
+      font-size:11px;
+      padding:3px 8px;
+      border-radius:999px;
+      background:#ede9fe;
+      color:#5b4dff;
+      margin-bottom:6px;
+    }
+    p{ margin:6px 0; font-size:14px; line-height:1.5; }
+    ul{
+      margin:6px 0 0 18px;
+      padding:0;
+      font-size:14px;
+    }
+    li{ margin:4px 0; }
+    footer{
+      margin-top:30px;
+      text-align:center;
+      font-size:12px;
+      color:var(--muted);
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+
+    <header>
+      <h1>Documentação de Services</h1>
+      <p>AmoraApp • Camada de regras de negócio e integração</p>
+    </header>
+
+    <!-- ========================= -->
+    <!-- AUTENTICAÇÃO / FIREBASE -->
+    <!-- ========================= -->
+
+    <div class="card">
+      <span class="tag">Auth</span>
+      <h2>FirebaseAuthService</h2>
+      <p>Responsável pela autenticação do usuário via Firebase.</p>
+      <ul>
+        <li>Login e logout</li>
+        <li>Criação de conta</li>
+        <li>Usuário autenticado atual</li>
+        <li>Recuperação de token (IdToken)</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <span class="tag">Database</span>
+      <h2>FirebaseDatabaseService</h2>
+      <p>Camada de acesso ao Firebase Realtime Database.</p>
+      <ul>
+        <li>Leitura e gravação de perfis</li>
+        <li>Atualização parcial de dados</li>
+        <li>Busca de informações públicas de usuários</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <span class="tag">Storage</span>
+      <h2>FirebaseStorageService</h2>
+      <p>Gerencia upload e exclusão de arquivos no Firebase Storage.</p>
+      <ul>
+        <li>Upload de fotos</li>
+        <li>Upload de vídeos</li>
+        <li>Geração de URLs públicas</li>
+        <li>Remoção de arquivos</li>
+      </ul>
+    </div>
+
+    <!-- ========================= -->
+    <!-- SOCIAL / INTERAÇÃO -->
+    <!-- ========================= -->
+
+    <div class="card">
+      <span class="tag">Discover</span>
+      <h2>MatchService</h2>
+      <p>Controla curtidas, dislikes, matches e discover.</p>
+      <ul>
+        <li>Like e dislike de perfis</li>
+        <li>Detecção automática de match</li>
+        <li>Lista de matches</li>
+        <li>Lista de usuários que curtiram o perfil</li>
+        <li>Perfis exibidos no Discover</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <span class="tag">Friends</span>
+      <h2>FriendService</h2>
+      <p>Gerencia amizade entre usuários.</p>
+      <ul>
+        <li>Solicitação de amizade</li>
+        <li>Aceite ou recusa</li>
+        <li>Lista de amigos</li>
+        <li>Remoção de amizade</li>
+      </ul>
+    </div>
+
+    <!-- ========================= -->
+    <!-- CHAT -->
+    <!-- ========================= -->
+
+    <div class="card">
+      <span class="tag">Chat</span>
+      <h2>ChatService</h2>
+      <p>Camada principal de gerenciamento de chats.</p>
+      <ul>
+        <li>Criação de chats privados</li>
+        <li>Envio de mensagens</li>
+        <li>Listagem de mensagens</li>
+        <li>Resumo de conversas</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <span class="tag">Chat</span>
+      <h2>MessageService</h2>
+      <p>Wrapper simples sobre o ChatService.</p>
+      <ul>
+        <li>Compatibilidade com código legado</li>
+        <li>Envio de mensagens de texto</li>
+        <li>Busca de mensagens por chat</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <span class="tag">Presence</span>
+      <h2>PresenceService</h2>
+      <p>Gerencia status online/offline do usuário.</p>
+      <ul>
+        <li>Usuário online</li>
+        <li>Usuário offline</li>
+        <li>Última vez visto (UTC)</li>
+      </ul>
+    </div>
+
+    <!-- ========================= -->
+    <!-- STORIES -->
+    <!-- ========================= -->
+
+    <div class="card">
+      <span class="tag">Stories</span>
+      <h2>StoryService</h2>
+      <p>Gerencia stories temporários.</p>
+      <ul>
+        <li>Duração fixa: <strong>24 horas</strong></li>
+        <li>Criação de story</li>
+        <li>Listagem apenas de stories válidos</li>
+        <li>Remoção automática de expirados</li>
+        <li>Likes em stories</li>
+      </ul>
+    </div>
+
+    <!-- ========================= -->
+    <!-- PLANOS / BOOST -->
+    <!-- ========================= -->
+
+    <div class="card">
+      <span class="tag">Planos</span>
+      <h2>PlanService</h2>
+      <p>Gerencia planos, boosts e cupons.</p>
+      <ul>
+        <li>Planos: Free, Plus, Premium</li>
+        <li>Controle de expiração</li>
+        <li>Boosts disponíveis</li>
+        <li>Duração do boost: <strong>3 horas</strong></li>
+        <li>Likes diários no plano grátis</li>
+        <li>Resgate de cupons</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <span class="tag">Billing</span>
+      <h2>GooglePlayBillingService</h2>
+      <p>Integração com Google Play Billing.</p>
+      <ul>
+        <li>Compra de planos</li>
+        <li>Validação de assinaturas</li>
+        <li>Atualização de estado de compra</li>
+      </ul>
+    </div>
+
+    <!-- ========================= -->
+    <!-- ADMIN / MODERAÇÃO -->
+    <!-- ========================= -->
+
+    <div class="card">
+      <span class="tag">Admin</span>
+      <h2>AdminAccessService</h2>
+      <p>Controle simples de acesso administrativo.</p>
+      <ul>
+        <li>Validação de UID administrador</li>
+        <li>Acesso a recursos restritos</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <span class="tag">Moderação</span>
+      <h2>ReportService</h2>
+      <p>Envio de denúncias para moderação.</p>
+      <ul>
+        <li>Denúncia de usuários</li>
+        <li>Denúncia de mensagens ou conteúdos</li>
+        <li>Persistência em /reports</li>
+      </ul>
+    </div>
+
+    <!-- ========================= -->
+    <!-- SUPORTE / SISTEMA -->
+    <!-- ========================= -->
+
+    <div class="card">
+      <span class="tag">Suporte</span>
+      <h2>EmailService</h2>
+      <p>Envio de e-mails transacionais.</p>
+      <ul>
+        <li>Confirmações</li>
+        <li>Contato com suporte</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <span class="tag">Notificações</span>
+      <h2>FcmTokenService</h2>
+      <p>Gerencia tokens de notificação push.</p>
+      <ul>
+        <li>Registro de token</li>
+        <li>Atualização</li>
+        <li>Associação ao usuário</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <span class="tag">Push</span>
+      <h2>PushNotificationBootstrapper</h2>
+      <p>Inicialização e preparação do sistema de notificações.</p>
+      <ul>
+        <li>Setup inicial do FCM</li>
+        <li>Configuração global</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <span class="tag">Localização</span>
+      <h2>LocationService</h2>
+      <p>Gerencia dados de localização do usuário.</p>
+      <ul>
+        <li>Latitude e longitude</li>
+        <li>Atualização no banco</li>
+      </ul>
+    </div>
+
+    <footer>
+      Documentação técnica • AmoraApp • Services
+    </footer>
+
+  </div>
+</body>
+</html>

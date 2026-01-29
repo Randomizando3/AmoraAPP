@@ -14,12 +14,12 @@ namespace AmoraApp.Views
         // Período selecionado na UI (padrão: mensal)
         private PlanPeriod _selectedPeriod = PlanPeriod.Monthly;
 
-        // Valores fictícios para exibição
-        private const string PlusMonthlyPriceText = "R$ 29,90/mês";
-        private const string PlusYearlyPriceText = "R$ 299,00/ano";
+        // Exibição (você informou estes valores)
+        private const string PlusMonthlyPriceText = "R$ 24,90/mês";
+        private const string PlusYearlyPriceText = "R$ 298,80/ano";
 
         private const string PremiumMonthlyPriceText = "R$ 49,90/mês";
-        private const string PremiumYearlyPriceText = "R$ 499,00/ano";
+        private const string PremiumYearlyPriceText = "R$ 598,80/ano";
 
         public UpgradePage()
         {
@@ -31,12 +31,26 @@ namespace AmoraApp.Views
             base.OnAppearing();
 
             UpdatePeriodUI();
+
             await LoadPlanAsync();
             await LoadBoostsAsync();
+
+#if ANDROID
+            // Restaura compras (subs ativas + inapps pendentes) para evitar “paguei e não ativou”
+            if (!string.IsNullOrWhiteSpace(CurrentUserId))
+            {
+                try { await GooglePlayBillingService.Instance.RestorePurchasesAsync(CurrentUserId); }
+                catch { /* best-effort */ }
+
+                // Recarrega após restore
+                await LoadPlanAsync();
+                await LoadBoostsAsync();
+            }
+#endif
         }
 
         // =========================
-        // NOVO: ATIVAR CUPOM
+        // CUPOM
         // =========================
         private async void OnApplyCouponClicked(object sender, EventArgs e)
         {
@@ -72,7 +86,6 @@ namespace AmoraApp.Views
                 CouponEntry.Text = "";
                 await DisplayAlert("Cupom", result.Message, "OK");
 
-                // Atualiza UI
                 await LoadPlanAsync();
                 await LoadBoostsAsync();
             }
@@ -98,7 +111,6 @@ namespace AmoraApp.Views
                     return;
                 }
 
-                // NOVO: pega plano + dias restantes (já faz downgrade se expirou)
                 var info = await PlanService.Instance.GetUserPlanStatusAsync(CurrentUserId);
 
                 var plan = info.Plan;
@@ -106,7 +118,6 @@ namespace AmoraApp.Views
 
                 CurrentPlanLabel.Text = $"Seu plano atual é: {planName}";
 
-                // Exibe dias restantes apenas se não for Free
                 if (plan != PlanType.Free && info.RemainingDays > 0)
                 {
                     RemainingDaysLabel.Text = $"Restam {info.RemainingDays} dia(s)";
@@ -117,7 +128,6 @@ namespace AmoraApp.Views
                     RemainingDaysLabel.IsVisible = false;
                 }
 
-                // Deixa o botão do plano atual desabilitado / marcado
                 FreePlanButton.IsEnabled = plan != PlanType.Free;
                 PlusPlanButton.IsEnabled = plan != PlanType.Plus;
                 PremiumPlanButton.IsEnabled = plan != PlanType.Premium;
@@ -149,7 +159,6 @@ namespace AmoraApp.Views
             }
         }
 
-
         private async Task LoadBoostsAsync()
         {
             try
@@ -170,15 +179,6 @@ namespace AmoraApp.Views
             }
         }
 
-        private async void OnBackClicked(object sender, EventArgs e)
-        {
-            try
-            {
-                await Navigation.PopAsync();
-            }
-            catch { }
-        }
-
         private async void OnPlusPlanClicked(object sender, EventArgs e)
         {
             await HandleUpgradeAsync(PlanType.Plus);
@@ -187,6 +187,17 @@ namespace AmoraApp.Views
         private async void OnPremiumPlanClicked(object sender, EventArgs e)
         {
             await HandleUpgradeAsync(PlanType.Premium);
+        }
+
+        private string GetSubscriptionProductId(PlanType targetPlan, PlanPeriod period)
+        {
+            if (targetPlan == PlanType.Plus)
+                return period == PlanPeriod.Yearly ? "plus_yearly" : "plus_monthly";
+
+            if (targetPlan == PlanType.Premium)
+                return period == PlanPeriod.Yearly ? "premium_yearly" : "premium_monthly";
+
+            return "";
         }
 
         private async Task HandleUpgradeAsync(PlanType targetPlan)
@@ -200,25 +211,57 @@ namespace AmoraApp.Views
             }
 
             var name = PlanService.Instance.GetPlanDisplayName(targetPlan);
+            var periodText = (_selectedPeriod == PlanPeriod.Monthly ? "mensal" : "anual");
 
             var confirm = await DisplayAlert(
-                "Continuar para pagamento",
-                $"Você será direcionado para a tela de pagamento do plano {name} ({(_selectedPeriod == PlanPeriod.Monthly ? "mensal" : "anual")}).",
+                "Confirmar assinatura",
+                $"Você vai assinar o plano {name} ({periodText}) pelo Google Play.",
                 "Continuar",
                 "Cancelar");
 
             if (!confirm)
                 return;
 
-            await DisplayAlert(
-                "Simulação",
-                "Integração de pagamento ainda não implementada. Nesta simulação, o plano será ativado agora.",
-                "OK");
+#if ANDROID
+            try
+            {
+                SetBusy(true);
 
-            await PlanService.Instance.ActivatePlanAsync(CurrentUserId, targetPlan, _selectedPeriod);
+                var productId = GetSubscriptionProductId(targetPlan, _selectedPeriod);
 
-            await LoadPlanAsync();
-            await LoadBoostsAsync();
+                // A concessão do benefício é feita no callback do Billing (ack + grant),
+                // mas mantemos aqui a intenção para clareza.
+                var result = await GooglePlayBillingService.Instance.BuySubscriptionAsync(
+                    CurrentUserId,
+                    productId,
+                    async (_) =>
+                    {
+                        await PlanService.Instance.ActivatePlanAsync(CurrentUserId, targetPlan, _selectedPeriod);
+                    });
+
+                if (!result.ok)
+                {
+                    await DisplayAlert("Pagamento", result.message, "OK");
+                    return;
+                }
+
+                await DisplayAlert("Pagamento", "Assinatura concluída. Seu plano foi atualizado.", "OK");
+
+                await LoadPlanAsync();
+                await LoadBoostsAsync();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[UpgradePage] Erro billing: {ex}");
+                await DisplayAlert("Pagamento", "Não foi possível concluir o pagamento agora.", "OK");
+            }
+            finally
+            {
+                SetBusy(false);
+            }
+#else
+            await DisplayAlert("Indisponível", "Assinaturas estão disponíveis apenas no Android (Google Play).", "OK");
+#endif
         }
 
         private async void OnBuy3BoostsClicked(object sender, EventArgs e)
@@ -230,6 +273,9 @@ namespace AmoraApp.Views
         {
             await HandleBuyBoostsAsync(10);
         }
+
+        private string GetBoostProductId(int quantity)
+            => quantity == 10 ? "boost_10" : "boost_3";
 
         private async Task HandleBuyBoostsAsync(int quantity)
         {
@@ -243,20 +289,49 @@ namespace AmoraApp.Views
 
             var confirm = await DisplayAlert(
                 "Comprar boosts",
-                $"Você será direcionado para o pagamento de {quantity} boost(s).",
+                $"Você vai comprar {quantity} boost(s) pelo Google Play.",
                 "Continuar",
                 "Cancelar");
 
             if (!confirm)
                 return;
 
-            await DisplayAlert(
-                "Simulação",
-                "Integração de pagamento ainda não está ativa. Nesta simulação, os boosts serão adicionados agora.",
-                "OK");
+#if ANDROID
+            try
+            {
+                SetBusy(true);
 
-            await PlanService.Instance.AddUserBoostsAsync(CurrentUserId, quantity);
-            await LoadBoostsAsync();
+                var productId = GetBoostProductId(quantity);
+
+                var result = await GooglePlayBillingService.Instance.BuyInAppAsync(
+                    CurrentUserId,
+                    productId,
+                    async (_) =>
+                    {
+                        await PlanService.Instance.AddUserBoostsAsync(CurrentUserId, quantity);
+                    });
+
+                if (!result.ok)
+                {
+                    await DisplayAlert("Pagamento", result.message, "OK");
+                    return;
+                }
+
+                await DisplayAlert("Pagamento", "Compra concluída. Boosts adicionados à sua conta.", "OK");
+                await LoadBoostsAsync();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[UpgradePage] Erro billing boosts: {ex}");
+                await DisplayAlert("Pagamento", "Não foi possível concluir o pagamento agora.", "OK");
+            }
+            finally
+            {
+                SetBusy(false);
+            }
+#else
+            await DisplayAlert("Indisponível", "Boosts por Google Play estão disponíveis apenas no Android.", "OK");
+#endif
         }
 
         private void OnMonthlyTapped(object sender, EventArgs e)
@@ -297,6 +372,16 @@ namespace AmoraApp.Views
                 PlusPriceLabel.Text = PlusYearlyPriceText;
                 PremiumPriceLabel.Text = PremiumYearlyPriceText;
             }
+        }
+
+        private void SetBusy(bool busy)
+        {
+            PlusPlanButton.IsEnabled = !busy;
+            PremiumPlanButton.IsEnabled = !busy;
+            ApplyCouponButton.IsEnabled = !busy;
+
+            // Botões boosts (não têm x:Name, então deixamos assim por simplicidade)
+            // Se quiser, eu te devolvo o XAML com x:Name para desabilitar também.
         }
     }
 }

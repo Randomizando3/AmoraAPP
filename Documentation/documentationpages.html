@@ -1,0 +1,312 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Amora • Documentação de Views</title>
+
+  <style>
+    :root{
+      --text:#1f2937;
+      --muted:#6b7280;
+      --stroke:#e5e7eb;
+      --bg:#f5f6f8;
+      --card:#ffffff;
+      --purple:#7a5cff;
+      --radius:14px;
+      --max:820px;
+    }
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+      background:var(--bg);
+      color:var(--text);
+    }
+    .wrap{
+      max-width:var(--max);
+      margin:0 auto;
+      padding:22px 14px 60px;
+    }
+    header{
+      background:linear-gradient(135deg,#7a5cff,#6347ff);
+      color:#fff;
+      padding:22px;
+      border-radius:20px;
+    }
+    header h1{ margin:0 0 6px; font-size:22px; }
+    header p{ margin:0; font-size:14px; opacity:.95; }
+
+    .card{
+      background:var(--card);
+      border:1px solid var(--stroke);
+      border-radius:var(--radius);
+      padding:16px;
+      margin-top:16px;
+    }
+    h2{ font-size:18px; margin:0 0 6px; }
+    h3{ font-size:14px; margin:12px 0 6px; }
+    p{ font-size:13.5px; line-height:1.45; margin:0 0 10px; }
+    ul{ padding-left:18px; margin:0; font-size:13.5px; }
+    li{ margin:6px 0; }
+    .muted{ color:var(--muted); }
+    .tag{
+      display:inline-block;
+      padding:2px 8px;
+      font-size:11px;
+      border-radius:999px;
+      background:#ede9fe;
+      color:#5b21b6;
+      margin-right:6px;
+    }
+  </style>
+</head>
+
+<body>
+<div class="wrap">
+
+<header>
+  <h1>Views • Amora App</h1>
+  <p>Documentação técnica das páginas (Views) do aplicativo.</p>
+</header>
+
+<!-- ================= AUTH ================= -->
+
+<div class="card">
+  <h2>WelcomePage</h2>
+  <span class="tag">Entrada</span>
+
+  <p><strong>Finalidade:</strong> Tela inicial do aplicativo.</p>
+  <ul>
+    <li>Apresentação do app</li>
+    <li>Navegação para Login ou Registro</li>
+  </ul>
+</div>
+
+<div class="card">
+  <h2>LoginPage</h2>
+  <span class="tag">Autenticação</span>
+
+  <p><strong>Finalidade:</strong> Login do usuário.</p>
+  <ul>
+    <li>Login por e-mail e senha</li>
+    <li>Login com Google</li>
+    <li>Redirecionamento para RegisterPage quando necessário</li>
+  </ul>
+</div>
+
+<div class="card">
+  <h2>RegisterPage</h2>
+  <span class="tag">Cadastro</span>
+
+  <p><strong>Finalidade:</strong> Fluxo completo de criação de conta.</p>
+  <ul>
+    <li>Wizard de cadastro (nome, e-mail, código, perfil)</li>
+    <li>Reutiliza AuthViewModel</li>
+    <li>Compatível com cadastro tradicional ou Google</li>
+  </ul>
+</div>
+
+<!-- ================= DISCOVER ================= -->
+
+<div class="card">
+  <h2>DiscoverPage</h2>
+  <span class="tag">Discover</span>
+
+  <p><strong>Finalidade:</strong> Descoberta de perfis.</p>
+  <ul>
+    <li>Swipe de usuários</li>
+    <li>Like / Dislike / Match</li>
+    <li>Friend request</li>
+    <li>Boost (3 horas no topo da pilha)</li>
+    <li>Rewind (planos pagos)</li>
+  </ul>
+</div>
+
+<div class="card">
+  <h2>FiltersPage</h2>
+  <span class="tag">Filtros</span>
+
+  <p><strong>Finalidade:</strong> Configuração de filtros do Discover.</p>
+  <ul>
+    <li>Idade mínima e máxima</li>
+    <li>Distância</li>
+    <li>Gênero e interesses</li>
+  </ul>
+</div>
+
+<!-- ================= FEED ================= -->
+
+<div class="card">
+  <h2>FeedPage</h2>
+  <span class="tag">Feed</span><span class="tag">Stories</span>
+
+  <p><strong>Finalidade:</strong> Feed social do aplicativo.</p>
+  <ul>
+    <li>Posts de amigos e matches</li>
+    <li>Criação de post com imagem</li>
+    <li>Stories (24h de duração)</li>
+    <li>Visualização de stories (StoryViewerPage)</li>
+    <li>Denúncia de post ou perfil</li>
+  </ul>
+</div>
+
+<div class="card">
+  <h2>CommentsPage</h2>
+  <span class="tag">Feed</span>
+
+  <p><strong>Finalidade:</strong> Comentários de um post.</p>
+  <ul>
+    <li>Listagem de comentários</li>
+    <li>Envio de novo comentário</li>
+    <li>Modal</li>
+  </ul>
+</div>
+
+<!-- ================= STORIES ================= -->
+
+<div class="card">
+  <h2>StoryViewerPage</h2>
+  <span class="tag">Stories</span>
+
+  <p><strong>Finalidade:</strong> Visualização sequencial de stories.</p>
+  <ul>
+    <li>Stories em tela cheia</li>
+    <li>Avanço automático</li>
+    <li>Duração total: 24h por story</li>
+  </ul>
+</div>
+
+<!-- ================= LIKES / FRIENDS ================= -->
+
+<div class="card">
+  <h2>LikesReceivedPage</h2>
+  <span class="tag">Curtidas</span>
+
+  <p><strong>Finalidade:</strong> Lista de usuários que curtiram o perfil.</p>
+  <ul>
+    <li>Visível apenas para planos Plus/Premium</li>
+    <li>Overlay de bloqueio para plano Free</li>
+    <li>Match direto ou solicitação de amizade</li>
+  </ul>
+</div>
+
+<div class="card">
+  <h2>FriendsPage</h2>
+  <span class="tag">Amigos</span>
+
+  <p><strong>Finalidade:</strong> Lista de amigos do usuário.</p>
+</div>
+
+<div class="card">
+  <h2>FriendRequestsPage</h2>
+  <span class="tag">Amizade</span>
+
+  <p><strong>Finalidade:</strong> Solicitações de amizade recebidas.</p>
+  <ul>
+    <li>Aceitar ou recusar pedidos</li>
+    <li>Aceitar libera posts e stories no feed</li>
+  </ul>
+</div>
+
+<!-- ================= CHAT ================= -->
+
+<div class="card">
+  <h2>ChatListPage</h2>
+  <span class="tag">Chat</span>
+
+  <p><strong>Finalidade:</strong> Lista de conversas.</p>
+  <ul>
+    <li>Chats individuais e grupos</li>
+    <li>Favoritos</li>
+    <li>Bloquear contato</li>
+    <li>Gerenciar grupos (admin)</li>
+  </ul>
+</div>
+
+<div class="card">
+  <h2>ChatPage</h2>
+  <span class="tag">Chat</span>
+
+  <p><strong>Finalidade:</strong> Conversa individual ou em grupo.</p>
+  <ul>
+    <li>Envio e leitura de mensagens</li>
+    <li>Presença online</li>
+  </ul>
+</div>
+
+<div class="card">
+  <h2>MessagesPage</h2>
+  <span class="tag">Chat</span>
+
+  <p><strong>Finalidade:</strong> Container visual da área de mensagens.</p>
+</div>
+
+<!-- ================= PERFIL ================= -->
+
+<div class="card">
+  <h2>ProfilePage</h2>
+  <span class="tag">Perfil</span>
+
+  <p><strong>Finalidade:</strong> Visualização e edição do perfil.</p>
+  <ul>
+    <li>Dados pessoais</li>
+    <li>Fotos e galeria</li>
+    <li>Status de verificação</li>
+  </ul>
+</div>
+
+<div class="card">
+  <h2>PhotoGalleryPage</h2>
+  <span class="tag">Perfil</span>
+
+  <p><strong>Finalidade:</strong> Galeria completa de fotos do usuário.</p>
+</div>
+
+<div class="card">
+  <h2>PhotoPreviewPage</h2>
+  <span class="tag">Imagem</span>
+
+  <p><strong>Finalidade:</strong> Visualização de imagem em tela cheia.</p>
+</div>
+
+<!-- ================= SUPORTE / ADMIN ================= -->
+
+<div class="card">
+  <h2>SupportPage</h2>
+  <span class="tag">Suporte</span>
+
+  <p><strong>Finalidade:</strong> Envio de ticket de suporte.</p>
+  <ul>
+    <li>Criação de SupportTicket</li>
+    <li>Status inicial: open</li>
+  </ul>
+</div>
+
+<div class="card">
+  <h2>VerificationPage</h2>
+  <span class="tag">Verificação</span>
+
+  <p><strong>Finalidade:</strong> Verificação de identidade.</p>
+  <ul>
+    <li>Envio de selfie + documento</li>
+    <li>Status: pending / approved / rejected</li>
+    <li>Upload no Firebase Storage</li>
+  </ul>
+</div>
+
+<div class="card">
+  <h2>UpgradePage</h2>
+  <span class="tag">Planos</span>
+
+  <p><strong>Finalidade:</strong> Upgrade de plano.</p>
+  <ul>
+    <li>Plus / Premium</li>
+    <li>Boosts</li>
+    <li>Desbloqueio de curtidas</li>
+  </ul>
+</div>
+
+</div>
+</body>
+</html>

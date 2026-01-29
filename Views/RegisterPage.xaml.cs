@@ -1,5 +1,7 @@
 using AmoraApp.ViewModels;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.ApplicationModel;
+
 
 namespace AmoraApp.Views
 {
@@ -21,5 +23,7 @@ namespace AmoraApp.Views
             InitializeComponent();
             BindingContext = vm;
         }
+
+       
     }
 }
