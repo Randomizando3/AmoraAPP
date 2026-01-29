@@ -86,77 +86,6 @@ namespace AmoraApp.ViewModels
             BirthDateText = newValue.ToString("dd/MM/yyyy");
         }
 
-
-        // Quando o usuário digita, tenta interpretar.
-        //partial void OnBirthDateTextChanged(string oldValue, string newValue)
-        //{
-        //    if (_syncingBirthText) return;
-
-        //    try
-        //    {
-        //        if (string.IsNullOrWhiteSpace(newValue))
-        //            return;
-
-        //        // Normaliza removendo tudo que não é dígito
-        //        var digits = new string(newValue.Where(char.IsDigit).ToArray());
-
-        //        // Limita no máximo 8 dígitos (ddMMyyyy) para evitar estados estranhos
-        //        if (digits.Length > 8)
-        //            digits = digits.Substring(0, 8);
-
-        //        // Enquanto não tiver 8 dígitos, só mantém o texto "formatado" e NÃO tenta parsear
-        //        if (digits.Length < 8)
-        //        {
-        //            var partial = FormatAsPartialDate(digits); // dd/MM/aaaa parcial
-        //            if (partial != newValue)
-        //            {
-        //                _syncingBirthText = true;
-        //                BirthDateText = partial;
-        //                _syncingBirthText = false;
-        //            }
-        //            return;
-        //        }
-
-        //        // Aqui tem exatamente 8 dígitos: formata dd/MM/yyyy e parseia
-        //        var formatted = $"{digits.Substring(0, 2)}/{digits.Substring(2, 2)}/{digits.Substring(4, 4)}";
-
-        //        if (formatted != newValue)
-        //        {
-        //            _syncingBirthText = true;
-        //            BirthDateText = formatted;
-        //            _syncingBirthText = false;
-        //        }
-
-        //        // Só agora tenta converter para DateTime
-        //        if (TryParseBirthDate(formatted, out var parsed))
-        //        {
-        //            _syncingBirthText = true;
-        //            BirthDate = parsed.Date;
-        //            _syncingBirthText = false;
-        //        }
-        //    }
-        //    catch
-        //    {
-        //        // Nunca derrube o app por causa de digitação.
-        //        // Se quiser, você pode logar em Debug/Console aqui.
-        //    }
-        //}
-
-        //private static string FormatAsPartialDate(string digits)
-        //{
-        //    // Ex.: "1" -> "1"
-        //    // "12" -> "12"
-        //    // "123" -> "12/3"
-        //    // "1234" -> "12/34"
-        //    // "12345" -> "12/34/5" ...
-        //    if (string.IsNullOrEmpty(digits)) return string.Empty;
-
-        //    if (digits.Length <= 2) return digits;
-        //    if (digits.Length <= 4) return $"{digits.Substring(0, 2)}/{digits.Substring(2)}";
-        //    return $"{digits.Substring(0, 2)}/{digits.Substring(2, 2)}/{digits.Substring(4)}";
-        //}
-
-
         partial void OnAgeChanged(int oldValue, int newValue)
         {
             OnPropertyChanged(nameof(AgeDisplay));
@@ -250,7 +179,6 @@ namespace AmoraApp.ViewModels
             return calcAge;
         }
 
-
         [RelayCommand]
         private async Task LoginAsync()
         {
@@ -266,17 +194,23 @@ namespace AmoraApp.ViewModels
                     return;
                 }
 
+                // ✅ IMPORTANTÍSSIMO: evita "misturar" sessão anterior (admin/usuário comum)
+                // Derruba qualquer resíduo ANTES de autenticar.
+                _authService.Logout();
+
                 var cred = await _authService.LoginWithEmailPasswordAsync(Email.Trim(), Password);
                 var uid = cred.User.Uid;
 
+                // fonte da verdade para o app (seu padrão atual)
                 Preferences.Set("auth_uid", uid);
 
                 // ===== BLOQUEIO POR SUSPENSÃO (7 dias ou até a data definida) =====
                 var blocked = await BlockIfSuspendedAsync(uid);
                 if (blocked)
                 {
-                    // opcional: limpa o uid local para evitar “sessão fantasma”
+                    // mata sessão e limpa uid local para evitar “sessão fantasma”
                     Preferences.Remove("auth_uid");
+                    _authService.Logout();
                     return;
                 }
 
@@ -298,9 +232,6 @@ namespace AmoraApp.ViewModels
                 IsBusy = false;
             }
         }
-
-
-
 
         // =========================================================
         // FLUXO DE REGISTRO EM ETAPAS
@@ -338,7 +269,6 @@ namespace AmoraApp.ViewModels
                 PrimaryButtonText = "Avançar";
                 return;
             }
-
 
             // Etapa 2: E-mail + senha + confirmação
             if (IsStepEmail)
@@ -535,7 +465,6 @@ namespace AmoraApp.ViewModels
                 // mantém texto coerente
                 BirthDateText = BirthDate.ToString("dd/MM/yyyy");
 
-
                 if (string.IsNullOrWhiteSpace(City))
                 {
                     ErrorMessage = "Informe sua cidade.";
@@ -602,6 +531,9 @@ namespace AmoraApp.ViewModels
 
                     email = Email.Trim();
 
+                    // ✅ evita misturar sessão anterior no registro também
+                    _authService.Logout();
+
                     var cred = await _authService.RegisterWithEmailPasswordAsync(
                         email,
                         Password,
@@ -659,7 +591,6 @@ namespace AmoraApp.ViewModels
             {
                 IsBusy = false;
             }
-
         }
 
         // =========================================================
@@ -670,7 +601,6 @@ namespace AmoraApp.ViewModels
         {
             if (Application.Current.MainPage is NavigationPage nav)
                 await nav.PushAsync(new Views.RegisterPage());
-
         }
 
         [RelayCommand]
@@ -691,6 +621,9 @@ namespace AmoraApp.ViewModels
 
             try
             {
+                // ✅ IMPORTANTÍSSIMO: evita "misturar" sessão anterior (admin/usuário comum)
+                _authService.Logout();
+
                 var client = _authService.Client;
 
                 var userCredential = await client.SignInWithRedirectAsync(
@@ -724,6 +657,7 @@ namespace AmoraApp.ViewModels
                     if (blocked)
                     {
                         Preferences.Remove("auth_uid");
+                        _authService.Logout();
                         return;
                     }
 
@@ -731,7 +665,6 @@ namespace AmoraApp.ViewModels
                     Application.Current.MainPage = new AppShell();
                     return;
                 }
-
 
                 _isSocialSignUp = true;
 
@@ -815,6 +748,5 @@ namespace AmoraApp.ViewModels
                 return true;
             }
         }
-
     }
 }

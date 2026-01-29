@@ -1,30 +1,52 @@
-﻿using AmoraApp.Views;
-using AmoraApp.Services;
+﻿using AmoraApp.Services;
+using AmoraApp.ViewModels;
+using AmoraApp.Views;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Storage;
 
 namespace AmoraApp
 {
     public partial class App : Application
     {
-        public App(WelcomePage welcomePage)
+        public App()
         {
             InitializeComponent();
 
-            // Garante que o serviço de auth é inicializado
-            var auth = FirebaseAuthService.Instance;
+            // VM obrigatório para LoginPage
+            var authVm = new AuthViewModel();
 
-            // Se já existir sessão do Firebase, vai direto para o AppShell
-            if (!string.IsNullOrEmpty(auth.CurrentUserUid))
+            var authService = FirebaseAuthService.Instance;
+
+            // Fonte primária: FirebaseAuth (se o SDK ainda tiver sessão viva)
+            var firebaseUid = authService.CurrentUserUid;
+
+            // Fallback: Preferences (controle seu)
+            var localUid = Preferences.Get("auth_uid", string.Empty);
+
+            var uid = !string.IsNullOrWhiteSpace(firebaseUid)
+                ? firebaseUid
+                : localUid;
+
+            if (!string.IsNullOrWhiteSpace(uid))
             {
-                // Usuário já está autenticado (Firebase persiste a sessão)
+                // Garante consistência
+                Preferences.Set("auth_uid", uid);
+
+                // 🔴 MUITO IMPORTANTE
+                // Nunca persista admin localmente
+                Preferences.Remove("is_admin");
+                Preferences.Remove("admin_uid");
+
                 MainPage = new AppShell();
-                // garante token vinculado mesmo quando pula o Welcome
-                _ = PushNotificationBootstrapper.BindCurrentUserAsync(auth.CurrentUserUid);
             }
             else
             {
-                // Ninguém logado: cai na tela de boas-vindas (Login / Register)
-                MainPage = new NavigationPage(welcomePage);
+                // Sem sessão → login limpo
+                Preferences.Remove("auth_uid");
+                Preferences.Remove("is_admin");
+                Preferences.Remove("admin_uid");
+
+                MainPage = new NavigationPage(new LoginPage(authVm));
             }
         }
     }
