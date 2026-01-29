@@ -702,7 +702,7 @@ namespace AmoraApp.ViewModels
         {
             await Application.Current.MainPage.DisplayAlert(
                 "Login com Apple",
-                "Login com Apple será configurado em uma próxima etapa.",
+                "O Apple Login estará disponível em breve.",
                 "OK");
         }
 
