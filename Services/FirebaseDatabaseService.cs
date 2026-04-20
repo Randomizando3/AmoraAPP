@@ -79,6 +79,24 @@ namespace AmoraApp.Services
             await EnsureSuccessAsync(resp);
         }
 
+        private static UserProfile NormalizeUserProfile(UserProfile profile)
+        {
+            profile.PhotoUrl ??= string.Empty;
+            profile.Gallery ??= new List<string>();
+            profile.Photos ??= new List<string>();
+            profile.Interests ??= new List<string>();
+            profile.LookingFor ??= new List<string>();
+
+            if (string.IsNullOrWhiteSpace(profile.PhotoUrl))
+            {
+                profile.PhotoUrl = profile.Photos.FirstOrDefault(p => !string.IsNullOrWhiteSpace(p))
+                                ?? profile.Gallery.FirstOrDefault(p => !string.IsNullOrWhiteSpace(p))
+                                ?? string.Empty;
+            }
+
+            return profile;
+        }
+
         // ============================================================
         // USERS
         // ============================================================
@@ -121,7 +139,7 @@ namespace AmoraApp.Services
             if (profile != null && string.IsNullOrWhiteSpace(profile.Id))
                 profile.Id = uid;
 
-            return profile;
+            return profile == null ? null : NormalizeUserProfile(profile);
         }
 
         // ============================================================
