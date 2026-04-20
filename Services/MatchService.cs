@@ -1,4 +1,4 @@
-﻿using AmoraApp.Config;
+using AmoraApp.Config;
 using AmoraApp.Models;
 using System;
 using System.Collections.Generic;
@@ -24,6 +24,23 @@ namespace AmoraApp.Services
         public static MatchService Instance { get; } = new MatchService();
 
         private MatchService() { }
+        private static UserProfile NormalizeUserProfile(UserProfile u)
+        {
+            u.PhotoUrl ??= string.Empty;
+            u.Gallery ??= new List<string>();
+            u.Photos ??= new List<string>();
+            u.Interests ??= new List<string>();
+            u.LookingFor ??= new List<string>();
+
+            if (string.IsNullOrWhiteSpace(u.PhotoUrl))
+            {
+                u.PhotoUrl = u.Photos.FirstOrDefault(p => !string.IsNullOrWhiteSpace(p))
+                          ?? u.Gallery.FirstOrDefault(p => !string.IsNullOrWhiteSpace(p))
+                          ?? string.Empty;
+            }
+
+            return u;
+        }
 
         // =========================================================
         // LIKE / DISLIKE / MATCH
@@ -126,11 +143,7 @@ namespace AmoraApp.Services
                     continue;
 
                 profile.Id = likerId;
-                profile.PhotoUrl ??= string.Empty;
-                profile.Gallery ??= new List<string>();
-                profile.Interests ??= new List<string>();
-
-                result.Add(profile);
+                result.Add(NormalizeUserProfile(profile));
             }
 
             // opcional: ordenar por nome, idade, etc.
@@ -157,12 +170,7 @@ namespace AmoraApp.Services
                     var u = k.Value ?? new UserProfile();
                     u.Id = k.Key;
 
-                    // Garante nunca nulo
-                    u.PhotoUrl ??= string.Empty;
-                    u.Gallery ??= new List<string>();
-                    u.Interests ??= new List<string>();
-
-                    return u;
+                    return NormalizeUserProfile(u);
                 })
                 .ToList();
 
