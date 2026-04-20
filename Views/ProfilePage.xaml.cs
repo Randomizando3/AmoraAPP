@@ -169,6 +169,7 @@ namespace AmoraApp.Views
                     {
                         _vm.PhotoUrl = url;
                         await _vm.SaveAsync();
+                        await ShowPhotoAutoSavedFeedbackAsync("Foto de perfil salva automaticamente.");
                     }
                 }
                 else if (action == "Câmera" || action == "Substituir pela câmera")
@@ -180,6 +181,7 @@ namespace AmoraApp.Views
                     {
                         _vm.PhotoUrl = url;
                         await _vm.SaveAsync();
+                        await ShowPhotoAutoSavedFeedbackAsync("Foto de perfil salva automaticamente.");
                     }
                 }
 
@@ -240,6 +242,7 @@ namespace AmoraApp.Views
                     {
                         slot.ImageUrl = url;
                         await _vm.SaveAsync();
+                        await ShowPhotoAutoSavedFeedbackAsync("Foto da galeria salva automaticamente.");
                     }
                 }
                 else if (action == "Câmera")
@@ -251,6 +254,7 @@ namespace AmoraApp.Views
                     {
                         slot.ImageUrl = url;
                         await _vm.SaveAsync();
+                        await ShowPhotoAutoSavedFeedbackAsync("Foto da galeria salva automaticamente.");
                     }
                 }
             }
@@ -283,6 +287,7 @@ namespace AmoraApp.Views
                     {
                         slot.ImageUrl = url;
                         await _vm.SaveAsync();
+                        await ShowPhotoAutoSavedFeedbackAsync("Foto da galeria salva automaticamente.");
                     }
                 }
                 else if (action == "Substituir pela câmera")
@@ -294,9 +299,18 @@ namespace AmoraApp.Views
                     {
                         slot.ImageUrl = url;
                         await _vm.SaveAsync();
+                        await ShowPhotoAutoSavedFeedbackAsync("Foto da galeria salva automaticamente.");
                     }
                 }
             }
+        }
+
+        private async Task ShowPhotoAutoSavedFeedbackAsync(string message)
+        {
+            if (string.IsNullOrEmpty(_vm.ErrorMessage))
+                await DisplayAlert("Pronto", message, "OK");
+            else
+                await DisplayAlert("Erro", _vm.ErrorMessage, "OK");
         }
 
         private async void OnVideoSlotTapped(object sender, TappedEventArgs e)
